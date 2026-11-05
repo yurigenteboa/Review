@@ -17,6 +17,8 @@ export interface Item {
   subtitle: string | null
   image_url: string | null
   year: number | null
+  source?: string
+  external_id?: string | null
 }
 
 export interface ReviewPhoto {

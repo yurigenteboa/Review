@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { categoryById, catColor, type CategoryId } from '../../lib/categories'
-import { useCreateReview, useSearchItems } from '../../lib/queries'
+import { useDebounced, useNearMe } from '../../lib/hooks'
+import { useCatalogSearch, useCreateReview, useItem, useSearchItems, type CatalogResult } from '../../lib/queries'
 import type { Visibility } from '../../lib/types'
 import { CategoryChips } from '../ui/Chips'
 import { Sheet } from '../ui/Sheet'
+import { CatalogResults, NearMeButton } from './CatalogResults'
 import { Cover } from './ReviewCard'
 import { CriterionInput, RatingInput } from './RatingInput'
 
@@ -12,6 +14,7 @@ export interface ComposeStart {
   category?: CategoryId
   title?: string
   itemId?: string
+  external?: CatalogResult
 }
 
 interface Props {
@@ -43,19 +46,32 @@ const MAX_PHOTOS = 4
 export function ComposeSheet({ open, start, onClose, onDone }: Props) {
   const navigate = useNavigate()
   // O App remonta este componente a cada abertura (prop `key`), então o estado já nasce limpo.
-  const [category, setCategory] = useState<CategoryId>(start.category ?? 'album')
-  const [title, setTitle] = useState(start.title ?? '')
+  const [category, setCategory] = useState<CategoryId>(start.category ?? start.external?.category ?? 'album')
+  const [title, setTitle] = useState(start.title ?? start.external?.title ?? '')
   const [subtitle, setSubtitle] = useState('')
   const [itemId, setItemId] = useState<string | undefined>(start.itemId)
+  const [external, setExternal] = useState<CatalogResult | undefined>(start.external)
   const [rating, setRating] = useState(0)
   const [criteria, setCriteria] = useState<Record<string, number>>({})
   const [body, setBody] = useState('')
   const [visibility, setVisibility] = useState<Visibility>('amigos')
   const [photos, setPhotos] = useState<File[]>([])
   const create = useCreateReview()
+  const { near, status, request, clear } = useNearMe()
 
-  const suggestions = useSearchItems(itemId ? '' : title, category)
-  const showSuggestions = !itemId && title.trim().length >= 2 && (suggestions.data?.length ?? 0) > 0
+  const picked = Boolean(itemId || external)
+  const term = useDebounced(picked ? '' : title.trim(), 400)
+  const placeCat = category === 'bar' || category === 'banheiro'
+  const local = useSearchItems(term, category)
+  const remote = useCatalogSearch(picked ? 'all' : category, term, placeCat ? near : null)
+  const pickedItem = useItem(itemId)
+
+  const known = useMemo(
+    () => new Set((local.data ?? []).filter((i) => i.external_id).map((i) => `${i.source}:${i.external_id}`)),
+    [local.data],
+  )
+  const localMatches = term.length >= 2 ? (local.data ?? []).slice(0, 3) : []
+  const showRemote = !picked && (term.length >= 2 || (placeCat && Boolean(near)))
 
   const previews = useMemo(() => photos.map((f) => URL.createObjectURL(f)), [photos])
   useEffect(() => () => previews.forEach((u) => URL.revokeObjectURL(u)), [previews])
@@ -63,12 +79,18 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
   const ready = title.trim().length > 0 && rating > 0 && !create.isPending
   const cat = categoryById(category)
 
+  const unpick = () => {
+    setItemId(undefined)
+    setExternal(undefined)
+  }
+
   const submit = async () => {
     if (!ready) return
     try {
       const res = await create.mutateAsync({
         category,
         itemId,
+        external,
         title,
         subtitle,
         rating,
@@ -85,6 +107,14 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
     }
   }
 
+  const chosen = external
+    ? { title: external.title, subtitle: external.subtitle, image_url: external.image_url, category: external.category }
+    : pickedItem.data
+      ? pickedItem.data
+      : itemId
+        ? { title, subtitle: null, image_url: null, category }
+        : null
+
   return (
     <Sheet open={open} onClose={onClose} title="Nova review">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -94,57 +124,89 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
           onChange={(v) => {
             if (v === 'all') return
             setCategory(v)
-            setItemId(undefined)
+            unpick()
             setCriteria({})
           }}
         />
 
-        <label style={{ display: 'block', position: 'relative' }}>
-          <span className="field-label">O que você está avaliando?</span>
-          <input
-            className="field"
-            value={title}
-            placeholder={PLACEHOLDER[category]}
-            onChange={(e) => {
-              setTitle(e.target.value)
-              setItemId(undefined)
-            }}
-          />
-          {showSuggestions && (
-            <div className="group" style={{ marginTop: 6 }}>
-              {suggestions.data!.slice(0, 4).map((it) => (
-                <button
-                  key={it.id}
-                  type="button"
-                  className="group__row tap"
-                  style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left' }}
-                  onClick={() => {
-                    setItemId(it.id)
-                    setTitle(it.title)
-                  }}
-                >
-                  <Cover item={it} size={36} />
-                  <span style={{ display: 'flex', flexDirection: 'column' }}>
-                    <strong style={{ fontWeight: 600 }}>{it.title}</strong>
-                    {it.subtitle && <span style={{ fontSize: 13, color: 'var(--text-3)' }}>{it.subtitle}</span>}
-                  </span>
-                </button>
-              ))}
+        {chosen ? (
+          <div className="group">
+            <div className="group__row">
+              <Cover item={chosen} size={56} radius={12} />
+              <span style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0, flex: 1 }}>
+                <strong style={{ fontWeight: 650, fontSize: 17 }}>{chosen.title}</strong>
+                {chosen.subtitle && <span style={{ fontSize: 13, color: 'var(--text-3)' }}>{chosen.subtitle}</span>}
+              </span>
+              <button type="button" className="btn btn--plain tap" style={{ minHeight: 36, padding: '0 14px', fontSize: 14 }} onClick={unpick}>
+                Trocar
+              </button>
             </div>
-          )}
-          {itemId && <span className="field-hint">Item já cadastrado no Review.</span>}
-        </label>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <label style={{ display: 'block' }}>
+              <span className="field-label">O que você está avaliando?</span>
+              <input
+                className="field"
+                value={title}
+                placeholder={PLACEHOLDER[category]}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </label>
 
-        {!itemId && title.trim() && (
-          <label style={{ display: 'block' }}>
-            <span className="field-label">Detalhe (opcional)</span>
-            <input
-              className="field"
-              value={subtitle}
-              placeholder={category === 'bar' || category === 'banheiro' ? 'Bairro, cidade' : 'Artista, diretor, ano…'}
-              onChange={(e) => setSubtitle(e.target.value)}
-            />
-          </label>
+            {placeCat && <NearMeButton active={Boolean(near)} status={status} onRequest={request} onClear={clear} />}
+
+            {localMatches.length > 0 && (
+              <div className="group">
+                {localMatches.map((it) => (
+                  <button
+                    key={it.id}
+                    type="button"
+                    className="group__row tap"
+                    style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left' }}
+                    onClick={() => {
+                      setItemId(it.id)
+                      setTitle(it.title)
+                    }}
+                  >
+                    <Cover item={it} size={44} radius={10} />
+                    <span style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      <strong style={{ fontWeight: 600 }}>{it.title}</strong>
+                      <span style={{ fontSize: 13, color: 'var(--text-3)' }}>{it.subtitle ? `${it.subtitle} · ` : ''}já no Review</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {showRemote && (
+              <CatalogResults
+                category={category}
+                results={remote.data?.results}
+                loading={remote.isFetching}
+                missingKey={remote.data?.missingKey}
+                error={remote.error ? String(remote.error) : remote.data?.error}
+                hide={known}
+                limit={6}
+                onPick={(r) => {
+                  setExternal(r)
+                  setTitle(r.title)
+                }}
+              />
+            )}
+
+            {title.trim() && (
+              <label style={{ display: 'block' }}>
+                <span className="field-label">Não achou? Detalhe para o cadastro manual (opcional)</span>
+                <input
+                  className="field"
+                  value={subtitle}
+                  placeholder={placeCat ? 'Bairro, cidade' : 'Artista, diretor, ano…'}
+                  onChange={(e) => setSubtitle(e.target.value)}
+                />
+              </label>
+            )}
+          </div>
         )}
 
         <RatingInput value={rating} onChange={setRating} />

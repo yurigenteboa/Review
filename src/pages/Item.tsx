@@ -35,18 +35,38 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
   return (
     <div className="page">
       <div
-        aria-hidden="true"
         style={{
           position: 'relative',
-          height: 'calc(320px + var(--safe-top))',
+          height: 'calc(360px + var(--safe-top))',
           overflow: 'hidden',
-          background: it.image_url
-            ? `center / cover no-repeat url("${it.image_url}")`
-            : `linear-gradient(160deg, color-mix(in srgb, var(--cat-${it.category}) 50%, #000), var(--cat-${it.category}))`,
+          background: `linear-gradient(160deg, color-mix(in srgb, var(--cat-${it.category}) 50%, #000), var(--cat-${it.category}))`,
         }}
       >
-        {!it.image_url && (
-          <span style={{ position: 'absolute', left: 24, bottom: 120, fontSize: 96, fontWeight: 800, color: 'rgba(255,255,255,0.9)', letterSpacing: -4 }}>
+        {it.image_url ? (
+          <>
+            {/* a própria capa, desfocada, vira o fundo colorido para o vidro */}
+            <img
+              src={it.image_url}
+              alt=""
+              aria-hidden="true"
+              style={{ position: 'absolute', inset: -40, width: 'calc(100% + 80px)', height: 'calc(100% + 80px)', objectFit: 'cover', filter: 'blur(40px) saturate(160%)', opacity: 0.9 }}
+            />
+            <div style={{ position: 'absolute', left: 0, right: 0, top: 'calc(var(--safe-top) + 40px)', display: 'flex', justifyContent: 'center' }}>
+              <img
+                src={it.image_url}
+                alt={`Capa de ${it.title}`}
+                style={{
+                  height: it.category === 'album' ? 170 : 200,
+                  width: it.category === 'album' ? 170 : 'auto',
+                  objectFit: 'cover',
+                  borderRadius: it.category === 'album' ? 12 : 14,
+                  boxShadow: '0 20px 50px rgba(0,0,0,0.35)',
+                }}
+              />
+            </div>
+          </>
+        ) : (
+          <span aria-hidden="true" style={{ position: 'absolute', left: 24, bottom: 120, fontSize: 96, fontWeight: 800, color: 'rgba(255,255,255,0.9)', letterSpacing: -4 }}>
             {initials(it.title)}
           </span>
         )}

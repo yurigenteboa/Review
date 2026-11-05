@@ -1,18 +1,33 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useMemo, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { CatalogResults, NearMeButton } from '../components/review/CatalogResults'
+import type { ComposeStart } from '../components/review/ComposeSheet'
 import { Cover } from '../components/review/ReviewCard'
 import { CategoryChips } from '../components/ui/Chips'
 import { SearchIcon } from '../components/ui/Icons'
 import { PageHeader } from '../components/ui/PageHeader'
 import { categoryById, type CategoryId } from '../lib/categories'
-import { useSearchItems } from '../lib/queries'
-import type { ComposeStart } from '../components/review/ComposeSheet'
+import { useDebounced, useNearMe } from '../lib/hooks'
+import { useCatalogSearch, useOpenCatalogItem, useSearchItems } from '../lib/queries'
 
 export default function Buscar({ onCompose }: { onCompose: (s: ComposeStart) => void }) {
+  const navigate = useNavigate()
   const [q, setQ] = useState('')
   const [cat, setCat] = useState<CategoryId | 'all'>('all')
-  const results = useSearchItems(q, cat)
-  const term = q.trim()
+  const term = useDebounced(q.trim(), 400)
+  const { near, status, request, clear } = useNearMe()
+  const placeCat = cat === 'bar' || cat === 'banheiro'
+
+  const local = useSearchItems(term, cat)
+  const external = useCatalogSearch(cat, term, placeCat ? near : null)
+  const open = useOpenCatalogItem()
+
+  const known = useMemo(
+    () => new Set((local.data ?? []).filter((i) => i.external_id).map((i) => `${i.source}:${i.external_id}`)),
+    [local.data],
+  )
+
+  const showExternal: boolean = term.length >= 2 || (placeCat && Boolean(near))
 
   return (
     <div className="page">
@@ -21,46 +36,84 @@ export default function Buscar({ onCompose }: { onCompose: (s: ComposeStart) => 
           <span style={{ color: 'var(--text-3)', display: 'flex' }}>
             <SearchIcon size={18} />
           </span>
-          <span className="visually-hidden">Buscar no catálogo</span>
-          <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Álbuns, filmes, bares, banheiros…" />
+          <span className="visually-hidden">Buscar</span>
+          <input
+            type="search"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder={cat === 'all' ? 'Álbuns, filmes, bares, banheiros…' : `Buscar ${categoryById(cat).label.toLowerCase()}…`}
+          />
         </label>
         <div style={{ marginTop: 12 }}>
           <CategoryChips value={cat} onChange={setCat} />
         </div>
+        {placeCat && (
+          <div style={{ marginTop: 10 }}>
+            <NearMeButton active={Boolean(near)} status={status} onRequest={request} onClear={clear} />
+          </div>
+        )}
       </PageHeader>
 
       <div className="page__body">
-        <div className="group">
-          {results.data?.map((i) => (
-            <Link key={i.id} to={`/item/${i.id}`} className="group__row tap" style={{ textDecoration: 'none', color: 'inherit' }}>
-              <Cover item={i} size={44} />
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
-                <strong style={{ fontWeight: 600, fontSize: 16 }}>{i.title}</strong>
-                <span style={{ fontSize: 13, color: 'var(--text-3)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {categoryById(i.category).label}
-                  {i.subtitle ? ` · ${i.subtitle}` : ''}
-                </span>
-              </div>
-            </Link>
-          ))}
-          {results.isLoading && <div className="group__row" style={{ color: 'var(--text-3)' }}>Buscando…</div>}
-          {results.data?.length === 0 && !term && (
-            <div className="group__row" style={{ color: 'var(--text-3)' }}>O catálogo ainda está vazio.</div>
-          )}
-          {term && (
-            <button
-              type="button"
-              className="group__row tap"
-              onClick={() => onCompose({ title: term, category: cat === 'all' ? undefined : cat })}
-              style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left', color: 'var(--accent-ink)', fontWeight: 600 }}
-            >
-              Avaliar “{term}” (criar manualmente)
-            </button>
-          )}
-        </div>
-        <p style={{ margin: '0 4px', fontSize: 12, color: 'var(--text-3)' }}>
-          Por enquanto a busca mostra o que já foi cadastrado no Review. Na Fase 3 ela passa a consultar TMDB, MusicBrainz, IGDB e mapas.
-        </p>
+        {(local.data?.length ?? 0) > 0 && (
+          <section aria-label="Já no Review" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <span className="field-label" style={{ margin: '4px 4px 0' }}>
+              {term ? 'Já no Review' : 'Adicionados recentemente'}
+            </span>
+            <div className="group">
+              {local.data!.slice(0, term ? 10 : 15).map((i) => (
+                <Link key={i.id} to={`/item/${i.id}`} className="group__row tap" style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <Cover item={i} size={44} radius={10} />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+                    <strong style={{ fontWeight: 600, fontSize: 16 }}>{i.title}</strong>
+                    <span style={{ fontSize: 13, color: 'var(--text-3)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {categoryById(i.category).label}
+                      {i.subtitle ? ` · ${i.subtitle}` : ''}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {showExternal && cat !== 'all' && (
+          <CatalogResults
+            category={cat}
+            results={external.data?.results}
+            loading={external.isFetching}
+            missingKey={external.data?.missingKey}
+            error={external.error ? String(external.error) : external.data?.error}
+            hide={known}
+            onPick={async (r) => {
+              const id = await open.mutateAsync(r)
+              navigate(`/item/${id}`)
+            }}
+          />
+        )}
+
+        {cat === 'all' && term.length >= 2 && (
+          <p style={{ margin: '0 4px', fontSize: 14, color: 'var(--text-3)' }}>
+            Escolha uma categoria acima para buscar também na internet (filmes, álbuns, jogos, livros, lugares).
+          </p>
+        )}
+
+        {term.length >= 2 && (
+          <button
+            type="button"
+            className="btn btn--plain tap"
+            onClick={() => onCompose({ title: term, category: cat === 'all' ? undefined : cat })}
+          >
+            Não achou? Criar “{term}” manualmente
+          </button>
+        )}
+
+        {open.isPending && <span role="status" className="field-hint">Abrindo…</span>}
+        {open.error && (
+          <span role="alert" style={{ color: 'var(--cat-filme-ink)', fontSize: 14 }}>
+            Não deu para abrir: {(open.error as Error).message}
+          </span>
+        )}
       </div>
     </div>
   )

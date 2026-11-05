@@ -87,7 +87,11 @@ export function useSearchItems(term: string, category: CategoryId | 'all') {
   return useQuery({
     queryKey: ['search', t, category],
     queryFn: async () => {
-      let q = supabase.from('items').select('id, category, title, subtitle, image_url, year').order('created_at', { ascending: false }).limit(30)
+      let q = supabase
+        .from('items')
+        .select('id, category, title, subtitle, image_url, year, source, external_id')
+        .order('created_at', { ascending: false })
+        .limit(30)
       if (t) q = q.ilike('title', `%${t.replace(/[%_]/g, '')}%`)
       if (category !== 'all') q = q.eq('category', category)
       const { data, error } = await q
@@ -127,12 +131,110 @@ export function usePhotoUrls(paths: string[]) {
   })
 }
 
+// ---------- Catálogo externo (Edge Function "catalog-search") ----------
+
+export interface CatalogResult {
+  source: string
+  external_id: string
+  category: CategoryId
+  title: string
+  subtitle: string | null
+  image_url: string | null
+  year: number | null
+  lat: number | null
+  lng: number | null
+  metadata: Record<string, unknown>
+}
+
+interface CatalogResponse {
+  results: CatalogResult[]
+  missingKey?: string
+  error?: string
+}
+
+/**
+ * Busca nas fontes externas (TMDB, MusicBrainz, IGDB, Open Library, OpenStreetMap, IBGE).
+ * Para bar e banheiro, `near` permite buscar "perto de mim" sem texto.
+ */
+export function useCatalogSearch(
+  category: CategoryId | 'all',
+  term: string,
+  near?: { lat: number; lng: number } | null,
+) {
+  const q = term.trim()
+  const placeCat = category === 'bar' || category === 'banheiro'
+  const enabled = category !== 'all' && (q.length >= 2 || (placeCat && Boolean(near)))
+  return useQuery({
+    queryKey: ['catalog', category, q.toLowerCase(), near?.lat, near?.lng],
+    enabled,
+    staleTime: 10 * 60 * 1000,
+    queryFn: async (): Promise<CatalogResponse> => {
+      const { data, error } = await supabase.functions.invoke<CatalogResponse>('catalog-search', {
+        body: { category, q, lat: placeCat ? near?.lat : undefined, lng: placeCat ? near?.lng : undefined },
+      })
+      if (error) throw error
+      return data ?? { results: [] }
+    },
+  })
+}
+
+/** Garante que o resultado externo exista na tabela items e devolve o id. */
+export async function ensureCatalogItem(r: CatalogResult, uid: string): Promise<string> {
+  const { data: found } = await supabase
+    .from('items')
+    .select('id')
+    .eq('source', r.source)
+    .eq('external_id', r.external_id)
+    .maybeSingle()
+  if (found) return found.id
+  const { data, error } = await supabase
+    .from('items')
+    .insert({
+      category: r.category,
+      title: r.title,
+      subtitle: r.subtitle,
+      image_url: r.image_url,
+      year: r.year,
+      source: r.source,
+      external_id: r.external_id,
+      lat: r.lat,
+      lng: r.lng,
+      metadata: r.metadata ?? {},
+      created_by: uid,
+    })
+    .select('id')
+    .single()
+  if (error) {
+    // outra pessoa cadastrou o mesmo item no mesmo instante
+    if (error.code === '23505') {
+      const { data: again } = await supabase.from('items').select('id').eq('source', r.source).eq('external_id', r.external_id).single()
+      if (again) return again.id
+    }
+    throw error
+  }
+  return data.id
+}
+
+export function useOpenCatalogItem() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (r: CatalogResult) => {
+      const { data: auth } = await supabase.auth.getUser()
+      if (!auth.user) throw new Error('Sessão expirada. Entre de novo.')
+      return ensureCatalogItem(r, auth.user.id)
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['search'] }),
+  })
+}
+
 // ---------- Escritas ----------
 
 export interface NewReview {
   category: CategoryId
   /** item já existente escolhido na lista; se vazio, cria (ou reaproveita) pelo título */
   itemId?: string
+  /** resultado vindo das APIs externas, cadastrado no catálogo na hora de publicar */
+  external?: CatalogResult
   title: string
   subtitle?: string
   rating: number
@@ -152,6 +254,7 @@ export function useCreateReview() {
 
       // 1. Item: usa o escolhido, reaproveita um manual com o mesmo nome ou cria um novo
       let itemId = input.itemId
+      if (!itemId && input.external) itemId = await ensureCatalogItem(input.external, uid)
       if (!itemId) {
         const title = input.title.trim()
         const { data: existing } = await supabase
