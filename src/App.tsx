@@ -1,17 +1,42 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'motion/react'
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom'
-import { Sheet } from './components/ui/Sheet'
+import { ComposeSheet, type ComposeStart } from './components/review/ComposeSheet'
 import { TabBar } from './components/ui/TabBar'
+import { AuthProvider, useAuth } from './lib/auth'
 import Buscar from './pages/Buscar'
 import Inicio from './pages/Inicio'
+import Item from './pages/Item'
 import Kit from './pages/Kit'
+import Login from './pages/Login'
 import Mapa from './pages/Mapa'
 import Perfil from './pages/Perfil'
 
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: true } },
+})
+
 function Shell() {
   const location = useLocation()
-  const [composeOpen, setComposeOpen] = useState(false)
+  const { session, loading } = useAuth()
+  const [compose, setCompose] = useState<{ open: boolean; start: ComposeStart; key: number }>({ open: false, start: {}, key: 0 })
+  const [toast, setToast] = useState<string | null>(null)
+
+  const openCompose = useCallback(
+    (start: ComposeStart = {}) => setCompose((c) => ({ open: true, start, key: c.key + 1 })),
+    [],
+  )
+  const closeCompose = useCallback(() => setCompose((c) => ({ ...c, open: false })), [])
+
+  useEffect(() => {
+    if (!toast) return
+    const t = setTimeout(() => setToast(null), 2200)
+    return () => clearTimeout(t)
+  }, [toast])
+
+  if (loading) return <div style={{ minHeight: '100dvh' }} aria-busy="true" />
+  if (!session) return <Login />
 
   return (
     <>
@@ -25,34 +50,46 @@ function Shell() {
           style={{ maxWidth: 640, margin: '0 auto' }}
         >
           <Routes location={location}>
-            <Route path="/" element={<Inicio />} />
-            <Route path="/buscar" element={<Buscar />} />
+            <Route path="/" element={<Inicio onCompose={() => openCompose()} />} />
+            <Route path="/buscar" element={<Buscar onCompose={openCompose} />} />
             <Route path="/mapa" element={<Mapa />} />
             <Route path="/perfil" element={<Perfil />} />
+            <Route path="/item/:id" element={<Item onCompose={openCompose} />} />
             <Route path="/kit" element={<Kit />} />
-            <Route path="*" element={<Inicio />} />
+            <Route path="*" element={<Inicio onCompose={() => openCompose()} />} />
           </Routes>
         </motion.main>
       </AnimatePresence>
 
-      <TabBar onCompose={() => setComposeOpen(true)} />
+      <TabBar onCompose={() => openCompose()} />
 
-      <Sheet open={composeOpen} onClose={() => setComposeOpen(false)} title="Nova review">
-        <p style={{ fontSize: 15, color: 'var(--text-2)', textAlign: 'center', margin: '8px 0 20px' }}>
-          O formulário de review chega na Fase 2, junto com o login e o banco.
-        </p>
-        <button type="button" className="btn btn--plain tap" style={{ width: '100%' }} onClick={() => setComposeOpen(false)}>
-          Fechar
-        </button>
-      </Sheet>
+      <ComposeSheet key={compose.key} open={compose.open} start={compose.start} onClose={closeCompose} onDone={setToast} />
+
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            role="status"
+            className="toast"
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+          >
+            {toast}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   )
 }
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Shell />
-    </BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <BrowserRouter>
+          <Shell />
+        </BrowserRouter>
+      </AuthProvider>
+    </QueryClientProvider>
   )
 }

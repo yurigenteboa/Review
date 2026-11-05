@@ -36,4 +36,9 @@ supabase/migrations/  um arquivo .sql por mudança de banco
 - Antes de mexer em RLS ou auth, explique o plano e espere confirmação.
 
 ## Fases (resumo)
-0 Setup · 1 Design system + casca (atual) · 2 MVP pessoal (login, banco, criar review) · 3 Catálogo via APIs · 4 Amigos (feed, convites) · 5 PWA (offline, push, mapa) · 6 Rede aberta (moderação, LGPD)
+0 Setup · 1 Design system + casca · 2 MVP pessoal (atual) (login, banco, criar review) · 3 Catálogo via APIs · 4 Amigos (feed, convites) · 5 PWA (offline, push, mapa) · 6 Rede aberta (moderação, LGPD)
+
+## Estado atual (Fase 2)
+- Supabase: projeto `review` (sa-east-1). Schema em `supabase/migrations/202611051800_fase2_base.sql` (já aplicado).
+- Login: OTP por e-mail (`signInWithOtp` + `verifyOtp`). Link funciona no navegador; o código só chega depois de configurar SMTP próprio (o template padrão não tem `{{ .Token }}`).
+- Dados: `src/lib/queries.ts` (TanStack Query). Fotos em bucket privado `review-photos/<user_id>/<review_id>/<uuid>.webp`, lidas por URL assinada.
