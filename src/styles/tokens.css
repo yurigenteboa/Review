@@ -1,0 +1,111 @@
+/* =========================================================
+   Review — design tokens ("iOS glass")
+   Toda cor, raio, blur e fonte do app sai daqui.
+   ========================================================= */
+:root {
+  color-scheme: light dark;
+
+  /* Fundo e texto */
+  --bg: #F2F2F7;
+  --surface: #FFFFFF;
+  --text: #1C1C1E;
+  --text-2: #3A3A3C;
+  --text-3: #6C6C70;
+  --separator: rgba(60, 60, 67, 0.16);
+  --fill: rgba(120, 120, 128, 0.14);
+
+  /* Destaque */
+  --accent: #0A84FF;
+  --accent-ink: #0062CC;
+  --star: #FF9F0A;
+  --star-empty: #D1D1D6;
+  --like: #FF2D55;
+
+  /* Vidro */
+  --glass-bg: rgba(255, 255, 255, 0.62);
+  --glass-bg-strong: rgba(248, 248, 250, 0.82);
+  --glass-bar: rgba(242, 242, 247, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.8);
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  --glass-shadow: 0 10px 36px rgba(0, 0, 0, 0.14);
+  --blur: blur(24px) saturate(180%);
+  --blur-strong: blur(32px) saturate(180%);
+
+  /* Cartões */
+  --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.05);
+
+  /* Raios */
+  --r-sm: 12px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --r-xl: 32px;
+  --r-pill: 999px;
+
+  /* Tipografia (tamanhos do iOS) */
+  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', system-ui, sans-serif;
+  --fs-large-title: 34px;
+  --fs-title: 22px;
+  --fs-body: 17px;
+  --fs-callout: 15px;
+  --fs-footnote: 13px;
+  --fs-caption: 11px;
+
+  /* Espaço */
+  --gutter: 16px;
+  --tabbar-h: 64px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+
+  /* Categorias: cor (ícones, barras) e tinta (texto sobre fundo claro, contraste >= 4,5:1) */
+  --cat-album: #AF52DE;    --cat-album-ink: #8E3BBE;
+  --cat-filme: #FF3B30;    --cat-filme-ink: #C9000E;
+  --cat-serie: #FF2D55;    --cat-serie-ink: #C50F3F;
+  --cat-jogo: #34C759;     --cat-jogo-ink: #1F7A35;
+  --cat-livro: #A2845E;    --cat-livro-ink: #7A5C38;
+  --cat-bar: #FF9500;      --cat-bar-ink: #B34700;
+  --cat-banheiro: #0A84FF; --cat-banheiro-ink: #0058B8;
+  --cat-cidade: #30B0C7;   --cat-cidade-ink: #0B6F80;
+}
+
+/* Tema escuro automático */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000;
+    --surface: #1C1C1E;
+    --text: #FFFFFF;
+    --text-2: #D1D1D6;
+    --text-3: #98989F;
+    --separator: rgba(84, 84, 88, 0.6);
+    --fill: rgba(118, 118, 128, 0.24);
+    --accent-ink: #64B5FF;
+    --star-empty: #48484A;
+
+    --glass-bg: rgba(44, 44, 46, 0.55);
+    --glass-bg-strong: rgba(28, 28, 30, 0.82);
+    --glass-bar: rgba(0, 0, 0, 0.6);
+    --glass-border: rgba(255, 255, 255, 0.14);
+    --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    --glass-shadow: 0 10px 36px rgba(0, 0, 0, 0.5);
+    --card-shadow: none;
+
+    --cat-album-ink: #D29BF5;
+    --cat-filme-ink: #FF8A80;
+    --cat-serie-ink: #FF7A9A;
+    --cat-jogo-ink: #6BD58A;
+    --cat-livro-ink: #D4B48C;
+    --cat-bar-ink: #FFB340;
+    --cat-banheiro-ink: #64B5FF;
+    --cat-cidade-ink: #6FD6E6;
+  }
+}
+
+/* Acessibilidade: quem pede menos transparência recebe superfícies sólidas */
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --glass-bg: var(--surface);
+    --glass-bg-strong: var(--surface);
+    --glass-bar: var(--bg);
+    --blur: none;
+    --blur-strong: none;
+  }
+}

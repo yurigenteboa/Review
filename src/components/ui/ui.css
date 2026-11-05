@@ -1,0 +1,346 @@
+/* ============ Vidro ============ */
+.glass {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  border: 0.5px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-highlight);
+}
+.glass--bar {
+  background: var(--glass-bar);
+  border: none;
+  border-bottom: 0.5px solid var(--separator);
+  box-shadow: none;
+}
+.glass--card {
+  border-radius: var(--r-xl);
+}
+.glass--pill {
+  border-radius: var(--r-pill);
+}
+.glass--sheet {
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: var(--blur-strong);
+  backdrop-filter: var(--blur-strong);
+  border-radius: 34px 34px 0 0;
+  border-bottom: none;
+}
+
+/* ============ Cabeçalho com título grande ============ */
+.page-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  padding: calc(var(--safe-top) + 20px) 20px 12px;
+}
+.page-header__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.page-header__title {
+  margin: 0;
+  font-size: var(--fs-large-title);
+  font-weight: 800;
+  letter-spacing: -0.8px;
+}
+.page-header__subtitle {
+  margin: 2px 0 0;
+  font-size: var(--fs-callout);
+  color: var(--text-3);
+}
+.page-header__extra {
+  margin-top: 12px;
+}
+
+/* ============ Página ============ */
+.page {
+  min-height: 100%;
+  padding-bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 56px);
+}
+.page__body {
+  padding: 14px var(--gutter) 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ============ Chips ============ */
+.chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin: 0 -20px;
+  padding: 0 20px 2px;
+}
+.chip {
+  flex: none;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: var(--r-pill);
+  border: 0.5px solid var(--separator);
+  background: var(--glass-bg);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.chip[aria-pressed='true'] {
+  border-color: transparent;
+  background: var(--text);
+  color: var(--bg);
+}
+
+.cat-tag {
+  align-self: flex-start;
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: var(--fs-caption);
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+}
+
+/* ============ Estrelas ============ */
+.stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.star {
+  position: relative;
+  display: inline-block;
+}
+.star svg {
+  display: block;
+}
+.star__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  overflow: hidden;
+}
+
+/* ============ Capa provisória ============ */
+.cover {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+/* ============ Card de review ============ */
+.review-card {
+  background: var(--surface);
+  border-radius: var(--r-lg);
+  padding: 14px;
+  box-shadow: var(--card-shadow);
+}
+.review-card__head {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: left;
+}
+.review-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  flex: 1;
+}
+.review-card__title {
+  font-size: var(--fs-body);
+  font-weight: 650;
+  line-height: 1.2;
+}
+.review-card__sub {
+  font-size: var(--fs-footnote);
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.review-card__text {
+  margin: 12px 0 0;
+  font-size: var(--fs-callout);
+  line-height: 1.4;
+}
+.review-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+.review-card__author {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--fs-footnote);
+  color: var(--text-2);
+}
+.avatar {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #fff;
+  font-weight: 700;
+}
+.like-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 18px;
+  background: var(--fill);
+  font-size: var(--fs-footnote);
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+/* ============ Barra de abas ============ */
+.tabbar {
+  position: fixed;
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: calc(var(--safe-bottom) + 20px);
+  z-index: 20;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  max-width: 520px;
+  margin: 0 auto;
+}
+.tabbar__tabs {
+  flex: 1;
+  height: var(--tabbar-h);
+  border-radius: 32px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding: 0 6px;
+}
+.tabbar__tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  margin: 6px 0;
+  border-radius: 26px;
+  color: var(--text-2);
+  text-decoration: none;
+  font-size: 10px;
+  font-weight: 600;
+}
+.tabbar__tab.active {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.tabbar__plus {
+  width: var(--tabbar-h);
+  height: var(--tabbar-h);
+  border-radius: 50%;
+  border: 0.5px solid rgba(255, 255, 255, 0.5);
+  background: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 28px rgba(10, 132, 255, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+/* ============ Sheet ============ */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  border: none;
+  background: rgba(0, 0, 0, 0.3);
+}
+.sheet {
+  max-width: 640px;
+  margin: 0 auto;
+  max-height: 92dvh;
+  overflow-y: auto;
+  padding: 8px 20px calc(var(--safe-bottom) + 28px);
+}
+.sheet__handle {
+  width: 40px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--separator);
+  margin: 0 auto 12px;
+}
+.sheet__title {
+  margin: 0 0 8px;
+  font-size: var(--fs-body);
+  font-weight: 650;
+  text-align: center;
+}
+
+/* ============ Botões ============ */
+.btn {
+  min-height: 50px;
+  padding: 0 22px;
+  border: none;
+  border-radius: var(--r-pill);
+  font-size: var(--fs-body);
+  font-weight: 650;
+}
+.btn--primary {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(10, 132, 255, 0.35);
+}
+.btn--plain {
+  background: var(--fill);
+  color: var(--text);
+}
+
+/* ============ Lista agrupada (estilo Ajustes) ============ */
+.group {
+  background: var(--surface);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+.group__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 10px 14px;
+  border-bottom: 0.5px solid var(--separator);
+  font-size: var(--fs-callout);
+}
+.group__row:last-child {
+  border-bottom: none;
+}
+
+/* ============ Campo de busca ============ */
+.search-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 12px;
+  border-radius: 14px;
+  background: var(--fill);
+}
+.search-field input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  font-size: var(--fs-body);
+  outline: none;
+}
