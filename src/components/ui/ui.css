@@ -1494,3 +1494,37 @@ img.cover--img {
 img.cover--img.is-loaded {
   opacity: 1;
 }
+
+/* =========================================================
+   Mobile M1 · Puxar para atualizar
+   ========================================================= */
+.ptr {
+  position: fixed;
+  top: calc(var(--safe-top) + 6px);
+  left: 50%;
+  z-index: 30;
+  width: 40px;
+  height: 40px;
+  margin-top: -40px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 0.5px solid var(--glass-border);
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  box-shadow: var(--glass-shadow);
+  color: var(--text-2);
+  pointer-events: none;
+}
+.ptr--ready {
+  color: var(--accent);
+}
+.ptr--spinning svg {
+  animation: ptr-spin 0.8s linear infinite;
+}
+@keyframes ptr-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

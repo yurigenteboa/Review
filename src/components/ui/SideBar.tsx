@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom'
 import { useAuth } from '../../lib/auth'
 import { useMyProfile } from '../../lib/queries'
 import { useFriends, useUnreadCount } from '../../lib/social'
+import { useTabReselect } from '../../lib/navigation'
 import { Avatar } from '../review/ReviewCard'
 import { Glass } from './Glass'
 import { BellIcon, HomeIcon, PeopleIcon, PersonIcon, PlusIcon, SearchIcon } from './Icons'
@@ -22,6 +23,7 @@ export function SideBar({ onCompose, compact }: SideBarProps) {
   const { data: me } = useMyProfile(userId)
   const { data: friends } = useFriends()
   const unread = useUnreadCount()
+  const reselect = useTabReselect()
   const pending = (friends ?? []).filter((f) => f.status === 'pendente' && !f.requested_by_me).length
 
   const items = [
@@ -53,6 +55,7 @@ export function SideBar({ onCompose, compact }: SideBarProps) {
               to={it.to}
               end={it.end}
               className="sidebar__item tap"
+              onClick={(e) => reselect(it.to) && e.preventDefault()}
               aria-label={compact ? it.label : undefined}
               title={compact ? it.label : undefined}
             >

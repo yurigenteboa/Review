@@ -6,6 +6,8 @@ import type { ComposeStart } from './components/review/ComposeSheet'
 import { TabBar } from './components/ui/TabBar'
 import { SideBar } from './components/ui/SideBar'
 import { useBreakpoint, useFinePointer } from './lib/breakpoints'
+import { useScrollMemory } from './lib/navigation'
+import { PullToRefresh } from './components/ui/PullToRefresh'
 import { Glass } from './components/ui/Glass'
 import { AuthProvider, FROM_APP_PARAM, isStandalone, useAuth } from './lib/auth'
 import { LEGAL_PATHS, type LegalDoc } from './pages/legalPaths'
@@ -93,6 +95,8 @@ function Shell() {
   const { session, loading } = useAuth()
   const bp = useBreakpoint()
   const finePointer = useFinePointer()
+  // M1: rolagem lembrada ao voltar e por aba; telas novas abrem no topo
+  const restoreScroll = useScrollMemory()
   const [compose, setCompose] = useState<{ open: boolean; start: ComposeStart; key: number }>({ open: false, start: {}, key: 0 })
   const [toast, setToast] = useState<string | null>(null)
   const [handoff, setHandoff] = useState(returnParams.handedOffToBrowser)
@@ -179,7 +183,7 @@ function Shell() {
         <SideBar onCompose={() => openCompose()} compact={bp === 'tablet'} />
       )}
 
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="wait" onExitComplete={restoreScroll}>
         <motion.main
           key={location.pathname}
           initial={{ opacity: 0, y: 8 }}
@@ -216,6 +220,9 @@ function Shell() {
           <DesktopEnhancers />
         </Suspense>
       )}
+
+      {/* Toque: puxar para baixo no topo da tela atualiza os dados (M1) */}
+      {!finePointer && <PullToRefresh />}
 
       {compose.key > 0 && (
         <Suspense fallback={null}>

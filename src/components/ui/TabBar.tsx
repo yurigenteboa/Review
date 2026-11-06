@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { useFriends } from '../../lib/social'
+import { useTabReselect } from '../../lib/navigation'
 import { Glass } from './Glass'
 import { HomeIcon, PeopleIcon, PersonIcon, PlusIcon, SearchIcon } from './Icons'
 
@@ -17,13 +18,15 @@ interface TabBarProps {
 /** Barra de abas flutuante de vidro + botão "+" de nova review. */
 export function TabBar({ onCompose }: TabBarProps) {
   const { data: friends } = useFriends()
+  // tocar na aba já aberta: sobe ao topo (ou recarrega, se já estiver no topo)
+  const reselect = useTabReselect()
   const pending = (friends ?? []).filter((f) => f.status === 'pendente' && !f.requested_by_me).length
 
   return (
     <nav className="tabbar" aria-label="Navegação principal">
       <Glass variant="pill" className="tabbar__tabs">
         {TABS.map(({ to, label, Icon, end }) => (
-          <NavLink key={to} to={to} end={end} className="tabbar__tab tap" style={{ position: 'relative' }}>
+          <NavLink key={to} to={to} end={end} className="tabbar__tab tap" style={{ position: 'relative' }} onClick={(e) => reselect(to) && e.preventDefault()}>
             <Icon />
             <span>{label}</span>
             {to === '/amigos' && pending > 0 && (
