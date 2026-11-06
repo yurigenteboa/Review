@@ -8,6 +8,7 @@ import { SearchIcon } from '../components/ui/Icons'
 import { PageHeader } from '../components/ui/PageHeader'
 import { categoryById, type CategoryId } from '../lib/categories'
 import { useDebounced, useNearMe } from '../lib/hooks'
+import { useFinePointer } from '../lib/breakpoints'
 import { useCatalogSearch, useOpenCatalogItem, useSearchItems } from '../lib/queries'
 
 export default function Buscar({ onCompose }: { onCompose: (s: ComposeStart) => void }) {
@@ -17,6 +18,8 @@ export default function Buscar({ onCompose }: { onCompose: (s: ComposeStart) => 
   const term = useDebounced(q.trim(), 400)
   const { near, status, request, clear } = useNearMe()
   const placeCat = cat === 'bar' || cat === 'banheiro'
+  // Com mouse/teclado, o cursor já entra no campo (no celular não: abriria o teclado sozinho)
+  const finePointer = useFinePointer()
 
   const local = useSearchItems(term, cat)
   const external = useCatalogSearch(cat, term, placeCat ? near : null)
@@ -30,7 +33,7 @@ export default function Buscar({ onCompose }: { onCompose: (s: ComposeStart) => 
   const showExternal: boolean = term.length >= 2 || (placeCat && Boolean(near))
 
   return (
-    <div className="page">
+    <div className="page page--wide">
       <PageHeader title="Buscar">
         <label className="search-field">
           <span style={{ color: 'var(--text-3)', display: 'flex' }}>
@@ -38,7 +41,9 @@ export default function Buscar({ onCompose }: { onCompose: (s: ComposeStart) => 
           </span>
           <span className="visually-hidden">Buscar</span>
           <input
+            id="busca-campo"
             type="search"
+            autoFocus={finePointer}
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder={cat === 'all' ? 'Álbuns, filmes, bares, banheiros…' : `Buscar ${categoryById(cat).label.toLowerCase()}…`}
@@ -54,7 +59,7 @@ export default function Buscar({ onCompose }: { onCompose: (s: ComposeStart) => 
         )}
       </PageHeader>
 
-      <div className="page__body">
+      <div className="page__body search-results">
         {(local.data?.length ?? 0) > 0 && (
           <section aria-label="Já no MMISC" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <span className="field-label" style={{ margin: '4px 4px 0' }}>

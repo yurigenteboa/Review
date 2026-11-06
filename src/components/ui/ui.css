@@ -486,7 +486,9 @@
 }
 
 /* Contador (pedidos, notificações) */
-.badge {
+/* Contador vermelho (pedidos, notificações). Antes era ".badge", que colidia com
+   os selos de conquista do perfil (profile.css) e perdia o fundo. */
+.count-badge {
   position: absolute;
   top: 2px;
   right: calc(50% - 22px);
@@ -513,7 +515,7 @@
   background: var(--fill);
   color: var(--text);
 }
-.icon-btn .badge {
+.icon-btn .count-badge {
   top: -4px;
   right: -4px;
 }
@@ -1086,4 +1088,192 @@
   padding: calc(var(--safe-top) + 20px) 22px 24px;
   border-radius: var(--r-xl) 0 0 var(--r-xl);
   border-bottom: 0.5px solid var(--glass-border);
+}
+
+/* =========================================================
+   D2 · Páginas com painel à direita e páginas largas
+   A coluna do conteúdo (.shell__main) se alarga sozinha
+   quando a página pede (:has), sem o App precisar saber.
+   ========================================================= */
+.page__main {
+  min-width: 0;
+}
+.page-aside {
+  display: none;
+}
+
+/* Páginas largas (Buscar; depois filme, perfil): usam até --wide-w */
+@media (min-width: 700px) {
+  .shell__main:has(> .page--wide) {
+    max-width: none;
+    margin-left: var(--sidebar-w-compact);
+    margin-right: 0;
+  }
+  .page--wide {
+    max-width: var(--wide-w);
+    margin: 0 auto;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+}
+
+@media (min-width: 1100px) {
+  .shell__main:has(> .page--wide) {
+    margin-left: var(--sidebar-w);
+  }
+  /* Conteúdo (640) + painel (320) + respiro, centralizados à direita da barra lateral */
+  .shell__main:has(> .page--with-aside) {
+    max-width: calc(var(--content-w) + var(--aside-w) + 32px);
+    margin-left: calc(
+      var(--sidebar-w) + max(0px, (100vw - var(--sidebar-w) - var(--content-w) - var(--aside-w) - 32px) / 2)
+    );
+  }
+  .page--with-aside {
+    display: grid;
+    grid-template-columns: minmax(0, var(--content-w)) var(--aside-w);
+    column-gap: 32px;
+    align-items: start;
+  }
+  .page-aside {
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    max-height: 100dvh;
+    overflow-y: auto;
+    padding: calc(var(--safe-top) + 28px) 4px 32px;
+    scrollbar-width: thin;
+  }
+
+  /* Buscar: resultados em duas colunas */
+  .search-results .group {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .search-results .group > .group__row:nth-child(odd) {
+    border-right: 0.5px solid var(--separator);
+  }
+}
+
+/* ============ Peças do painel ============ */
+.aside-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.aside-section__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 4px;
+}
+.aside-section__head h2 {
+  margin: 0;
+  font-size: var(--fs-body);
+  font-weight: 750;
+  letter-spacing: -0.2px;
+}
+.aside-section__more {
+  font-size: var(--fs-footnote);
+  font-weight: 600;
+  color: var(--accent-ink);
+  text-decoration: none;
+}
+.aside-empty {
+  margin: 0;
+  padding: 0 4px;
+  font-size: var(--fs-footnote);
+  color: var(--text-3);
+  line-height: 1.45;
+}
+.aside-empty a {
+  color: var(--accent-ink);
+}
+.aside-people {
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: var(--card-shadow);
+}
+.aside-person {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 6px 8px;
+  border-radius: var(--r-sm);
+  color: inherit;
+  text-decoration: none;
+}
+.aside-person__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.aside-person__text strong,
+.aside-person__text span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.aside-person__text strong {
+  font-size: var(--fs-callout);
+  font-weight: 600;
+}
+.aside-person__text span {
+  font-size: var(--fs-footnote);
+  color: var(--text-3);
+}
+.aside-people:empty {
+  display: none;
+}
+.aside-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.aside-callout {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+  color: inherit;
+  text-decoration: none;
+  font-size: var(--fs-callout);
+}
+.aside-callout span {
+  font-size: var(--fs-footnote);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .aside-person:hover {
+    background: var(--hover-fill);
+  }
+  .aside-section__more:hover {
+    text-decoration: underline;
+  }
+  .aside-callout:hover {
+    background: color-mix(in srgb, var(--accent) 20%, var(--surface));
+  }
+}
+
+/* Convite: 3 botões lado a lado; no painel estreito do desktop, Compartilhar ocupa a linha toda */
+.invite-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.page-aside .invite-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.page-aside .invite-actions > :first-child {
+  grid-column: 1 / -1;
 }

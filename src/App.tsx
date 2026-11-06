@@ -73,6 +73,29 @@ function Shell() {
   )
   const closeCompose = useCallback(() => setCompose((c) => ({ ...c, open: false })), [])
 
+  // Atalhos de teclado (desktop): N = nova review, / = buscar. Ignorados enquanto se digita
+  // num campo, com Ctrl/Cmd/Alt apertado ou com uma janela aberta.
+  useEffect(() => {
+    if (!session) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey || e.defaultPrevented) return
+      const t = e.target as HTMLElement | null
+      if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return
+      if (document.querySelector('[role="dialog"][aria-modal="true"]')) return
+      if (e.key === 'n' || e.key === 'N') {
+        e.preventDefault()
+        openCompose()
+      } else if (e.key === '/') {
+        e.preventDefault()
+        const field = document.getElementById('busca-campo')
+        if (field) field.focus()
+        else navigate('/buscar')
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [session, openCompose, navigate])
+
   useEffect(() => {
     if (!toast) return
     const t = setTimeout(() => setToast(null), 2200)

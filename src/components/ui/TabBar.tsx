@@ -27,7 +27,7 @@ export function TabBar({ onCompose }: TabBarProps) {
             <Icon />
             <span>{label}</span>
             {to === '/amigos' && pending > 0 && (
-              <span className="badge" aria-label={`${pending} pedidos de amizade`}>
+              <span className="count-badge" aria-label={`${pending} pedidos de amizade`}>
                 {pending}
               </span>
             )}

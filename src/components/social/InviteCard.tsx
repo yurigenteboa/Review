@@ -53,7 +53,7 @@ export function InviteCard() {
         <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{isLoading ? 'Gerando link…' : url}</span>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8 }}>
+      <div className="invite-actions">
         <button type="button" className="btn btn--primary tap" disabled={!code} onClick={share} style={{ padding: 0, fontSize: 15 }}>
           Compartilhar
         </button>

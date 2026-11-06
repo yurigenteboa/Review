@@ -59,7 +59,7 @@ export function SideBar({ onCompose, compact }: SideBarProps) {
               <span className="sidebar__icon">
                 {it.icon}
                 {it.badge > 0 && (
-                  <span className="badge sidebar__badge" aria-label={it.badgeLabel}>
+                  <span className="count-badge sidebar__badge" aria-label={it.badgeLabel}>
                     {it.badge > 9 ? '9+' : it.badge}
                   </span>
                 )}
@@ -75,7 +75,7 @@ export function SideBar({ onCompose, compact }: SideBarProps) {
         className="sidebar__compose tap"
         onClick={onCompose}
         aria-label={compact ? 'Nova review' : undefined}
-        title={compact ? 'Nova review' : undefined}
+        title="Nova review (atalho: N)"
       >
         <PlusIcon size={compact ? 26 : 22} />
         {!compact && <span>Nova review</span>}
