@@ -82,6 +82,13 @@ Agora: UX de filmes (F1 e F2 feitas → F3, abaixo). Depois: 5 PWA (offline, pus
 - Páginas públicas sem login: `/sobre`, `/privacidade`, `/termos`, `/excluir-dados` (`src/pages/Legal.tsx`).
 - Migração `202611061900_login_google_perfil.sql` (nome/foto do Google no perfil + gatilho em `auth.identities`).
 
+## Estado atual (perfil novo — chat do login/perfil)
+- Plano e decisões no doc "MMISC · Perfil novo: referências e plano": https://claude.ai/artifact/HxfbFtBFSbS4GAgyX3Qug8
+- A antiga **F3 de filmes (favoritos, estatísticas, importar Letterboxd) passou para este chat** (decisão do dono em 06/11). O chat de filmes não mexe mais em perfil.
+- Decisões: 4 favoritos por categoria; perfil público por link já (Etapa 3); capa automática OU foto; "agora" marcado na mão; conquistas com moderação; Top 10 do ano por comparação (estilo Beli).
+- **Etapa 1 (06/11, só front, sem banco):** `src/components/profile/ProfileView.tsx` (tela única para /perfil e /u/:id), `ProfileCharts.tsx` (mapa de calor 12 meses, distribuição de notas), `profile.css`; `src/lib/profileStats.ts` (funções puras: latestPerItem, summary, ratingHistogram, heatmapWeeks, topRated, coverImages, tasteLabels, compatScore/compatHighlights); `src/lib/profile.ts` (`useProfileFull` com bio, `useSaveProfile`). Perfil.tsx e Pessoa.tsx viraram invólucros. Filtros na URL: `?cat=` e `?aba=`.
+- **Etapas 2–4 esperam OK** (mexem em banco/RLS): tabelas `favorites`, `profile_now`, `goals`, `rankings`; colunas em `profiles` (cover_mode, cover_url, links, showcase, depois is_public); bucket `profile-media` (leitura pública); RPC `rating_vs_friends`; RPC `public_profile(handle)` + rota `/@:handle` + middleware Vercel para prévia; conquistas, retrospectiva, importar Letterboxd.
+
 ## Como trabalhamos (para uma conversa nova)
 - Pasta no PC do dono: `C:\Users\yurim\Review`. O Claude edita uma cópia na nuvem e entrega os arquivos na pasta; o dono roda `git add . ; git commit -m "..." ; git push` no PowerShell do VS Code. A Vercel publica sozinha a cada push.
 - Supabase: projeto `review` (ref `dgvrkmqenkwfeytgaouv`, sa-east-1). Migrações aplicadas pelo SQL Editor do painel (Claude cola pelo navegador e confere). Edge Functions publicadas pelo editor do painel.
