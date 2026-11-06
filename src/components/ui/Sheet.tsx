@@ -1,5 +1,6 @@
 import { AnimatePresence, motion, useDragControls } from 'motion/react'
 import { useEffect, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { Glass } from './Glass'
 
 interface SheetProps {
@@ -30,7 +31,8 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
     }
   }, [open, onClose])
 
-  return (
+  // Portal: a sheet é desenhada direto no <body>, fora de qualquer card ou tela animada
+  return createPortal(
     <AnimatePresence>
       {open && (
         <>
@@ -74,6 +76,7 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
           </motion.div>
         </>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   )
 }

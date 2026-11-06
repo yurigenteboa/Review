@@ -6,6 +6,8 @@ import { PageHeader } from '../components/ui/PageHeader'
 import { useAuth } from '../lib/auth'
 import type { CategoryId } from '../lib/categories'
 import { useFeed, useMyProfile } from '../lib/queries'
+import { useUnreadCount } from '../lib/social'
+import { BellIcon } from '../components/ui/Icons'
 import { EmptyState, ErrorState, LoadingCards } from './states'
 
 export default function Inicio({ onCompose }: { onCompose: () => void }) {
@@ -13,6 +15,7 @@ export default function Inicio({ onCompose }: { onCompose: () => void }) {
   const { userId } = useAuth()
   const { data: me } = useMyProfile(userId)
   const feed = useFeed(cat)
+  const unread = useUnreadCount()
 
   return (
     <div className="page">
@@ -20,17 +23,31 @@ export default function Inicio({ onCompose }: { onCompose: () => void }) {
         title="Início"
         subtitle="Suas reviews e as dos seus amigos"
         trailing={
-          me && (
-            <Link to="/perfil" aria-label="Abrir seu perfil" className="tap" style={{ display: 'flex' }}>
-              <Avatar profile={me} size={40} />
+          <span style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <Link to="/notificacoes" className="icon-btn tap" aria-label={unread ? `Notificações (${unread} novas)` : 'Notificações'}>
+              <BellIcon size={22} />
+              {unread > 0 && <span className="badge">{unread > 9 ? '9+' : unread}</span>}
             </Link>
-          )
+            {me && (
+              <Link to="/perfil" aria-label="Abrir seu perfil" className="tap" style={{ display: 'flex' }}>
+                <Avatar profile={me} size={40} />
+              </Link>
+            )}
+          </span>
         }
       >
         <CategoryChips value={cat} onChange={setCat} />
       </PageHeader>
 
       <div className="page__body">
+        {me && !me.username && (
+          <Link to="/perfil" className="review-card tap" style={{ textDecoration: 'none', color: 'inherit', display: 'block', background: 'color-mix(in srgb, var(--accent) 12%, var(--surface))' }}>
+            <strong>Escolha seu @</strong>
+            <span style={{ display: 'block', fontSize: 14, color: 'var(--text-2)', marginTop: 2 }}>
+              É assim que seus amigos vão te achar na busca. Toque para definir.
+            </span>
+          </Link>
+        )}
         {feed.isLoading && <LoadingCards />}
         {feed.error && <ErrorState error={feed.error} onRetry={() => feed.refetch()} />}
         {feed.data?.map((r) => <ReviewCard key={r.id} review={r} />)}

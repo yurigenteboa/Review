@@ -21,7 +21,7 @@ interface Props {
   missingKey?: string
   error?: string | null
   onPick: (r: CatalogResult) => void
-  /** esconde resultados que já existem no catálogo do Review */
+  /** esconde resultados que já existem no catálogo do MMISC */
   hide?: Set<string>
   limit?: number
 }

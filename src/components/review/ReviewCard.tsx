@@ -5,6 +5,10 @@ import { avatarColor, displayName, initials, timeAgo } from '../../lib/format'
 import { usePhotoUrls } from '../../lib/queries'
 import { VISIBILITY_LABEL, type Item, type Profile, type Review } from '../../lib/types'
 import { Stars } from '../ui/Stars'
+import { CommentIcon, HeartIcon } from '../ui/Icons'
+import { useAuth } from '../../lib/auth'
+import { useToggleLike } from '../../lib/social'
+import { CommentsSheet } from './CommentsSheet'
 
 type CoverItem = Pick<Item, 'title' | 'category' | 'image_url'>
 
@@ -80,10 +84,20 @@ export function PhotoStrip({ paths }: { paths: string[] }) {
   )
 }
 
-/** Card do feed: capa, título, nota, texto, fotos, autor e visibilidade. */
+/** Card do feed: capa, título, nota, texto, fotos, autor, curtidas e comentários. */
 export function ReviewCard({ review, showItem = true }: { review: Review; showItem?: boolean }) {
   const { item, author } = review
+  const { userId } = useAuth()
+  const toggleLike = useToggleLike()
+  const [commentsOpen, setCommentsOpen] = useState(false)
   const photos = [...review.photos].sort((a, b) => a.position - b.position).map((p) => p.storage_path)
+  const likes = review.likes ?? []
+  const liked = likes.some((l) => l.user_id === userId)
+  // mostra o novo estado na hora, antes do banco responder
+  const pendingLike = toggleLike.isPending ? !liked : liked
+  const likeCount = likes.length + (toggleLike.isPending ? (liked ? -1 : 1) : 0)
+  const commentCount = review.comments?.[0]?.count ?? 0
+  const authorLink = author.id === userId ? '/perfil' : `/u/${author.id}`
 
   return (
     <article className="review-card">
@@ -110,14 +124,36 @@ export function ReviewCard({ review, showItem = true }: { review: Review; showIt
       {review.body && <p className="review-card__text">{review.body}</p>}
       <PhotoStrip paths={photos} />
       <div className="review-card__foot">
-        <span className="review-card__author">
+        <Link to={authorLink} className="review-card__author tap" style={{ textDecoration: 'none', minWidth: 0 }}>
           <Avatar profile={author} />
-          <span>
+          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             <strong style={{ fontWeight: 600 }}>{displayName(author)}</strong> · {timeAgo(review.created_at)}
           </span>
+        </Link>
+        <span style={{ display: 'flex', gap: 6, flex: 'none' }}>
+          <button
+            type="button"
+            className="like-btn tap"
+            aria-pressed={pendingLike}
+            aria-label={pendingLike ? 'Descurtir' : 'Curtir'}
+            disabled={!userId || toggleLike.isPending}
+            onClick={() => userId && toggleLike.mutate({ reviewId: review.id, liked, uid: userId })}
+          >
+            <HeartIcon filled={pendingLike} />
+            {likeCount > 0 && likeCount}
+          </button>
+          <button type="button" className="like-btn tap" aria-label={`Comentários (${commentCount})`} onClick={() => setCommentsOpen(true)}>
+            <CommentIcon />
+            {commentCount > 0 && commentCount}
+          </button>
         </span>
-        <span className="vis-badge">{VISIBILITY_LABEL[review.visibility]}</span>
       </div>
+      {review.visibility !== 'amigos' && (
+        <span className="vis-badge" style={{ alignSelf: 'flex-start', display: 'inline-block', marginTop: 10 }}>
+          {VISIBILITY_LABEL[review.visibility]}
+        </span>
+      )}
+      <CommentsSheet review={review} open={commentsOpen} onClose={() => setCommentsOpen(false)} />
     </article>
   )
 }

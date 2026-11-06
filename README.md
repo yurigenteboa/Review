@@ -1,6 +1,6 @@
-# Review
+# MMISC
 
-Review de tudo: álbuns, filmes, jogos, bares, banheiros públicos, cidades.
+Nota para tudo: álbuns, filmes, jogos, bares, banheiros públicos, cidades.
 PWA com visual iOS de vidro, feito em React + Vite + Supabase.
 
 ## Rodar no computador

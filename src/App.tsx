@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'motion/react'
 import { useCallback, useEffect, useState } from 'react'
-import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom'
+import { BrowserRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { ComposeSheet, type ComposeStart } from './components/review/ComposeSheet'
 import { TabBar } from './components/ui/TabBar'
 import { AuthProvider, useAuth } from './lib/auth'
@@ -10,8 +10,13 @@ import Inicio from './pages/Inicio'
 import Item from './pages/Item'
 import Kit from './pages/Kit'
 import Login from './pages/Login'
+import Amigos from './pages/Amigos'
 import Mapa from './pages/Mapa'
+import Notificacoes from './pages/Notificacoes'
 import Perfil from './pages/Perfil'
+import Pessoa from './pages/Pessoa'
+import { acceptInvite, savePendingInvite, takePendingInvite } from './lib/social'
+import { useQueryClient } from '@tanstack/react-query'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: true } },
@@ -19,6 +24,8 @@ const queryClient = new QueryClient({
 
 function Shell() {
   const location = useLocation()
+  const navigate = useNavigate()
+  const qc = useQueryClient()
   const { session, loading } = useAuth()
   const [compose, setCompose] = useState<{ open: boolean; start: ComposeStart; key: number }>({ open: false, start: {}, key: 0 })
   const [toast, setToast] = useState<string | null>(null)
@@ -34,6 +41,26 @@ function Shell() {
     const t = setTimeout(() => setToast(null), 2200)
     return () => clearTimeout(t)
   }, [toast])
+
+  // Link de convite (/convite/<código>): guarda o código; se já estiver logado, aceita na hora.
+  const inviteMatch = location.pathname.match(/^\/convite\/([a-z0-9]+)/i)
+  if (inviteMatch) savePendingInvite(inviteMatch[1])
+
+  useEffect(() => {
+    if (!session) return
+    const code = takePendingInvite()
+    if (!code) return
+    acceptInvite(code)
+      .then((ownerId) => {
+        qc.invalidateQueries()
+        setToast('Convite aceito: agora vocês são amigos')
+        navigate(`/u/${ownerId}`, { replace: true })
+      })
+      .catch((e: Error) => {
+        setToast(e.message.includes('inválido') ? 'Esse link de convite não vale mais' : 'Não deu para aceitar o convite')
+        navigate('/', { replace: true })
+      })
+  }, [session]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading) return <div style={{ minHeight: '100dvh' }} aria-busy="true" />
   if (!session) return <Login />
@@ -52,6 +79,10 @@ function Shell() {
           <Routes location={location}>
             <Route path="/" element={<Inicio onCompose={() => openCompose()} />} />
             <Route path="/buscar" element={<Buscar onCompose={openCompose} />} />
+            <Route path="/amigos" element={<Amigos />} />
+            <Route path="/u/:id" element={<Pessoa />} />
+            <Route path="/notificacoes" element={<Notificacoes />} />
+            <Route path="/convite/:code" element={<div className="page" aria-busy="true" />} />
             <Route path="/mapa" element={<Mapa />} />
             <Route path="/perfil" element={<Perfil />} />
             <Route path="/item/:id" element={<Item onCompose={openCompose} />} />

@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Glass } from '../components/ui/Glass'
 import { sendLoginEmail, verifyLoginCode } from '../lib/auth'
+import { displayName } from '../lib/format'
+import { inviteOwner, peekPendingInvite } from '../lib/social'
 
 /**
  * Login sem senha:
@@ -15,6 +17,13 @@ export default function Login() {
   const [code, setCode] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [inviter, setInviter] = useState<string | null>(null)
+
+  // Veio por link de convite? Mostra quem convidou.
+  useEffect(() => {
+    const code = peekPendingInvite()
+    if (code) inviteOwner(code).then((o) => o && setInviter(displayName(o)))
+  }, [])
 
   const send = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -55,10 +64,15 @@ export default function Login() {
     >
       <Glass style={{ width: '100%', maxWidth: 400, padding: 28 }}>
         <img src="/icons/icon-192.png" alt="" width={64} height={64} style={{ borderRadius: 16, display: 'block' }} />
-        <h1 style={{ margin: '16px 0 4px', fontSize: 34, fontWeight: 800, letterSpacing: -0.8 }}>Review</h1>
+        <h1 style={{ margin: '16px 0 4px', fontSize: 34, fontWeight: 800, letterSpacing: -0.8 }}>MMISC</h1>
         <p style={{ margin: 0, fontSize: 15, color: 'var(--text-2)' }}>
-          Review de tudo: álbuns, filmes, bares, banheiros, cidades.
+          Nota para tudo: álbuns, filmes, bares, banheiros, cidades.
         </p>
+        {inviter && (
+          <p style={{ margin: '16px 0 0', padding: '10px 14px', borderRadius: 14, background: 'color-mix(in srgb, var(--accent) 14%, transparent)', fontSize: 15 }}>
+            <strong>{inviter}</strong> te convidou. Entre com seu e-mail e vocês já viram amigos.
+          </p>
+        )}
 
         {step === 'email' ? (
           <form onSubmit={send} style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>

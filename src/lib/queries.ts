@@ -9,8 +9,10 @@ import type { Item, Profile, Review, Visibility } from './types'
 const REVIEW_SELECT = `
   id, user_id, rating, body, criteria_scores, visibility, created_at,
   item:items!inner ( id, category, title, subtitle, image_url, year ),
-  author:profiles!inner ( id, username, display_name, avatar_url ),
-  photos:review_photos ( storage_path, position )
+  author:profiles!reviews_user_id_fkey ( id, username, display_name, avatar_url ),
+  photos:review_photos ( storage_path, position ),
+  likes ( user_id ),
+  comments ( count )
 `
 
 // O Postgres devolve numeric como string; aqui vira número.

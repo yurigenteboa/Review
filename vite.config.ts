@@ -11,9 +11,9 @@ export default defineConfig({
       injectRegister: false,
       includeAssets: ['favicon.svg', 'icons/apple-touch-icon.png'],
       manifest: {
-        name: 'Review',
-        short_name: 'Review',
-        description: 'Review de tudo: álbuns, filmes, jogos, bares, banheiros e cidades.',
+        name: 'MMISC',
+        short_name: 'MMISC',
+        description: 'MMISC: nota para tudo. Álbuns, filmes, jogos, bares, banheiros e cidades.',
         lang: 'pt-BR',
         start_url: '/',
         scope: '/',

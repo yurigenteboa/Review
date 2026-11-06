@@ -37,6 +37,49 @@ export interface Review {
   item: Item
   author: Profile
   photos: ReviewPhoto[]
+  /** quem curtiu (só as curtidas que você pode ver) */
+  likes?: { user_id: string }[]
+  /** contagem de comentários */
+  comments?: { count: number }[]
+}
+
+export interface FriendRow {
+  id: string
+  username: string | null
+  display_name: string | null
+  avatar_url: string | null
+  status: 'pendente' | 'aceita'
+  requested_by_me: boolean
+  since: string
+}
+
+export interface Comment {
+  id: string
+  review_id: string
+  user_id: string
+  body: string
+  created_at: string
+  author: Profile
+}
+
+export interface Notification {
+  id: string
+  type: 'friend_request' | 'friend_accepted' | 'like' | 'comment'
+  created_at: string
+  read_at: string | null
+  review_id: string | null
+  actor: Profile
+  review: { id: string; item: { id: string; title: string } } | null
+  comment: { body: string } | null
+}
+
+export interface TasteRow {
+  item_id: string
+  title: string
+  category: string
+  image_url: string | null
+  my_rating: number
+  their_rating: number
 }
 
 export const VISIBILITY_LABEL: Record<Visibility, string> = {

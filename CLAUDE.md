@@ -1,4 +1,4 @@
-# Review — contexto do projeto
+# MMISC (antes "Review") — contexto do projeto
 
 App de review de tudo (álbuns, filmes, séries, jogos, livros, bares, banheiros públicos, cidades).
 PWA mobile-first com visual "iOS glass". Público: o dono + amigos; depois, rede aberta.
@@ -47,3 +47,10 @@ supabase/migrations/  um arquivo .sql por mudança de banco
 - Edge Function `supabase/functions/catalog-search` (publicada pelo painel). "Verify JWT with legacy secret" DESLIGADO: o projeto assina tokens com ECC, então a função confere o login sozinha via JWKS (`npm:jose`).
 - Secrets necessários: `TMDB_TOKEN`, `TWITCH_CLIENT_ID`, `TWITCH_CLIENT_SECRET`. Sem eles, filmes/séries/jogos respondem `missingKey`.
 - Itens externos entram em `items` com `source` + `external_id` (único). Fontes: musicbrainz, tmdb-movie, tmdb-tv, igdb, openlibrary, osm, ibge.
+
+## Estado atual (Fase 4)
+- Nome do app: MMISC (domínio www.mmisc.com.br). E-mails de login saem de login@mmisc.com.br via Resend (SMTP no Supabase).
+- Social: `supabase/migrations/202611061300_fase4_social.sql`. Amizade mútua em `friendships` (par ordenado user_a < user_b); criar/aceitar/desfazer só via RPC (`request_friend`, `respond_friend`, `remove_friend`, `accept_invite`). `follows` foi removida.
+- Convite: `/convite/<código>`; código guardado no localStorage até o login (`mmisc.pendingInvite`) e aceito no App.
+- Curtidas, comentários e notificações (criadas por triggers). Comparação de gosto: RPC `taste_match` (security invoker).
+- Hooks em `src/lib/social.ts`. Aba "Mapa" virou "Amigos" (mapa volta na Fase 5).
