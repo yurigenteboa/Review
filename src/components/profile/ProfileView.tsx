@@ -8,7 +8,8 @@ import { signOut } from '../../lib/auth'
 import { catColor, categoryById, formatRating, type CategoryId } from '../../lib/categories'
 import { useMyServices } from '../../lib/diary'
 import { displayName } from '../../lib/format'
-import { BIO_MAX, useProfileFull, useSaveProfile, type ProfileFull } from '../../lib/profile'
+import { useProfileFull, type ProfileFull } from '../../lib/profile'
+import { friendsLabel, useFavorites, useRatingVsFriends } from '../../lib/profileData'
 import {
   byCategory,
   categoriesWithEntries,
@@ -25,7 +26,9 @@ import { useUserReviews } from '../../lib/queries'
 import { useFriendState, useRemoveFriend, useRequestFriend, useRespondFriend, useTasteMatch } from '../../lib/social'
 import type { TasteRow } from '../../lib/types'
 import { ErrorState, LoadingCards } from '../../pages/states'
+import { EditProfileSheet } from './EditProfileSheet'
 import { RatingBars, YearHeatmap } from './ProfileCharts'
+import { Goals, LinksRow, NowLine, Showcase, TopTen } from './ProfileSections'
 import './profile.css'
 
 type Tab = 'diario' | 'reviews' | 'quero'
@@ -41,6 +44,7 @@ export function ProfileView({ userId, isMe }: { userId: string; isMe: boolean })
   const navigate = useNavigate()
   const profile = useProfileFull(userId)
   const reviews = useUserReviews(userId)
+  const favorites = useFavorites(userId)
   const [params, setParams] = useSearchParams()
 
   const all = reviews.data ?? []
@@ -56,6 +60,8 @@ export function ProfileView({ userId, isMe }: { userId: string; isMe: boolean })
     setParams(next, { replace: true })
   }
 
+  const vsFriends = useRatingVsFriends(cat === 'all' ? null : cat, isMe)
+
   if (profile.error) return <div className="page"><ErrorState error={profile.error} /></div>
   if (!profile.data) return <div className="page"><div className="page__body"><LoadingCards count={2} /></div></div>
 
@@ -63,14 +69,16 @@ export function ProfileView({ userId, isMe }: { userId: string; isMe: boolean })
   const list = byCategory(all, cat)
   const stats = summary(list, thisYear)
   const color = cat === 'all' ? 'var(--accent)' : catColor(cat)
-  const labels = tasteLabels(all)
+  const friendLabel = isMe ? friendsLabel(vsFriends.data) : null
+  const labels = [...(friendLabel ? [friendLabel] : []), ...tasteLabels(all)].slice(0, 3)
+  const hasFavorites = (favorites.data ?? []).length > 0
   const covers = coverImages(all)
   const best = topRated(list)
   const withText = list.filter((r) => r.body || r.photos.length)
 
   return (
     <div className="page profile">
-      <ProfileCover images={covers} />
+      <ProfileCover images={covers} photo={p.cover_mode === 'foto' ? p.cover_url : null} />
       {!isMe && (
         <button
           type="button"
@@ -86,6 +94,8 @@ export function ProfileView({ userId, isMe }: { userId: string; isMe: boolean })
 
       <Glass className="profile__card">
         <ProfileHeader profile={p} isMe={isMe} />
+        <LinksRow links={p.links ?? []} />
+        <NowLine userId={userId} isMe={isMe} entries={all} />
         {labels.length > 0 && (
           <ul className="taste-labels" aria-label="Rótulos de gosto">
             {labels.map((l) => (
@@ -130,7 +140,9 @@ export function ProfileView({ userId, isMe }: { userId: string; isMe: boolean })
       <div className="profile__sections">
         {!isMe && <CompatCard otherId={userId} name={displayName(p)} cat={cat} />}
 
-        {best.length > 0 && (
+        <Showcase userId={userId} isMe={isMe} showcase={p.showcase ?? []} cat={cat} entries={all} />
+
+        {!hasFavorites && best.length > 0 && (
           <section className="profile-section" aria-labelledby="sec-best">
             <h2 id="sec-best" className="profile-section__title">Notas mais altas</h2>
             <div className="best-row">
@@ -149,6 +161,10 @@ export function ProfileView({ userId, isMe }: { userId: string; isMe: boolean })
             </div>
           </section>
         )}
+
+        <TopTen userId={userId} isMe={isMe} cat={cat} entries={all} />
+
+        <Goals userId={userId} isMe={isMe} entries={all} />
 
         <section className="profile-section" aria-labelledby="sec-activity">
           <h2 id="sec-activity" className="profile-section__title">Atividade</h2>
@@ -206,10 +222,12 @@ export function ProfileView({ userId, isMe }: { userId: string; isMe: boolean })
 }
 
 /** Mosaico desfocado das capas que a pessoa mais curte; sem capas, um degradê. */
-function ProfileCover({ images }: { images: string[] }) {
+function ProfileCover({ images, photo }: { images: string[]; photo: string | null }) {
   return (
     <div className="profile__cover" aria-hidden="true">
-      {images.length >= 3 ? (
+      {photo ? (
+        <img className="profile__cover-photo" src={photo} alt="" />
+      ) : images.length >= 3 ? (
         <div className="profile__mosaic">
           {images.slice(0, 6).map((src) => (
             <span key={src} style={{ backgroundImage: `url("${src.replace(/"/g, '%22')}")` }} />
@@ -221,79 +239,7 @@ function ProfileCover({ images }: { images: string[] }) {
 }
 
 function ProfileHeader({ profile: p, isMe }: { profile: ProfileFull; isMe: boolean }) {
-  const save = useSaveProfile()
   const [editing, setEditing] = useState(false)
-  const [name, setName] = useState('')
-  const [username, setUsername] = useState('')
-  const [bio, setBio] = useState('')
-
-  const start = () => {
-    setName(p.display_name ?? '')
-    setUsername(p.username ?? '')
-    setBio(p.bio ?? '')
-    setEditing(true)
-  }
-
-  if (editing) {
-    return (
-      <form
-        className="profile__edit"
-        onSubmit={async (e) => {
-          e.preventDefault()
-          try {
-            await save.mutateAsync({ id: p.id, display_name: name, username, bio })
-            setEditing(false)
-          } catch {
-            /* mensagem abaixo */
-          }
-        }}
-      >
-        <label>
-          <span className="field-label">Nome</span>
-          <input className="field" value={name} maxLength={60} onChange={(e) => setName(e.target.value)} />
-        </label>
-        <label>
-          <span className="field-label">@ de usuário</span>
-          <input
-            className="field"
-            value={username}
-            maxLength={24}
-            autoCapitalize="none"
-            onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_.]/g, ''))}
-            placeholder="yuri"
-          />
-        </label>
-        <label>
-          <span className="field-label">Bio</span>
-          <textarea
-            className="field profile__bio-input"
-            value={bio}
-            maxLength={BIO_MAX}
-            rows={3}
-            onChange={(e) => setBio(e.target.value)}
-            placeholder="O que você gosta, o que está procurando, onde mais te achar…"
-          />
-          <span className="field-hint" style={{ textAlign: 'right' }}>
-            {bio.length}/{BIO_MAX}
-          </span>
-        </label>
-        {save.error && (
-          <span role="alert" style={{ color: 'var(--cat-filme-ink)', fontSize: 14 }}>
-            {(save.error as Error).message}
-          </span>
-        )}
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn btn--primary tap" disabled={save.isPending} style={{ flex: 1 }}>
-            Salvar
-          </button>
-          <button type="button" className="btn btn--plain tap" onClick={() => setEditing(false)}>
-            Cancelar
-          </button>
-        </div>
-      </form>
-    )
-  }
-
   return (
     <>
       <div className="profile__identity">
@@ -303,7 +249,7 @@ function ProfileHeader({ profile: p, isMe }: { profile: ProfileFull; isMe: boole
           <span>{p.username ? `@${p.username}` : isMe ? 'sem @ ainda' : ''}</span>
         </div>
         {isMe ? (
-          <button type="button" className="btn btn--plain tap" style={smallBtn} onClick={start}>
+          <button type="button" className="btn btn--plain tap" style={smallBtn} onClick={() => setEditing(true)}>
             Editar
           </button>
         ) : (
@@ -314,11 +260,12 @@ function ProfileHeader({ profile: p, isMe }: { profile: ProfileFull; isMe: boole
         <p className="profile__bio">{p.bio}</p>
       ) : (
         isMe && (
-          <button type="button" className="link-btn" onClick={start}>
+          <button type="button" className="link-btn" style={{ alignSelf: 'flex-start' }} onClick={() => setEditing(true)}>
             + Escrever uma bio
           </button>
         )
       )}
+      {isMe && editing && <EditProfileSheet profile={p} onClose={() => setEditing(false)} />}
     </>
   )
 }

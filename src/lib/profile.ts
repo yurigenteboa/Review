@@ -2,11 +2,19 @@
 // nada muda no banco nesta etapa.
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from './supabase'
+import type { CategoryId } from './categories'
+import type { ProfileLink } from './profileData'
 import type { Profile } from './types'
 
 export interface ProfileFull extends Profile {
   /** até 280 caracteres (check no banco) */
   bio: string | null
+  /** 'auto' = mosaico das capas; 'foto' = cover_url */
+  cover_mode: 'auto' | 'foto'
+  cover_url: string | null
+  links: ProfileLink[]
+  /** categorias da vitrine de favoritos, em ordem */
+  showcase: CategoryId[]
 }
 
 export function useProfileFull(id: string | null | undefined) {
@@ -16,7 +24,7 @@ export function useProfileFull(id: string | null | undefined) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, username, display_name, avatar_url, bio')
+        .select('id, username, display_name, avatar_url, bio, cover_mode, cover_url, links, showcase')
         .eq('id', id!)
         .single()
       if (error) throw error
