@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'motion/react'
-import { useCallback, useEffect, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import { BrowserRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { ComposeSheet, type ComposeStart } from './components/review/ComposeSheet'
 import { TabBar } from './components/ui/TabBar'
@@ -21,6 +21,10 @@ import Perfil from './pages/Perfil'
 import Pessoa from './pages/Pessoa'
 import { acceptInvite, savePendingInvite, takePendingInvite } from './lib/social'
 import { useQueryClient } from '@tanstack/react-query'
+
+// Telas raras: carregam só quando abertas (o leitor de .zip pesa)
+const ImportLetterboxd = lazy(() => import('./pages/ImportLetterboxd'))
+const Retrospectiva = lazy(() => import('./pages/Retrospectiva'))
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: true } },
@@ -123,6 +127,8 @@ function Shell() {
             <Route path="/perfil" element={<Perfil />} />
             <Route path="/item/:id" element={<Item onCompose={openCompose} />} />
             <Route path="/kit" element={<Kit />} />
+            <Route path="/importar" element={<Suspense fallback={<div className="page" aria-busy="true" />}><ImportLetterboxd /></Suspense>} />
+            <Route path="/retrospectiva" element={<Suspense fallback={<div className="page" aria-busy="true" />}><Retrospectiva /></Suspense>} />
             <Route path="*" element={<Inicio onCompose={() => openCompose()} />} />
           </Routes>
         </motion.main>

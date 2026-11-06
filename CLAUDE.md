@@ -78,7 +78,6 @@ Agora: UX de filmes (F1 e F2 feitas → F3, abaixo). Depois: 5 PWA (offline, pus
 
 ## Estado atual (login com Google — em andamento, outro chat)
 - Detalhes, decisões e pendências em `docs/LOGIN-SOCIAL.md` (seção 4b). Só Google agora; Apple e Meta depois; vínculo manual desligado.
-- Botão do Google escondido até o teste no iPhone: liga com `VITE_LOGIN_GOOGLE=on` (Vercel) ou interruptor em `/kit`.
 - Páginas públicas sem login: `/sobre`, `/privacidade`, `/termos`, `/excluir-dados` (`src/pages/Legal.tsx`).
 - Migração `202611061900_login_google_perfil.sql` (nome/foto do Google no perfil + gatilho em `auth.identities`).
 
@@ -93,7 +92,11 @@ Agora: UX de filmes (F1 e F2 feitas → F3, abaixo). Depois: 5 PWA (offline, pus
 - **Etapa 3 (06/11, APLICADA):** migração `202611062000_perfil_publico.sql` (`profiles.is_public default true`; função `item_public_json`; RPC `public_profile(handle)` security definer liberada para anon e logado, devolve perfil + favoritos/agora/Top 10/reviews SÓ `publico`, nada de metas, amigos, quero ver, fotos de review). 56 cenários em PGlite; conferido no banco real como anon (só chama a RPC, não lê tabelas). Front: `src/lib/publicProfile.ts`, `src/pages/PublicProfile.tsx` (rota `/@usuario` tratada no App antes do teste de sessão; logado vê aviso "Abrir no app"), aviso de primeira vez no perfil (`mmisc.publicNoticeSeen`), interruptor Público/Privado em Editar perfil, "Ver meu perfil público", parágrafo na Privacidade.
   - Prévia de link: `proxy.ts` na raiz + `vercel.json` → `"proxy": { "entrypoint": "proxy.ts", "matcher": ["/@:handle(...)"] }` (Vercel Routing Middleware, Node). Para `/@usuario`, busca `/index.html`, chama `public_profile` com a anon key (`process.env.VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY`, precisam existir nas variáveis da Vercel) e injeta título/descrição/og:image. Falha = página normal. Se o deploy reclamar do `proxy`, remover esse bloco do vercel.json desliga só a prévia.
 - Login com Google LIGADO para todo mundo desde 06/11 (`googleLoginEnabled()`; `VITE_LOGIN_GOOGLE=off` esconde). Interruptor do /kit removido.
-- Etapa 4 ainda não feita: conquistas, retrospectiva, importar Letterboxd.
+- **Etapa 4 (06/11, só front, SEM banco):**
+  - Conquistas: `src/lib/achievements.ts` (8 selos com moderação: eclético, cinéfilo, ouvinte, bares, banheiros, cidades, crítico, ano completo); componente `Achievements` em ProfileSections (dono vê progresso; os outros e o perfil público só os desbloqueados).
+  - Retrospectiva: `/retrospectiva?ano=` (`src/pages/Retrospectiva.tsx`, `src/lib/retro.ts`): números do ano, por categoria, mês mais ativo, maior sequência, notas mais altas, Top 3. Imagem 1080×1920 para Stories desenhada em canvas (tokens `--retro-*`, sem capas). Cartão no perfil em dezembro e janeiro; link fixo no rodapé do perfil.
+  - Importar Letterboxd: `/importar` (`src/pages/ImportLetterboxd.tsx`, `src/lib/letterboxd.ts` (CSV + .zip via `fflate`, casamento por título/ano), `src/lib/importLetterboxd.ts`). Usa `catalog-search` (precisa de `TMDB_TOKEN`), cria itens com `ensureCatalogItem`, não duplica (item + data), `created_at` = data do registro no Letterboxd (não inunda o feed), visibilidade padrão `amigos`, quero ver opcional. Casos duvidosos o dono confere antes de gravar.
+  - Telas de importar e retrospectiva carregam sob demanda (`React.lazy`).
 
 ## Como trabalhamos (para uma conversa nova)
 - Pasta no PC do dono: `C:\Users\yurim\Review`. O Claude edita uma cópia na nuvem e entrega os arquivos na pasta; o dono roda `git add . ; git commit -m "..." ; git push` no PowerShell do VS Code. A Vercel publica sozinha a cada push.

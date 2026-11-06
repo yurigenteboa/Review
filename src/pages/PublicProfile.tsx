@@ -1,7 +1,7 @@
 import { useEffect, type ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { RatingBars, YearHeatmap } from '../components/profile/ProfileCharts'
-import { LinksRow } from '../components/profile/ProfileSections'
+import { Achievements, LinksRow } from '../components/profile/ProfileSections'
 import '../components/profile/profile.css'
 import { Avatar, Cover } from '../components/review/ReviewCard'
 import { SpoilerText } from '../components/review/SpoilerText'
@@ -238,6 +238,8 @@ function PublicView({ data: d, loggedIn, isMe }: { data: PublicProfileData; logg
             </section>
           </>
         )}
+
+        <Achievements entries={reviews} isMe={false} />
 
         <section className="profile-section" aria-labelledby="pub-recent">
           <h2 id="pub-recent" className="profile-section__title">Recentes</h2>

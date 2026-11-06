@@ -80,6 +80,11 @@
   --google-border: #747775;
   --google-text: #1F1F1F;
 
+  /* Imagem da retrospectiva (canvas): degradê e texto */
+  --retro-from: #4B2380;
+  --retro-to: #FF9500;
+  --retro-ink: #FFFFFF;
+
   /* Fundo da tela de login e das páginas públicas */
   --login-gradient: linear-gradient(160deg, #4B2380 0%, #0A84FF 45%, #FF9500 100%);
 }

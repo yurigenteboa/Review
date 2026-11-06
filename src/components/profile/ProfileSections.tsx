@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { Cover } from '../review/ReviewCard'
 import { Sheet } from '../ui/Sheet'
@@ -23,6 +23,7 @@ import {
 import { CATEGORY_PLURAL, latestPerItem, type CategoryFilter } from '../../lib/profileStats'
 import type { Item, Review, Visibility } from '../../lib/types'
 import { VISIBILITY_LABEL } from '../../lib/types'
+import { computeAchievements } from '../../lib/achievements'
 import { ItemPicker } from './ItemPicker'
 
 const thisYear = new Date().getFullYear()
@@ -550,5 +551,47 @@ function RankingBuilder({ year, category, entries, onClose }: { year: number; ca
         </div>
       )}
     </Sheet>
+  )
+}
+
+// ---------- Conquistas ----------
+
+/**
+ * Conquistas com moderação: os outros veem só as conquistadas; o dono vê também
+ * o progresso das que faltam. Sem notificação, sem contador piscando.
+ */
+export function Achievements({ entries, isMe }: { entries: Review[]; isMe: boolean }) {
+  const list = computeAchievements(entries)
+  const done = list.filter((a) => a.unlocked)
+  const [open, setOpen] = useState(false)
+  if (!done.length && !isMe) return null
+  const shown = isMe && open ? list : done
+  return (
+    <section className="profile-section" aria-labelledby="sec-badges">
+      <div className="profile-section__head">
+        <h2 id="sec-badges" className="profile-section__title">
+          Conquistas {done.length > 0 && <span className="profile-section__hint">· {done.length} de {list.length}</span>}
+        </h2>
+        {isMe && (
+          <button type="button" className="link-btn" onClick={() => setOpen((o) => !o)}>
+            {open ? 'Só as minhas' : 'Ver todas'}
+          </button>
+        )}
+      </div>
+      {!shown.length && <p className="profile-section__hint">Nenhuma ainda. Toque em “Ver todas” para ver o que falta.</p>}
+      <ul className="badges">
+        {shown.map((a) => (
+          <li key={a.id} className={`badge${a.unlocked ? '' : ' is-locked'}`} style={{ '--badge': a.color } as CSSProperties}>
+            <span className="badge__mark" aria-hidden="true">
+              {a.mark}
+            </span>
+            <span className="badge__text">
+              <strong>{a.title}</strong>
+              <span>{a.unlocked ? a.goal : `${a.progress} de ${a.target} · ${a.goal}`}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
   )
 }

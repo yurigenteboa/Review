@@ -29,7 +29,7 @@ import type { TasteRow } from '../../lib/types'
 import { ErrorState, LoadingCards } from '../../pages/states'
 import { EditProfileSheet } from './EditProfileSheet'
 import { RatingBars, YearHeatmap } from './ProfileCharts'
-import { Goals, LinksRow, NowLine, Showcase, TopTen } from './ProfileSections'
+import { Achievements, Goals, LinksRow, NowLine, Showcase, TopTen } from './ProfileSections'
 import './profile.css'
 
 type Tab = 'diario' | 'reviews' | 'quero'
@@ -140,6 +140,7 @@ export function ProfileView({ userId, isMe }: { userId: string; isMe: boolean })
 
       <div className="profile__sections">
         {isMe && <PublicNotice profile={p} />}
+        {isMe && <RetroCard />}
         {!isMe && <CompatCard otherId={userId} name={displayName(p)} cat={cat} />}
 
         <Showcase userId={userId} isMe={isMe} showcase={p.showcase ?? []} cat={cat} entries={all} />
@@ -167,6 +168,8 @@ export function ProfileView({ userId, isMe }: { userId: string; isMe: boolean })
         <TopTen userId={userId} isMe={isMe} cat={cat} entries={all} />
 
         <Goals userId={userId} isMe={isMe} entries={all} />
+
+        <Achievements entries={all} isMe={isMe} />
 
         <section className="profile-section" aria-labelledby="sec-activity">
           <h2 id="sec-activity" className="profile-section__title">Atividade</h2>
@@ -212,6 +215,12 @@ export function ProfileView({ userId, isMe }: { userId: string; isMe: boolean })
 
         {isMe && (
           <div className="profile__footer">
+            <Link to="/retrospectiva" className="btn btn--plain tap public-cta__btn">
+              Retrospectiva de {thisYear}
+            </Link>
+            <Link to="/importar" className="btn btn--plain tap public-cta__btn">
+              Importar do Letterboxd
+            </Link>
             {p.is_public && p.username && (
               <Link to={`/@${p.username}`} className="btn btn--plain tap public-cta__btn">
                 Ver meu perfil público
@@ -433,5 +442,19 @@ function PublicNotice({ profile: p }: { profile: ProfileFull }) {
         </button>
       </div>
     </section>
+  )
+}
+
+/** Em dezembro (ano atual) e janeiro (ano anterior), a retrospectiva aparece em destaque. */
+function RetroCard() {
+  const now = new Date()
+  const month = now.getMonth()
+  if (month !== 11 && month !== 0) return null
+  const year = month === 11 ? now.getFullYear() : now.getFullYear() - 1
+  return (
+    <Link to={`/retrospectiva?ano=${year}`} className="profile-section retro-card tap">
+      <strong>Sua retrospectiva de {year} está pronta</strong>
+      <span className="profile-section__hint">Números do ano, recordes e uma imagem para os Stories.</span>
+    </Link>
   )
 }

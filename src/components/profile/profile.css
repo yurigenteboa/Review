@@ -845,3 +845,227 @@
   font-size: var(--fs-footnote);
   color: var(--text-2);
 }
+
+/* ============ Etapa 4 ============ */
+
+/* Conquistas */
+.badges {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--badge) 12%, transparent);
+  min-width: 0;
+}
+.badge__mark {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--badge);
+  color: var(--surface);
+  font-size: 15px;
+  font-weight: 800;
+}
+.badge__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.badge__text strong {
+  font-size: var(--fs-footnote);
+  font-weight: 700;
+}
+.badge__text span {
+  font-size: 12px;
+  line-height: 1.25;
+  color: var(--text-2);
+}
+.badge.is-locked {
+  background: var(--fill);
+}
+.badge.is-locked .badge__mark {
+  background: var(--fill);
+  color: var(--text-3);
+  box-shadow: inset 0 0 0 1.5px var(--separator);
+}
+
+/* Destaque da retrospectiva no perfil */
+.retro-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-decoration: none;
+  color: var(--text);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--retro-from) 18%, var(--surface)), color-mix(in srgb, var(--retro-to) 18%, var(--surface)));
+}
+
+/* Retrospectiva */
+.retro__hero {
+  padding: 24px 20px;
+  border-radius: var(--r-lg);
+  background: linear-gradient(150deg, var(--retro-from), var(--accent) 55%, var(--retro-to));
+  color: var(--retro-ink);
+}
+.retro__hero p {
+  margin: 0;
+  font-size: var(--fs-callout);
+  line-height: 1.4;
+}
+.retro__hero .retro__big {
+  font-size: 72px;
+  font-weight: 800;
+  letter-spacing: -2px;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.retro__labels {
+  margin-top: 14px;
+}
+.retro__labels li {
+  background: color-mix(in srgb, var(--retro-ink) 22%, transparent);
+  color: var(--retro-ink);
+}
+.retro__cats {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.retro__cats li {
+  display: grid;
+  grid-template-columns: 76px 1fr 32px;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--fs-footnote);
+}
+.retro__bar {
+  height: 12px;
+  border-radius: var(--r-pill);
+  background: var(--fill);
+  overflow: hidden;
+}
+.retro__bar span {
+  display: block;
+  height: 100%;
+  border-radius: var(--r-pill);
+}
+.retro__cat-n {
+  text-align: right;
+  font-weight: 700;
+}
+.retro__facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.retro__facts .profile-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.retro__facts strong {
+  font-size: var(--fs-body);
+}
+.retro__top {
+  margin: 0 0 6px;
+  font-size: var(--fs-callout);
+  line-height: 1.4;
+}
+
+/* Importar do Letterboxd */
+.import__card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.import__card .profile-section__title {
+  margin: 0;
+}
+.import__file {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.import__check {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  min-height: 44px;
+  font-size: var(--fs-callout);
+}
+.import__check input {
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  flex: none;
+  accent-color: var(--accent);
+}
+.import__stats div {
+  background: var(--fill);
+}
+.import__error {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+.import__list {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.import__film {
+  margin: 0 0 6px;
+  font-size: var(--fs-callout);
+}
+.import__options {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.import__option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 4px 10px;
+  border-radius: var(--r-md);
+  background: var(--fill);
+  font-size: var(--fs-callout);
+}
+.import__option.is-on {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+.import__option input {
+  accent-color: var(--accent);
+}
+.import__names {
+  margin: 8px 0 0;
+  font-size: var(--fs-footnote);
+  color: var(--text-2);
+  line-height: 1.5;
+}
+.import__done {
+  margin: 0;
+  padding-left: 20px;
+  font-size: var(--fs-callout);
+  line-height: 1.6;
+}
