@@ -5,7 +5,8 @@ import { BrowserRouter, Route, Routes, useLocation, useNavigate } from 'react-ro
 import { ComposeSheet, type ComposeStart } from './components/review/ComposeSheet'
 import { TabBar } from './components/ui/TabBar'
 import { SideBar } from './components/ui/SideBar'
-import { useBreakpoint } from './lib/breakpoints'
+import { useBreakpoint, useFinePointer } from './lib/breakpoints'
+import { DesktopEnhancers } from './components/ui/DesktopEnhancers'
 import { Glass } from './components/ui/Glass'
 import { AuthProvider, FROM_APP_PARAM, isStandalone, useAuth } from './lib/auth'
 import Legal, { LEGAL_PATHS, type LegalDoc } from './pages/Legal'
@@ -63,6 +64,7 @@ function Shell() {
   const qc = useQueryClient()
   const { session, loading } = useAuth()
   const bp = useBreakpoint()
+  const finePointer = useFinePointer()
   const [compose, setCompose] = useState<{ open: boolean; start: ComposeStart; key: number }>({ open: false, start: {}, key: 0 })
   const [toast, setToast] = useState<string | null>(null)
   const [handoff, setHandoff] = useState(returnParams.handedOffToBrowser)
@@ -166,6 +168,9 @@ function Shell() {
           </Routes>
         </motion.main>
       </AnimatePresence>
+
+      {/* Mouse/trackpad: setas nas fileiras, dicas nos ícones, colar/arrastar fotos (D4) */}
+      {finePointer && <DesktopEnhancers />}
 
       <ComposeSheet key={compose.key} open={compose.open} start={compose.start} onClose={closeCompose} onDone={setToast} />
 
