@@ -2,32 +2,60 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'motion/react'
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import { BrowserRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
-import { ComposeSheet, type ComposeStart } from './components/review/ComposeSheet'
+import type { ComposeStart } from './components/review/ComposeSheet'
 import { TabBar } from './components/ui/TabBar'
 import { SideBar } from './components/ui/SideBar'
 import { useBreakpoint, useFinePointer } from './lib/breakpoints'
-import { DesktopEnhancers } from './components/ui/DesktopEnhancers'
 import { Glass } from './components/ui/Glass'
 import { AuthProvider, FROM_APP_PARAM, isStandalone, useAuth } from './lib/auth'
-import Legal, { LEGAL_PATHS, type LegalDoc } from './pages/Legal'
-import PublicProfile from './pages/PublicProfile'
+import { LEGAL_PATHS, type LegalDoc } from './pages/legalPaths'
 import { parseHandle } from './lib/publicProfile'
-import Buscar from './pages/Buscar'
 import Inicio from './pages/Inicio'
-import Item from './pages/Item'
-import Kit from './pages/Kit'
 import Login from './pages/Login'
-import Amigos from './pages/Amigos'
-import Mapa from './pages/Mapa'
-import Notificacoes from './pages/Notificacoes'
-import Perfil from './pages/Perfil'
-import Pessoa from './pages/Pessoa'
 import { acceptInvite, savePendingInvite, takePendingInvite } from './lib/social'
 import { useQueryClient } from '@tanstack/react-query'
 
-// Telas raras: carregam só quando abertas (o leitor de .zip pesa)
+// M0 (velocidade no celular): só Início e Login vêm no primeiro download.
+// As outras telas viram arquivos separados e são baixadas em segundo plano logo
+// depois que o app abre (prefetchScreens), então a navegação continua instantânea.
+const SCREENS = {
+  Buscar: () => import('./pages/Buscar'),
+  Amigos: () => import('./pages/Amigos'),
+  Item: () => import('./pages/Item'),
+  Perfil: () => import('./pages/Perfil'),
+  Pessoa: () => import('./pages/Pessoa'),
+  Notificacoes: () => import('./pages/Notificacoes'),
+  Mapa: () => import('./pages/Mapa'),
+  Legal: () => import('./pages/Legal'),
+  PublicProfile: () => import('./pages/PublicProfile'),
+  // a janela de Registrar também vem depois (é grande) e fica pronta antes do primeiro toque no +
+  Compose: () => import('./components/review/ComposeSheet'),
+}
+const Buscar = lazy(SCREENS.Buscar)
+const Amigos = lazy(SCREENS.Amigos)
+const Item = lazy(SCREENS.Item)
+const Perfil = lazy(SCREENS.Perfil)
+const Pessoa = lazy(SCREENS.Pessoa)
+const Notificacoes = lazy(SCREENS.Notificacoes)
+const Mapa = lazy(SCREENS.Mapa)
+const Legal = lazy(SCREENS.Legal)
+const PublicProfile = lazy(SCREENS.PublicProfile)
+// Telas raras: só quando abertas (o leitor de .zip pesa)
 const ImportLetterboxd = lazy(() => import('./pages/ImportLetterboxd'))
 const Retrospectiva = lazy(() => import('./pages/Retrospectiva'))
+const Kit = lazy(() => import('./pages/Kit'))
+const ComposeSheet = lazy(() => SCREENS.Compose().then((m) => ({ default: m.ComposeSheet })))
+// Só para mouse/trackpad: no celular nem é baixado
+const DesktopEnhancers = lazy(() => import('./components/ui/DesktopEnhancers').then((m) => ({ default: m.DesktopEnhancers })))
+
+/** Baixa as telas comuns quando o aparelho estiver ocioso (sem atrapalhar a abertura). */
+function prefetchScreens() {
+  const run = () => Object.values(SCREENS).forEach((load) => void load().catch(() => {}))
+  if ('requestIdleCallback' in window) window.requestIdleCallback(run, { timeout: 4000 })
+  else setTimeout(run, 1500)
+}
+
+const loadingPage = <div className="page" aria-busy="true" />
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: true } },
@@ -108,6 +136,11 @@ function Shell() {
   const inviteMatch = location.pathname.match(/^\/convite\/([a-z0-9]+)/i)
   if (inviteMatch) savePendingInvite(inviteMatch[1])
 
+  // Com a pessoa logada, baixa as outras telas em segundo plano
+  useEffect(() => {
+    if (session) prefetchScreens()
+  }, [session])
+
   useEffect(() => {
     if (!session) return
     const code = takePendingInvite()
@@ -126,9 +159,9 @@ function Shell() {
 
   // Páginas públicas abrem com ou sem login (o Google exige que sejam acessíveis).
   const publicDoc = PUBLIC_PAGES.find(([, path]) => location.pathname === path)?.[0]
-  if (publicDoc) return <Legal doc={publicDoc} />
+  if (publicDoc) return <Suspense fallback={loadingPage}><Legal doc={publicDoc} /></Suspense>
   // Perfil público (mmisc.com.br/@usuario): abre com ou sem login.
-  if (parseHandle(location.pathname)) return <PublicProfile />
+  if (parseHandle(location.pathname)) return <Suspense fallback={loadingPage}><PublicProfile /></Suspense>
 
   if (loading) return <div style={{ minHeight: '100dvh' }} aria-busy="true" />
   if (!session) return <Login />
@@ -157,6 +190,7 @@ function Shell() {
           id="conteudo"
           tabIndex={-1}
         >
+          <Suspense fallback={loadingPage}>
           <Routes location={location}>
             <Route path="/" element={<Inicio onCompose={() => openCompose()} />} />
             <Route path="/buscar" element={<Buscar onCompose={openCompose} />} />
@@ -168,17 +202,26 @@ function Shell() {
             <Route path="/perfil" element={<Perfil />} />
             <Route path="/item/:id" element={<Item onCompose={openCompose} />} />
             <Route path="/kit" element={<Kit />} />
-            <Route path="/importar" element={<Suspense fallback={<div className="page" aria-busy="true" />}><ImportLetterboxd /></Suspense>} />
-            <Route path="/retrospectiva" element={<Suspense fallback={<div className="page" aria-busy="true" />}><Retrospectiva /></Suspense>} />
+            <Route path="/importar" element={<ImportLetterboxd />} />
+            <Route path="/retrospectiva" element={<Retrospectiva />} />
             <Route path="*" element={<Inicio onCompose={() => openCompose()} />} />
           </Routes>
+          </Suspense>
         </motion.main>
       </AnimatePresence>
 
       {/* Mouse/trackpad: setas nas fileiras, dicas nos ícones, colar/arrastar fotos (D4) */}
-      {finePointer && <DesktopEnhancers />}
+      {finePointer && (
+        <Suspense fallback={null}>
+          <DesktopEnhancers />
+        </Suspense>
+      )}
 
-      <ComposeSheet key={compose.key} open={compose.open} start={compose.start} onClose={closeCompose} onDone={setToast} />
+      {compose.key > 0 && (
+        <Suspense fallback={null}>
+          <ComposeSheet key={compose.key} open={compose.open} start={compose.start} onClose={closeCompose} onDone={setToast} />
+        </Suspense>
+      )}
 
       {handoff && (
         <Glass className="notice" role="status">

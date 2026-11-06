@@ -1483,3 +1483,14 @@ body:has(.sheet[role='dialog']) .row-arrow {
   width: 100% !important;
   height: 100% !important;
 }
+
+/* =========================================================
+   Mobile M0 · Capas aparecem suavemente
+   ========================================================= */
+img.cover--img {
+  opacity: 0;
+  transition: opacity 0.28s ease;
+}
+img.cover--img.is-loaded {
+  opacity: 1;
+}

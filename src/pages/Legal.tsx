@@ -11,13 +11,8 @@ import { PageHeader } from '../components/ui/PageHeader'
 export const CONTACT_EMAIL = 'contato@mmisc.com.br'
 const UPDATED = '6 de novembro de 2026'
 
-export type LegalDoc = 'sobre' | 'privacidade' | 'termos' | 'excluir-dados'
-export const LEGAL_PATHS: Record<LegalDoc, string> = {
-  sobre: '/sobre',
-  privacidade: '/privacidade',
-  termos: '/termos',
-  'excluir-dados': '/excluir-dados',
-}
+import { LEGAL_PATHS, type LegalDoc } from './legalPaths'
+export { LEGAL_PATHS, type LegalDoc }
 
 const Mail = () => <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
 

@@ -17,6 +17,8 @@ type CoverItem = Pick<Item, 'title' | 'category' | 'image_url'>
 /** Capa do item: a imagem quando existir (Fase 3), senão gradiente da categoria + iniciais. */
 export function Cover({ item, size = 72, radius, fill = false }: { item: CoverItem; size?: number; radius?: number; fill?: boolean }) {
   const [broken, setBroken] = useState(false)
+  // M0: a capa aparece suavemente quando termina de baixar (sem o "pisca" seco)
+  const [loaded, setLoaded] = useState(false)
   const r = radius ?? size * 0.22
   const dim = fill ? '100%' : size
   if (item.image_url && !broken) {
@@ -25,7 +27,13 @@ export function Cover({ item, size = 72, radius, fill = false }: { item: CoverIt
         src={item.image_url}
         alt=""
         loading="lazy"
-        className="cover"
+        decoding="async"
+        className={`cover cover--img${loaded ? ' is-loaded' : ''}`}
+        // imagem que já estava no cache: marca como pronta na hora, sem animação
+        ref={(el) => {
+          if (el?.complete && el.naturalWidth > 0 && !loaded) setLoaded(true)
+        }}
+        onLoad={() => setLoaded(true)}
         onError={() => setBroken(true)}
         style={{ width: dim, height: dim, borderRadius: r, objectFit: 'cover', background: 'var(--fill)' }}
       />

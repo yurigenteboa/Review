@@ -4,6 +4,23 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
+  build: {
+    // As bibliotecas (React, Supabase, motion…) num arquivo próprio: mudam pouco, então o
+    // celular guarda esse arquivo em cache e, a cada deploy, só baixa de novo o código do app.
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            {
+              name: 'vendor',
+              test: /node_modules[\\/](react|react-dom|scheduler|react-router|@supabase|@tanstack|motion|motion-dom|motion-utils|framer-motion|tslib|iceberg-js)[\\/]/,
+            },
+          ],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 700,
+  },
   plugins: [
     react(),
     VitePWA({
