@@ -10,6 +10,12 @@ export default defineConfig({
       registerType: 'autoUpdate',
       injectRegister: false,
       includeAssets: ['favicon.svg', 'icons/apple-touch-icon.png'],
+      // A versão nova assume na hora, sem esperar todas as abas fecharem.
+      workbox: {
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
+      },
       manifest: {
         name: 'MMISC',
         short_name: 'MMISC',
