@@ -20,6 +20,7 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html}', 'assets/inter-latin-*.woff2'],
       },
       manifest: {
+        id: '/',
         name: 'MMISC',
         short_name: 'MMISC',
         description: 'MMISC: nota para tudo. Álbuns, filmes, jogos, bares, banheiros e cidades.',

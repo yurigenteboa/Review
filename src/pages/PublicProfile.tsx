@@ -3,7 +3,8 @@ import { Link, useLocation } from 'react-router-dom'
 import { RatingBars, YearHeatmap } from '../components/profile/ProfileCharts'
 import { Achievements, LinksRow } from '../components/profile/ProfileSections'
 import '../components/profile/profile.css'
-import { Avatar, Cover } from '../components/review/ReviewCard'
+import { Cover } from '../components/review/ReviewCard'
+import { AvatarViewer } from '../components/profile/AvatarViewer'
 import { SpoilerText } from '../components/review/SpoilerText'
 import { Glass } from '../components/ui/Glass'
 import { Stars } from '../components/ui/Stars'
@@ -112,7 +113,7 @@ function PublicView({ data: d, loggedIn, isMe }: { data: PublicProfileData; logg
 
       <Glass className="profile__card">
         <div className="profile__identity">
-          <Avatar profile={p} size={76} />
+          <AvatarViewer profile={p} size={76} isMe={false} />
           <div className="profile__names">
             <h1>{displayName(p)}</h1>
             <span>@{p.username}</span>

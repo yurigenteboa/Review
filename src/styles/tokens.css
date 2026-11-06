@@ -67,6 +67,8 @@
   --aside-w: 320px;            /* painel à direita (desktop) */
   --wide-w: 1080px;            /* telas ricas: filme, perfil, busca */
   --hover-fill: color-mix(in srgb, var(--text) 6%, transparent);
+  --lightbox-bg: rgba(0, 0, 0, 0.78);   /* fundo da foto ampliada */
+  --lightbox-ink: #FFFFFF;
 
   /* Categorias: cor (ícones, barras) e tinta (texto sobre fundo claro, contraste >= 4,5:1) */
   --cat-album: #AF52DE;    --cat-album-ink: #8E3BBE;

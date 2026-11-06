@@ -135,6 +135,10 @@ function Shell() {
 
   return (
     <div className={`shell shell--${bp}`}>
+      {/* Teclado: pula a navegação e vai direto ao conteúdo (aparece só ao receber foco) */}
+      <a href="#conteudo" className="skip-link">
+        Pular para o conteúdo
+      </a>
       {/* Celular: abas embaixo. Tablet/desktop: barra lateral (D1 do plano desktop). */}
       {bp === 'mobile' ? (
         <TabBar onCompose={() => openCompose()} />
@@ -150,6 +154,8 @@ function Shell() {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.18 }}
           className="shell__main"
+          id="conteudo"
+          tabIndex={-1}
         >
           <Routes location={location}>
             <Route path="/" element={<Inicio onCompose={() => openCompose()} />} />

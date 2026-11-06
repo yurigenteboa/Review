@@ -1,7 +1,7 @@
 import { useState, type CSSProperties } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { DiaryList, WatchlistGrid } from '../review/DiaryViews'
-import { Avatar, Cover, ReviewCard } from '../review/ReviewCard'
+import { Cover, ReviewCard } from '../review/ReviewCard'
 import { smallBtn } from '../social/PersonRow'
 import { Glass } from '../ui/Glass'
 import { signOut } from '../../lib/auth'
@@ -27,6 +27,7 @@ import { useUserReviews } from '../../lib/queries'
 import { useFriendState, useRemoveFriend, useRequestFriend, useRespondFriend, useTasteMatch } from '../../lib/social'
 import type { TasteRow } from '../../lib/types'
 import { ErrorState, LoadingCards } from '../../pages/states'
+import { AvatarViewer } from './AvatarViewer'
 import { EditProfileSheet } from './EditProfileSheet'
 import { RatingBars, YearHeatmap } from './ProfileCharts'
 import { Achievements, Goals, LinksRow, NowLine, Showcase, TopTen } from './ProfileSections'
@@ -259,7 +260,8 @@ function ProfileHeader({ profile: p, isMe }: { profile: ProfileFull; isMe: boole
   return (
     <>
       <div className="profile__identity">
-        <Avatar profile={p} size={76} />
+        {/* toque/clique amplia a foto; o dono troca por ali */}
+        <AvatarViewer profile={p} size={76} isMe={isMe} />
         <div className="profile__names">
           <h1>{displayName(p)}</h1>
           <span>{p.username ? `@${p.username}` : isMe ? 'sem @ ainda' : ''}</span>

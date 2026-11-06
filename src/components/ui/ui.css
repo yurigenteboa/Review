@@ -1350,3 +1350,136 @@ body:has(.sheet[role='dialog']) .row-arrow {
   outline-offset: -8px;
   box-shadow: var(--glass-shadow), inset 0 0 0 999px color-mix(in srgb, var(--accent) 10%, transparent);
 }
+
+/* =========================================================
+   Foto de perfil ampliada (AvatarViewer)
+   ========================================================= */
+.avatar-btn {
+  display: inline-flex;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  cursor: zoom-in;
+}
+.avatar-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: calc(var(--safe-top) + 64px) 24px calc(var(--safe-bottom) + 32px);
+  background: var(--lightbox-bg);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  color: var(--lightbox-ink);
+  cursor: zoom-out;
+}
+.avatar-lightbox > * {
+  cursor: auto;
+}
+.avatar-lightbox__close {
+  position: absolute;
+  top: calc(var(--safe-top) + 16px);
+  right: 16px;
+  width: 44px;
+  height: 44px;
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--lightbox-ink) 16%, transparent);
+  color: var(--lightbox-ink);
+}
+.avatar-lightbox__figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+.avatar-lightbox__img {
+  width: min(78vw, 56dvh, 420px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+  transition: opacity 0.2s ease;
+}
+.avatar-lightbox__empty {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.avatar-lightbox figcaption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.avatar-lightbox figcaption strong {
+  font-size: var(--fs-title);
+  font-weight: 750;
+}
+.avatar-lightbox figcaption span {
+  font-size: var(--fs-callout);
+  opacity: 0.75;
+}
+.avatar-lightbox__actions {
+  display: flex;
+  gap: 10px;
+}
+.avatar-lightbox__actions .btn {
+  min-height: 46px;
+}
+.avatar-lightbox__actions .btn--plain {
+  background: color-mix(in srgb, var(--lightbox-ink) 16%, transparent);
+  color: var(--lightbox-ink);
+}
+.avatar-lightbox__error {
+  margin: 0;
+  font-size: var(--fs-footnote);
+  text-align: center;
+}
+@media (hover: hover) and (pointer: fine) {
+  .avatar-btn:hover .avatar {
+    filter: brightness(1.08);
+  }
+}
+
+/* =========================================================
+   D5 · Acabamento
+   ========================================================= */
+/* A barra lateral não fica sobre nada que rola: o desfoque não serve para
+   nada ali e custa desempenho em tela grande. Fundo sólido com o mesmo tom. */
+.sidebar {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: var(--bg);
+}
+
+/* Link "Pular para o conteúdo": escondido até receber foco pelo Tab */
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 90;
+  padding: 10px 16px;
+  border-radius: var(--r-pill);
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  transform: translateY(-160%);
+}
+.skip-link:focus {
+  transform: none;
+}
+.shell__main:focus {
+  outline: none;
+}
+/* Sem foto: as iniciais ocupam o círculo todo */
+.avatar-lightbox__empty .avatar {
+  width: 100% !important;
+  height: 100% !important;
+}
