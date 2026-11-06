@@ -91,6 +91,37 @@ export function Sheet({ open, onClose, title, children, desktop = 'dialog' }: Sh
             transition: { type: 'spring' as const, stiffness: 500, damping: 38 },
           }
 
+  // M2 · Teclado no celular: o teclado encolhe só a área visível (visualViewport) e a sheet,
+  // presa ao fundo da tela, ficava atrás dele. Aqui ela sobe junto (--kb = altura do teclado)
+  // e o campo que recebeu o foco é rolado para dentro da área visível.
+  useEffect(() => {
+    if (!open || mode !== 'bottom') return
+    const vv = window.visualViewport
+    const root = document.documentElement
+    const apply = () => {
+      const kb = vv ? Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop)) : 0
+      root.style.setProperty('--kb', `${kb}px`)
+    }
+    let t: number | undefined
+    const onFocus = (e: FocusEvent) => {
+      const el = e.target as HTMLElement | null
+      if (!el || !panelRef.current?.contains(el) || !el.matches('input, textarea, select')) return
+      window.clearTimeout(t)
+      t = window.setTimeout(() => el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 320)
+    }
+    apply()
+    vv?.addEventListener('resize', apply)
+    vv?.addEventListener('scroll', apply)
+    document.addEventListener('focusin', onFocus)
+    return () => {
+      window.clearTimeout(t)
+      vv?.removeEventListener('resize', apply)
+      vv?.removeEventListener('scroll', apply)
+      document.removeEventListener('focusin', onFocus)
+      root.style.removeProperty('--kb')
+    }
+  }, [open, mode])
+
   // Portal: a sheet é desenhada direto no <body>, fora de qualquer card ou tela animada
   return createPortal(
     <AnimatePresence>

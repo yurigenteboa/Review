@@ -1528,3 +1528,48 @@ img.cover--img.is-loaded {
     transform: rotate(360deg);
   }
 }
+
+/* =========================================================
+   Mobile M2 · Registrar em segundos
+   ========================================================= */
+/* Nota: arrastar na fileira de estrelas (a rolagem vertical continua livre) */
+.rating-input {
+  display: flex;
+  gap: 4px;
+  padding: 0 4px;
+  border-radius: var(--r-md);
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+}
+.rating-input__star {
+  position: relative;
+  display: block;
+  width: 52px;
+  height: 52px;
+}
+
+/* Teclado aberto (--kb vem da Sheet): a sheet de baixo sobe e encolhe junto */
+.sheet-frame--bottom {
+  bottom: var(--kb, 0px);
+}
+.sheet--bottom {
+  max-height: calc(92dvh - var(--kb, 0px));
+}
+.draft-note {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 4px 4px 14px;
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  font-size: var(--fs-footnote);
+  color: var(--text-2);
+}
+.draft-note .link-btn {
+  min-height: 36px;
+  padding: 0 10px;
+  font-size: var(--fs-footnote);
+}

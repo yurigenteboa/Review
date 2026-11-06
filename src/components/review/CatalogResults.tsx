@@ -24,16 +24,18 @@ interface Props {
   /** esconde resultados que já existem no catálogo do MMISC */
   hide?: Set<string>
   limit?: number
+  /** título da lista (padrão "Na internet"); ex.: "Você está em algum destes?" com a localização */
+  label?: string
 }
 
 /** Lista "Na internet": resultados das APIs externas, prontos para virar item. */
-export function CatalogResults({ category, results, loading, missingKey, error, onPick, hide, limit = 12 }: Props) {
+export function CatalogResults({ category, results, loading, missingKey, error, onPick, hide, limit = 12, label = 'Na internet' }: Props) {
   const list = (results ?? []).filter((r) => !hide?.has(`${r.source}:${r.external_id}`)).slice(0, limit)
 
   return (
     <section aria-label="Resultados na internet" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
       <span className="field-label" style={{ margin: '4px 4px 0' }}>
-        Na internet
+        {label}
       </span>
       <div className="group">
         {loading && <div className="group__row" style={{ color: 'var(--text-3)' }}>Buscando…</div>}

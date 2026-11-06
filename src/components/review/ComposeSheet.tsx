@@ -13,6 +13,7 @@ import { Sheet } from '../ui/Sheet'
 import { CatalogResults, NearMeButton } from './CatalogResults'
 import { Avatar, Cover } from './ReviewCard'
 import { CriterionInput, RatingInput } from './RatingInput'
+import { haptic } from '../../lib/haptics'
 
 export interface ComposeStart {
   category?: CategoryId
@@ -62,6 +63,46 @@ const readDetailsPref = () => {
     return false
   }
 }
+// ---------- M2 · Rascunho automático ----------
+// O "+" sem nada escolhido guarda o que foi digitado; se o app fechar ou a pessoa sair,
+// o próximo "+" continua de onde parou (fotos não entram: são arquivos do aparelho).
+const DRAFT_KEY = 'mmisc.composeDraft'
+const DRAFT_MAX_AGE = 3 * 24 * 60 * 60 * 1000
+
+interface Draft {
+  savedAt: number
+  category: CategoryId
+  title: string
+  subtitle: string
+  itemId?: string
+  external?: CatalogResult
+  rating: number
+  body: string
+  visibility: Visibility
+  day: string
+  loved: boolean
+  where: WatchedWhere | null
+  companions: string[]
+  note: string
+}
+
+const readDraft = (): Draft | null => {
+  try {
+    const d = JSON.parse(localStorage.getItem(DRAFT_KEY) ?? 'null') as Draft | null
+    return d && Date.now() - d.savedAt < DRAFT_MAX_AGE ? d : null
+  } catch {
+    return null
+  }
+}
+const writeDraft = (d: Draft | null) => {
+  try {
+    if (d) localStorage.setItem(DRAFT_KEY, JSON.stringify(d))
+    else localStorage.removeItem(DRAFT_KEY)
+  } catch {
+    /* modo privado: segue sem rascunho */
+  }
+}
+
 const saveDetailsPref = (open: boolean) => {
   try {
     localStorage.setItem(DETAILS_KEY, open ? '1' : '0')
@@ -74,27 +115,30 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
   const navigate = useNavigate()
   const { userId } = useAuth()
   const edit = start.edit
+  // "+" puro (sem item, edição ou pré-preenchimento) usa e guarda rascunho
+  const blank = !edit && !start.itemId && !start.external && !start.title && !start.category && !start.prefill && !start.loved
+  const [draft, setDraft] = useState<Draft | null>(() => (blank ? readDraft() : null))
   // O App remonta este componente a cada abertura (prop `key`), então o estado já nasce limpo.
-  const [category, setCategory] = useState<CategoryId>(edit?.item.category ?? start.category ?? start.external?.category ?? 'album')
-  const [title, setTitle] = useState(edit?.item.title ?? start.title ?? start.external?.title ?? '')
-  const [subtitle, setSubtitle] = useState('')
-  const [itemId, setItemId] = useState<string | undefined>(edit?.item.id ?? start.itemId)
-  const [external, setExternal] = useState<CatalogResult | undefined>(start.external)
-  const [rating, setRating] = useState(edit?.rating ?? 0)
+  const [category, setCategory] = useState<CategoryId>(edit?.item.category ?? start.category ?? start.external?.category ?? draft?.category ?? 'album')
+  const [title, setTitle] = useState(edit?.item.title ?? start.title ?? start.external?.title ?? draft?.title ?? '')
+  const [subtitle, setSubtitle] = useState(draft?.subtitle ?? '')
+  const [itemId, setItemId] = useState<string | undefined>(edit?.item.id ?? start.itemId ?? draft?.itemId)
+  const [external, setExternal] = useState<CatalogResult | undefined>(start.external ?? draft?.external)
+  const [rating, setRating] = useState(edit?.rating ?? draft?.rating ?? 0)
   const [criteria, setCriteria] = useState<Record<string, number>>(edit?.criteria_scores ?? {})
-  const [body, setBody] = useState(edit?.body ?? '')
-  const [visibility, setVisibility] = useState<Visibility>(edit?.visibility ?? 'amigos')
+  const [body, setBody] = useState(edit?.body ?? draft?.body ?? '')
+  const [visibility, setVisibility] = useState<Visibility>(edit?.visibility ?? draft?.visibility ?? 'amigos')
   const [photos, setPhotos] = useState<File[]>([])
-  const [day, setDay] = useState(edit?.experienced_at ?? start.prefill?.experiencedAt ?? localDay())
-  const [loved, setLoved] = useState(edit?.loved ?? start.loved ?? false)
+  const [day, setDay] = useState(edit?.experienced_at ?? start.prefill?.experiencedAt ?? draft?.day ?? localDay())
+  const [loved, setLoved] = useState(edit?.loved ?? start.loved ?? draft?.loved ?? false)
   const [rewatch, setRewatch] = useState<boolean | null>(edit ? edit.rewatch : null)
   const [spoiler, setSpoiler] = useState(edit?.spoiler ?? false)
-  const [where, setWhere] = useState<WatchedWhere | null>(edit?.watched_where ?? start.prefill?.watchedWhere ?? null)
+  const [where, setWhere] = useState<WatchedWhere | null>(edit?.watched_where ?? start.prefill?.watchedWhere ?? draft?.where ?? null)
   const [companions, setCompanions] = useState<string[]>(
-    edit?.companions?.map((c) => c.user.id) ?? start.prefill?.companions ?? [],
+    edit?.companions?.map((c) => c.user.id) ?? start.prefill?.companions ?? draft?.companions ?? [],
   )
-  const [note, setNote] = useState('')
-  const [noteTouched, setNoteTouched] = useState(false)
+  const [note, setNote] = useState(draft?.note ?? '')
+  const [noteTouched, setNoteTouched] = useState(Boolean(draft?.note))
   const [details, setDetails] = useState(() => Boolean(edit) || readDetailsPref())
   const create = useCreateReview()
   const { near, status, request, clear } = useNearMe()
@@ -132,6 +176,54 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
   const cat = categoryById(category)
   const verb = DID_VERB[category]
 
+  // Guarda o rascunho (só no "+" puro), meio segundo depois de parar de mexer
+  useEffect(() => {
+    if (!blank) return
+    const t = setTimeout(() => {
+      const hasContent = title.trim() || rating > 0 || body.trim() || note.trim()
+      writeDraft(
+        hasContent
+          ? { savedAt: Date.now(), category, title, subtitle, itemId, external, rating, body, visibility, day, loved, where, companions, note }
+          : null,
+      )
+    }, 500)
+    return () => clearTimeout(t)
+  }, [blank, category, title, subtitle, itemId, external, rating, body, visibility, day, loved, where, companions, note])
+
+  const discardDraft = () => {
+    writeDraft(null)
+    setDraft(null)
+    setTitle('')
+    setSubtitle('')
+    setItemId(undefined)
+    setExternal(undefined)
+    setRating(0)
+    setBody('')
+    setNote('')
+    setLoved(false)
+    setWhere(null)
+    setCompanions([])
+    setDay(localDay())
+  }
+
+  // Bar e banheiro: se a localização já foi liberada antes, já mostra "Perto de você" sem pedir de novo
+  useEffect(() => {
+    if (!placeCat || near || picked || !navigator.permissions) return
+    let alive = true
+    navigator.permissions
+      .query({ name: 'geolocation' })
+      .then((p) => alive && p.state === 'granted' && request())
+      .catch(() => {})
+    return () => {
+      alive = false
+    }
+  }, [placeCat]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const addPhotos = (list: FileList | null) => {
+    const files = Array.from(list ?? [])
+    if (files.length) setPhotos((p) => [...p, ...files].slice(0, MAX_PHOTOS))
+  }
+
   const unpick = () => {
     setItemId(undefined)
     setExternal(undefined)
@@ -167,6 +259,8 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
         note: noteValue,
         companions,
       })
+      haptic('success')
+      if (blank) writeDraft(null)
       onDone(res.edited ? 'Entrada atualizada' : 'Registrado no seu diário')
       onClose()
       navigate(`/item/${res.itemId}`)
@@ -189,6 +283,14 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
   return (
     <Sheet open={open} onClose={onClose} title={edit ? 'Editar entrada' : 'Registrar'}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {draft && (
+          <div className="draft-note" role="status">
+            <span>Rascunho de {new Date(draft.savedAt).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })} restaurado</span>
+            <button type="button" className="link-btn" onClick={discardDraft}>
+              Descartar
+            </button>
+          </div>
+        )}
         {!edit && !start.itemId && (
           <CategoryChips
             value={category}
@@ -258,6 +360,7 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
                 error={remote.error ? String(remote.error) : remote.data?.error}
                 hide={known}
                 limit={6}
+                label={placeCat && near && term.length < 2 ? 'Você está em algum destes?' : undefined}
                 onPick={(r) => {
                   setExternal(r)
                   setTitle(r.title)
@@ -307,12 +410,31 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
             </label>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button type="button" className="toggle-chip tap" aria-pressed={loved} onClick={() => setLoved((v) => !v)}>
+            <button type="button" className="toggle-chip tap" aria-pressed={loved} onClick={() => {
+                haptic()
+                setLoved((v) => !v)
+              }}>
               <span aria-hidden="true">{loved ? '♥' : '♡'}</span> Curti
             </button>
             <button type="button" className="toggle-chip tap" aria-pressed={isRewatch} onClick={() => setRewatch(!isRewatch)}>
               <span aria-hidden="true">↻</span> {category === 'album' ? 'Reouvi' : screen ? 'Revi' : 'De novo'}
             </button>
+            {placeCat && photos.length < MAX_PHOTOS && (
+              // Bar e banheiro: câmera direto, sem passar por "Mais detalhes"
+              <label className="toggle-chip tap" style={{ cursor: 'pointer' }}>
+                <span aria-hidden="true">📷</span> {photos.length ? `Foto (${photos.length})` : 'Foto'}
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  hidden
+                  onChange={(e) => {
+                    addPhotos(e.target.files)
+                    e.target.value = ''
+                  }}
+                />
+              </label>
+            )}
           </div>
         </div>
 
@@ -457,8 +579,7 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
                       multiple
                       hidden
                       onChange={(e) => {
-                        const files = Array.from(e.target.files ?? [])
-                        setPhotos((p) => [...p, ...files].slice(0, MAX_PHOTOS))
+                        addPhotos(e.target.files)
                         e.target.value = ''
                       }}
                     />

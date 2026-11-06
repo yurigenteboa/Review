@@ -145,6 +145,16 @@ function Shell() {
     if (session) prefetchScreens()
   }, [session])
 
+  // Atalho "Nova review" do ícone do app (Android): /?novo=1 abre o registro
+  useEffect(() => {
+    if (!session) return
+    const p = new URLSearchParams(location.search)
+    if (p.get('novo') !== '1') return
+    p.delete('novo')
+    navigate({ pathname: location.pathname, search: p.toString() ? `?${p}` : '' }, { replace: true })
+    openCompose()
+  }, [session, location.search]) // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (!session) return
     const code = takePendingInvite()

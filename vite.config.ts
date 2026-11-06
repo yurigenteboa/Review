@@ -49,6 +49,11 @@ export default defineConfig({
         orientation: 'any',
         background_color: '#F2F2F7',
         theme_color: '#F2F2F7',
+        // Android: segurar o ícone do app mostra estes atalhos (o iPhone não tem para apps da web)
+        shortcuts: [
+          { name: 'Nova review', short_name: 'Registrar', url: '/?novo=1', icons: [{ src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' }] },
+          { name: 'Buscar', short_name: 'Buscar', url: '/buscar', icons: [{ src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' }] },
+        ],
         icons: [
           { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
