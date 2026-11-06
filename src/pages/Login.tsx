@@ -1,23 +1,73 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Glass } from '../components/ui/Glass'
-import { sendLoginEmail, verifyLoginCode } from '../lib/auth'
+import {
+  googleLoginEnabled,
+  isStandaloneIOS,
+  readOAuthError,
+  sendLoginEmail,
+  signInWithGoogle,
+  verifyLoginCode,
+} from '../lib/auth'
 import { displayName } from '../lib/format'
 import { inviteOwner, peekPendingInvite } from '../lib/social'
 
+/** Traduz os erros mais comuns que voltam do Google/Supabase na URL. */
+function oauthMessage(raw: string): string {
+  if (/access_denied|cancel/i.test(raw)) return 'Login com o Google cancelado.'
+  return `Não deu para entrar com o Google (${raw}). Tente de novo ou use o código por e-mail.`
+}
+
 /**
  * Login sem senha:
- * 1. a pessoa digita o e-mail;
- * 2. recebe um e-mail com link E código;
- * 3. no computador, clica no link; no app instalado no iPhone, digita o código
- *    (o app instalado não compartilha o login com o Safari).
+ * - Google (quando ligado): vai para o Google e volta logado;
+ * - e-mail: a pessoa recebe link E código. No computador, clica no link; no app
+ *   instalado no iPhone, digita o código (o app instalado não compartilha o login com o Safari).
+ * Com o mesmo e-mail, Google e código caem na MESMA conta (o Supabase junta as duas).
  */
 export default function Login() {
   const [step, setStep] = useState<'email' | 'code'>('email')
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
   const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(() => {
+    const raw = readOAuthError()
+    return raw ? oauthMessage(raw) : null
+  })
   const [inviter, setInviter] = useState<string | null>(null)
+  const showGoogle = googleLoginEnabled()
+  // No app instalado do iPhone o Google pode terminar no Safari: o código por e-mail vem primeiro.
+  const appIOS = isStandaloneIOS()
+
+  const google = async () => {
+    setBusy(true)
+    setError(null)
+    const { error } = await signInWithGoogle(peekPendingInvite())
+    // Em caso de sucesso a página já saiu para o Google; só chega aqui se falhar.
+    if (error) {
+      setBusy(false)
+      setError(oauthMessage(error.message))
+    }
+  }
+
+  const googleButton = showGoogle && step === 'email' && (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <button type="button" className="btn btn--google tap" onClick={google} disabled={busy}>
+        {/* "G" oficial recortado do kit de marca do Google; fundo igual ao do botão em cada tema */}
+        <picture>
+          <source srcSet="/brand/google-g-dark.png" media="(prefers-color-scheme: dark)" />
+          <img src="/brand/google-g-light.png" alt="" width={20} height={20} />
+        </picture>
+        Continuar com o Google
+      </button>
+      {appIOS && (
+        <span className="field-hint">
+          No app instalado, o Google pode abrir no Safari. Se isso acontecer, volte aqui e use o código por e-mail com o mesmo
+          e-mail do Google: é a mesma conta.
+        </span>
+      )}
+    </div>
+  )
 
   // Veio por link de convite? Mostra quem convidou.
   useEffect(() => {
@@ -59,7 +109,7 @@ export default function Login() {
         alignItems: 'center',
         justifyContent: 'center',
         padding: 'calc(var(--safe-top) + 24px) 20px calc(var(--safe-bottom) + 24px)',
-        background: 'linear-gradient(160deg, #4B2380 0%, #0A84FF 45%, #FF9500 100%)',
+        background: 'var(--login-gradient)',
       }}
     >
       <Glass style={{ width: '100%', maxWidth: 400, padding: 28 }}>
@@ -70,12 +120,19 @@ export default function Login() {
         </p>
         {inviter && (
           <p style={{ margin: '16px 0 0', padding: '10px 14px', borderRadius: 14, background: 'color-mix(in srgb, var(--accent) 14%, transparent)', fontSize: 15 }}>
-            <strong>{inviter}</strong> te convidou. Entre com seu e-mail e vocês já viram amigos.
+            <strong>{inviter}</strong> te convidou. Entre e vocês já viram amigos.
           </p>
         )}
 
+        {!appIOS && googleButton && (
+          <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {googleButton}
+            <span className="login-divider">ou com seu e-mail</span>
+          </div>
+        )}
+
         {step === 'email' ? (
-          <form onSubmit={send} style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <form onSubmit={send} style={{ marginTop: !appIOS && googleButton ? 12 : 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
             <label>
               <span className="field-label">Seu e-mail</span>
               <input
@@ -93,6 +150,12 @@ export default function Login() {
               {busy ? 'Enviando…' : 'Receber código'}
             </button>
             <span className="field-hint">Sem senha: mandamos um código de acesso para o seu e-mail.</span>
+            {appIOS && googleButton && (
+              <>
+                <span className="login-divider">ou</span>
+                {googleButton}
+              </>
+            )}
           </form>
         ) : (
           <form onSubmit={verify} style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -136,6 +199,12 @@ export default function Login() {
             {error}
           </p>
         )}
+
+        <nav className="login-links" aria-label="Sobre o MMISC">
+          <Link to="/sobre">Sobre</Link>
+          <Link to="/privacidade">Privacidade</Link>
+          <Link to="/termos">Termos</Link>
+        </nav>
       </Glass>
     </div>
   )

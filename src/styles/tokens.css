@@ -74,6 +74,14 @@
   /* Página do filme: véu escuro sobre o backdrop e o spoiler borrado */
   --scrim: rgba(0, 0, 0, 0.45);
   --spoiler-blur: blur(5px);
+
+  /* Botão "Continuar com o Google" (cores das diretrizes de marca do Google, tema claro) */
+  --google-bg: #FFFFFF;
+  --google-border: #747775;
+  --google-text: #1F1F1F;
+
+  /* Fundo da tela de login e das páginas públicas */
+  --login-gradient: linear-gradient(160deg, #4B2380 0%, #0A84FF 45%, #FF9500 100%);
 }
 
 /* Tema escuro automático */
@@ -105,6 +113,10 @@
     --cat-bar-ink: #FFB340;
     --cat-banheiro-ink: #64B5FF;
     --cat-cidade-ink: #6FD6E6;
+
+    --google-bg: #131314;
+    --google-border: #8E918F;
+    --google-text: #E3E3E3;
   }
 }
 

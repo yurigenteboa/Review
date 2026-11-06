@@ -38,7 +38,7 @@ supabase/migrations/  um arquivo .sql por mudança de banco
 
 ## Fases (resumo)
 0 Setup · 1 Design system + casca · 2 MVP pessoal (login, banco, criar review) · 3 Catálogo via APIs · 4 Amigos (feed, convites) — todas FEITAS e no ar.
-Agora: UX de filmes (F1 feita → F2 → F3, abaixo). Depois: 5 PWA (offline, push, mapa) · 6 Rede aberta (moderação, LGPD).
+Agora: UX de filmes (F1 e F2 feitas → F3, abaixo). Depois: 5 PWA (offline, push, mapa) · 6 Rede aberta (moderação, LGPD).
 
 ## Estado atual (Fase 2)
 - Supabase: projeto `review` (sa-east-1). Schema em `supabase/migrations/202611051800_fase2_base.sql` (já aplicado).
@@ -68,7 +68,19 @@ Agora: UX de filmes (F1 feita → F2 → F3, abaixo). Depois: 5 PWA (offline, pu
   - `movie-details` publicada pelo editor do painel, "Verify JWT with legacy secret" DESLIGADO (a função confere o login sozinha). Testada no app com "Ainda Estou Aqui": ficha, classificação, onde assistir e cache em `items.metadata` ok.
   - ♥ Curti e Quero ver ficam para a F2 (precisam de tabela). Nota do TMDB vem na ficha (`tmdb_rating`) mas não aparece (decisão em aberto).
 - F2 planejada em 06/11 (aba "F2: registro e diferenciais" do mesmo doc). Decisões do dono: diário com várias entradas para TODAS as categorias (sai o unique user_id,item_id; médias/histograma/taste_match usam a entrada mais recente por pessoa); "quero ver" nasce visível para amigos; entram na F2 notas privadas (`entry_notes`, só dono), vi com quem (`entry_companions`, amigo recebe entrada pronta para confirmar), meus streamings (`user_services`, só dono) + quero ver em comum + histórico da nota. Abandonei, clima do filme, previsão de nota e calendário ficam para F2.5. `reviews.experienced_at` já existe e vira a data do diário; ♥ = coluna `loved` (não confundir com tabela `likes`). Padrões se o dono não disser outra coisa: critérios de filme opcionais/recolhidos, nota TMDB escondida. Migração da F2 mexe em RLS → plano no doc, aplicar só após OK.
+- F2 entregue em 06/11. Migração `202611061700_f2_diario.sql` APLICADA (31 cenários de RLS testados antes em PGlite: dono/amigo/estranho; conferido no banco real: RLS ligado e policies nas 4 tabelas novas). Front:
+  - `src/lib/diary.ts`: quero ver (`useWatchlist`, `useItemWatchers`, `useToggleWatchlist`), ♥ (`useToggleLoved` marca a entrada mais recente), notas (`useEntryNote`, `useMyNotes`), streamings (`useMyServices`, `useToggleService`), `DID_VERB`/`WANT_VERB`, `formatDay`, `localDay`.
+  - `queries.ts`: `useCreateReview` cria OU edita (`reviewId`), grava nota privada e companhias; helpers `sortDiary`, `latestPerPerson`, `averageRating` (médias usam a entrada mais recente de cada pessoa). `REVIEW_SELECT` traz os campos do diário e `companions`.
+  - `ComposeSheet`: registro rápido (nota opcional, Hoje/Ontem/Outro dia, Curti, Revi automático se já registrou) + "Mais detalhes" recolhido (lembra a escolha em localStorage `mmisc.composeDetails`): onde viu, com quem, texto + "contém spoiler", nota privada, critérios, fotos. `ComposeStart` aceita `edit`, `prefill`, `loved`.
+  - Filme.tsx: barra Vi/♥/Quero ver/Compartilhar, seção "Seu diário" (histórico da nota, notas privadas, editar/apagar), amigos que querem ver, destaque dos streamings que você assina e modo "Meus streamings" (toca no logo para marcar). Item.tsx genérico: "Quero ouvir/ir/…" e editar entradas.
+  - Perfil: abas Diário (por mês) e Quero ver (filtro "no que eu assino", usa `metadata->tmdb->providers`). Pessoa: Reviews / Diário / Quero ver. Notificação `companion` com botão "Registrar" que abre o registro pré-preenchido.
 - Decisões em aberto (no fim do doc): diário com várias entradas (recomendado), critérios opcionais para filme, mostrar nota TMDB, "quero ver" visível a amigos, importação já na F3.
+
+## Estado atual (login com Google — em andamento, outro chat)
+- Detalhes, decisões e pendências em `docs/LOGIN-SOCIAL.md` (seção 4b). Só Google agora; Apple e Meta depois; vínculo manual desligado.
+- Botão do Google escondido até o teste no iPhone: liga com `VITE_LOGIN_GOOGLE=on` (Vercel) ou interruptor em `/kit`.
+- Páginas públicas sem login: `/sobre`, `/privacidade`, `/termos`, `/excluir-dados` (`src/pages/Legal.tsx`).
+- Migração `202611061900_login_google_perfil.sql` (nome/foto do Google no perfil + gatilho em `auth.identities`).
 
 ## Como trabalhamos (para uma conversa nova)
 - Pasta no PC do dono: `C:\Users\yurim\Review`. O Claude edita uma cópia na nuvem e entrega os arquivos na pasta; o dono roda `git add . ; git commit -m "..." ; git push` no PowerShell do VS Code. A Vercel publica sozinha a cada push.

@@ -61,7 +61,8 @@ export function CategoryTag({ category }: { category: CategoryId }) {
 
 export function Avatar({ profile, size = 28 }: { profile: Pick<Profile, 'id' | 'display_name' | 'username' | 'avatar_url'>; size?: number }) {
   if (profile.avatar_url) {
-    return <img src={profile.avatar_url} alt="" className="avatar" style={{ width: size, height: size, objectFit: 'cover' }} />
+    // no-referrer: a foto do Google (lh3.googleusercontent.com) às vezes recusa pedidos com referrer
+    return <img src={profile.avatar_url} alt="" referrerPolicy="no-referrer" className="avatar" style={{ width: size, height: size, objectFit: 'cover' }} />
   }
   return (
     <span className="avatar" aria-hidden="true" style={{ width: size, height: size, fontSize: size * 0.38, background: avatarColor(profile.id) }}>

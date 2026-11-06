@@ -4,7 +4,9 @@ import { useCallback, useEffect, useState } from 'react'
 import { BrowserRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { ComposeSheet, type ComposeStart } from './components/review/ComposeSheet'
 import { TabBar } from './components/ui/TabBar'
-import { AuthProvider, useAuth } from './lib/auth'
+import { Glass } from './components/ui/Glass'
+import { AuthProvider, FROM_APP_PARAM, isStandalone, useAuth } from './lib/auth'
+import Legal, { LEGAL_PATHS, type LegalDoc } from './pages/Legal'
 import Buscar from './pages/Buscar'
 import Inicio from './pages/Inicio'
 import Item from './pages/Item'
@@ -22,6 +24,31 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: true } },
 })
 
+/**
+ * Lido uma vez, quando a página abre na volta do Google:
+ * - `convite`: código de convite que viajou na URL (sobrevive mesmo se o login terminar no Safari);
+ * - `origem=app` fora do app instalado: o login começou no app, mas o iPhone terminou no Safari.
+ */
+const returnParams = (() => {
+  const p = new URLSearchParams(window.location.search)
+  const invite = p.get('convite')
+  const result = {
+    invite: invite && /^[a-z0-9]+$/i.test(invite) ? invite : null,
+    handedOffToBrowser: p.get(FROM_APP_PARAM) === 'app' && !isStandalone(),
+  }
+  if (p.has('convite') || p.has(FROM_APP_PARAM)) {
+    p.delete('convite')
+    p.delete(FROM_APP_PARAM)
+    const qs = p.toString()
+    // mantém o #access_token para o Supabase ler; só limpa os nossos parâmetros
+    window.history.replaceState(null, '', window.location.pathname + (qs ? `?${qs}` : '') + window.location.hash)
+  }
+  return result
+})()
+if (returnParams.invite) savePendingInvite(returnParams.invite)
+
+const PUBLIC_PAGES = Object.entries(LEGAL_PATHS) as [LegalDoc, string][]
+
 function Shell() {
   const location = useLocation()
   const navigate = useNavigate()
@@ -29,6 +56,7 @@ function Shell() {
   const { session, loading } = useAuth()
   const [compose, setCompose] = useState<{ open: boolean; start: ComposeStart; key: number }>({ open: false, start: {}, key: 0 })
   const [toast, setToast] = useState<string | null>(null)
+  const [handoff, setHandoff] = useState(returnParams.handedOffToBrowser)
 
   const openCompose = useCallback(
     (start: ComposeStart = {}) => setCompose((c) => ({ open: true, start, key: c.key + 1 })),
@@ -61,6 +89,10 @@ function Shell() {
         navigate('/', { replace: true })
       })
   }, [session]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Páginas públicas abrem com ou sem login (o Google exige que sejam acessíveis).
+  const publicDoc = PUBLIC_PAGES.find(([, path]) => location.pathname === path)?.[0]
+  if (publicDoc) return <Legal doc={publicDoc} />
 
   if (loading) return <div style={{ minHeight: '100dvh' }} aria-busy="true" />
   if (!session) return <Login />
@@ -95,6 +127,19 @@ function Shell() {
       <TabBar onCompose={() => openCompose()} />
 
       <ComposeSheet key={compose.key} open={compose.open} start={compose.start} onClose={closeCompose} onDone={setToast} />
+
+      {handoff && (
+        <Glass className="notice" role="status">
+          <strong>Você entrou pelo navegador</strong>
+          <span>
+            O iPhone abriu o Google fora do app instalado, então o login ficou aqui. Pode continuar por aqui ou, no app
+            da tela de início, entrar com o código por e-mail usando o mesmo e-mail do Google: é a mesma conta.
+          </span>
+          <button type="button" className="btn btn--plain tap" onClick={() => setHandoff(false)}>
+            Entendi
+          </button>
+        </Glass>
+      )}
 
       <AnimatePresence>
         {toast && (
