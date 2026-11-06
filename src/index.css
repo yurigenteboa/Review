@@ -64,6 +64,34 @@ button {
   white-space: nowrap;
 }
 
+/* =========================================================
+   Mouse e trackpad (desktop, notebook, iPad com trackpad)
+   Tudo aqui só vale com ponteiro fino: no iPhone o hover
+   "gruda" depois do toque, então ele nunca recebe isso.
+   ========================================================= */
+@media (hover: hover) and (pointer: fine) {
+  /* Clique com mouse: encolhe menos que o toque */
+  .tap:active {
+    transform: scale(0.98);
+  }
+
+  /* Fileiras horizontais: com mouse comum (sem trackpad) não dá para
+     arrastar para o lado, então a barra de rolagem fina volta a aparecer.
+     Setas nas fileiras chegam no D4. */
+  .no-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--separator) transparent;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: block;
+    height: 8px;
+  }
+  .no-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--separator);
+    border-radius: var(--r-pill);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

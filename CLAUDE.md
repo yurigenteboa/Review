@@ -98,6 +98,13 @@ Agora: UX de filmes (F1 e F2 feitas → F3, abaixo). Depois: 5 PWA (offline, pus
   - Importar Letterboxd: `/importar` (`src/pages/ImportLetterboxd.tsx`, `src/lib/letterboxd.ts` (CSV + .zip via `fflate`, casamento por título/ano), `src/lib/importLetterboxd.ts`). Usa `catalog-search` (precisa de `TMDB_TOKEN`), cria itens com `ensureCatalogItem`, não duplica (item + data), `created_at` = data do registro no Letterboxd (não inunda o feed), visibilidade padrão `amigos`, quero ver opcional. Casos duvidosos o dono confere antes de gravar.
   - Telas de importar e retrospectiva carregam sob demanda (`React.lazy`).
 
+## Estado atual (desktop/tablet — este chat)
+- Plano e decisões no doc "MMISC · Desktop: plano": https://claude.ai/artifact/SKBYjpRXHLEshkTC4SJv2p (D0 base → D1 casca → D2 listas → D3 telas ricas → D4 coisas do desktop → D5 acabamento). Só front, sem banco.
+- Decisões do dono (06/11): público = usuários e visitantes; barra lateral à esquerda; largura mista (feed estreito + painel à direita; filme/perfil/busca/diário largos); registrar/editar em janela no centro, comentários/notificações em painel à direita; tablet entra; fonte Inter; atalhos de teclado (N, /, Esc, setas). Nas telas dos chats de filmes e perfil, este chat só acrescenta CSS de desktop em blocos separados, depois que eles fecharem.
+- Tamanhos: celular < 700 px (como sempre) · tablet 700–1099 px (barra lateral só ícones) · desktop >= 1100 px (barra lateral com nomes + painel). Cortes em `src/lib/breakpoints.ts` (`useBreakpoint`, `useFinePointer`) e escritos nos `@media`; medidas em `tokens.css` (`--sidebar-w`, `--content-w`, `--aside-w`, `--wide-w`, `--hover-fill`).
+- **D0 (06/11, FEITO):** Inter via `@fontsource-variable/inter` (importada em `main.tsx`; só o latino entra no cache offline); hover e barra de rolagem fina só em `@media (hover: hover) and (pointer: fine)` (`index.css`, fim do `ui.css`); manifesto com `orientation: 'any'`.
+- Pendente: a imagem da Retrospectiva (canvas) ainda pede `-apple-system` antes da Inter; ajustar no D3 (é tela do chat de perfil).
+
 ## Como trabalhamos (para uma conversa nova)
 - Pasta no PC do dono: `C:\Users\yurim\Review`. O Claude edita uma cópia na nuvem e entrega os arquivos na pasta; o dono roda `git add . ; git commit -m "..." ; git push` no PowerShell do VS Code. A Vercel publica sozinha a cada push.
 - Supabase: projeto `review` (ref `dgvrkmqenkwfeytgaouv`, sa-east-1). Migrações aplicadas pelo SQL Editor do painel (Claude cola pelo navegador e confere). Edge Functions publicadas pelo editor do painel.

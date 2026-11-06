@@ -15,6 +15,9 @@ export default defineConfig({
         skipWaiting: true,
         clientsClaim: true,
         cleanupOutdatedCaches: true,
+        // Guarda para offline só a Inter do alfabeto latino (português); os outros
+        // alfabetos (cirílico, grego, vietnamita) baixam sob demanda, se aparecerem.
+        globPatterns: ['**/*.{js,css,html}', 'assets/inter-latin-*.woff2'],
       },
       manifest: {
         name: 'MMISC',
@@ -24,7 +27,8 @@ export default defineConfig({
         start_url: '/',
         scope: '/',
         display: 'standalone',
-        orientation: 'portrait',
+        // Sem trava: tablet deitado e janela do app no desktop também valem
+        orientation: 'any',
         background_color: '#F2F2F7',
         theme_color: '#F2F2F7',
         icons: [

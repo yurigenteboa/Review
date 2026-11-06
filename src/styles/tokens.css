@@ -42,7 +42,7 @@
   --r-pill: 999px;
 
   /* Tipografia (tamanhos do iOS) */
-  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', system-ui, sans-serif;
+  --font: 'Inter Variable', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --fs-large-title: 34px;
   --fs-title: 22px;
   --fs-body: 17px;
@@ -55,6 +55,18 @@
   --tabbar-h: 64px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-top: env(safe-area-inset-top, 0px);
+
+  /* Layout por tamanho de tela (desktop/tablet).
+     Cortes: celular < 700px · tablet 700–1099px · desktop >= 1100px.
+     CSS não aceita variável dentro de @media, então os cortes aparecem escritos
+     nos @media e moram também em src/lib/breakpoints.ts (fonte única para o JS). */
+  --sidebar-w: 240px;          /* barra lateral com nomes (desktop) */
+  --sidebar-w-compact: 72px;   /* barra lateral só com ícones (tablet) */
+  --content-w: 640px;          /* coluna de leitura (feed, listas) */
+  --content-w-tablet: 720px;
+  --aside-w: 320px;            /* painel à direita (desktop) */
+  --wide-w: 1080px;            /* telas ricas: filme, perfil, busca */
+  --hover-fill: color-mix(in srgb, var(--text) 6%, transparent);
 
   /* Categorias: cor (ícones, barras) e tinta (texto sobre fundo claro, contraste >= 4,5:1) */
   --cat-album: #AF52DE;    --cat-album-ink: #8E3BBE;

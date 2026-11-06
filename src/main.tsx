@@ -1,6 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { registerSW } from 'virtual:pwa-register'
+// Inter servida pelo próprio app (sem Google Fonts): igual em iPhone, Mac, Windows e Android
+import '@fontsource-variable/inter/wght.css'
 import './index.css'
 import './components/ui/ui.css'
 import App from './App.tsx'

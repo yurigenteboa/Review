@@ -785,3 +785,64 @@
   align-items: center;
   min-height: 44px;
 }
+
+/* =========================================================
+   Hover (D0 · desktop): só com mouse/trackpad.
+   Retorno discreto, no espírito do macOS: fundo leve,
+   nunca muda tamanho nem posição (o clique já encolhe).
+   ========================================================= */
+@media (hover: hover) and (pointer: fine) {
+  .icon-btn,
+  .chip,
+  .toggle-chip,
+  .like-btn,
+  .btn,
+  .details-toggle,
+  .group__row,
+  .tabbar__tab,
+  .review-card__head,
+  .watch-card > :first-child {
+    transition:
+      background-color 0.15s ease,
+      filter 0.15s ease,
+      color 0.15s ease,
+      transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .icon-btn:hover,
+  .chip:hover:not([aria-pressed='true']),
+  .toggle-chip:hover,
+  .like-btn:hover,
+  .btn--plain:hover,
+  .details-toggle:hover,
+  a.group__row:hover,
+  button.group__row:hover {
+    background-color: color-mix(in srgb, var(--text) 10%, var(--fill));
+  }
+
+  .btn--primary:hover,
+  .tabbar__plus:hover {
+    filter: brightness(1.08);
+  }
+  .btn--google:hover {
+    filter: brightness(0.97);
+  }
+
+  .tabbar__tab:not(.active):hover {
+    color: var(--text);
+    background: var(--hover-fill);
+  }
+
+  .link-btn:hover {
+    text-decoration: underline;
+  }
+
+  /* Capa + título de um card: o título ganha a cor de destaque */
+  .review-card__head:hover .review-card__title,
+  .watch-card:hover .watch-card__title {
+    color: var(--accent-ink);
+  }
+  .watch-card:hover > :first-child {
+    filter: brightness(1.06);
+  }
+}
