@@ -36,7 +36,8 @@ supabase/migrations/  um arquivo .sql por mudança de banco
 - Antes de mexer em RLS ou auth, explique o plano e espere confirmação.
 
 ## Fases (resumo)
-0 Setup · 1 Design system + casca · 2 MVP pessoal (atual) (login, banco, criar review) · 3 Catálogo via APIs · 4 Amigos (feed, convites) · 5 PWA (offline, push, mapa) · 6 Rede aberta (moderação, LGPD)
+0 Setup · 1 Design system + casca · 2 MVP pessoal (login, banco, criar review) · 3 Catálogo via APIs · 4 Amigos (feed, convites) — todas FEITAS e no ar.
+Agora: UX de filmes (F1 → F2 → F3, abaixo). Depois: 5 PWA (offline, push, mapa) · 6 Rede aberta (moderação, LGPD).
 
 ## Estado atual (Fase 2)
 - Supabase: projeto `review` (sa-east-1). Schema em `supabase/migrations/202611051800_fase2_base.sql` (já aplicado).
@@ -54,3 +55,18 @@ supabase/migrations/  um arquivo .sql por mudança de banco
 - Convite: `/convite/<código>`; código guardado no localStorage até o login (`mmisc.pendingInvite`) e aceito no App.
 - Curtidas, comentários e notificações (criadas por triggers). Comparação de gosto: RPC `taste_match` (security invoker).
 - Hooks em `src/lib/social.ts`. Aba "Mapa" virou "Amigos" (mapa volta na Fase 5).
+
+## Estado atual (UX de filmes — em andamento)
+- Plano completo no doc "MMISC · Filmes: UX e próximos passos": https://claude.ai/artifact/Vp8QC4MxMcT3jVEp83LdNp (comparação com Letterboxd/IMDb/Filmow, página do filme 2.0, diário, mudanças no banco, prioridade).
+- Ordem aprovada pelo dono ("siga da forma que achar melhor"):
+  - **F1 página do filme 2.0 (próximo passo):** Edge Function nova `movie-details` chama TMDB `/movie/{id}?append_to_response=credits,videos,watch/providers,release_dates,recommendations&language=pt-BR` e guarda em `items.metadata` (com `fetched_at`, cache 7 dias). Tela do item para filme: backdrop + pôster, título original, ano, direção, duração, classificação BR; barra de ações (Vi, ♥, Quero ver, Compartilhar); amigos que viram + médias + histograma 0,5–5; onde assistir no Brasil (crédito "Dados: JustWatch" obrigatório); sinopse; trailer (YouTube); elenco/equipe; gêneros; reviews (amigos primeiro); parecidos. Aviso de spoiler (texto borrado até tocar). Sem nota do IMDb. F1 NÃO mexe em RLS.
+  - **F2 registro:** `reviews` ganha `watched_on`, `rewatch`, `liked`, `spoiler`, `watched_where`; tirar unique (user_id,item_id) (filme vira diário; outras categorias seguem atualizando a última entrada); `rating` pode ser nulo; tabelas `watchlist` e `favorites`; `taste_match` usa a nota mais recente. Registro rápido em 2 toques, detalhes recolhidos. MEXE EM RLS → explicar plano e esperar aprovação.
+  - **F3 perfil cinéfilo:** 4 favoritos, estatísticas do ano, importar CSV do Letterboxd.
+- Decisões em aberto (no fim do doc): diário com várias entradas (recomendado), critérios opcionais para filme, mostrar nota TMDB, "quero ver" visível a amigos, importação já na F3.
+
+## Como trabalhamos (para uma conversa nova)
+- Pasta no PC do dono: `C:\Users\yurim\Review`. O Claude edita uma cópia na nuvem e entrega os arquivos na pasta; o dono roda `git add . ; git commit -m "..." ; git push` no PowerShell do VS Code. A Vercel publica sozinha a cada push.
+- Supabase: projeto `review` (ref `dgvrkmqenkwfeytgaouv`, sa-east-1). Migrações aplicadas pelo SQL Editor do painel (Claude cola pelo navegador e confere). Edge Functions publicadas pelo editor do painel.
+- Segredos: nunca no chat nem digitados pelo Claude; o dono cola chaves no painel. Nunca usar a service_role.
+- Pendências do dono: dar push na correção do PWA (`workbox.skipWaiting/clientsClaim` em vite.config.ts) se ainda não deu; testar a Fase 4 com um amigo; chaves da Twitch (jogos) quando quiser.
+- Antes de entregar: `npm run build` sem erro; mudanças de RLS testadas antes de aplicar.
