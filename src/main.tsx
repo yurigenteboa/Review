@@ -6,6 +6,8 @@ import '@fontsource-variable/inter/wght.css'
 import './index.css'
 import './components/ui/ui.css'
 import App from './App.tsx'
+// Layout de desktop das telas ricas: depois do App, para vir por último na cascata
+import './styles/desktop-pages.css'
 
 // Quando sai uma versão nova na Vercel, o app troca sozinho em vez de
 // mostrar a versão antiga guardada em cache. Também confere a cada hora.

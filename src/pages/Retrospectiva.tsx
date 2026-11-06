@@ -220,7 +220,7 @@ async function drawStory(r: RetroData, name: string, labels: string[]): Promise<
   ctx.fillRect(0, 0, W, H)
   ctx.globalAlpha = 1
 
-  const font = (w: number, s: number) => `${w} ${s}px -apple-system, "SF Pro Display", "Inter", system-ui, sans-serif`
+  const font = (w: number, s: number) => `${w} ${s}px "Inter Variable", "Inter", -apple-system, system-ui, sans-serif`
   ctx.fillStyle = ink
   ctx.textBaseline = 'alphabetic'
   ctx.font = font(700, 44)
