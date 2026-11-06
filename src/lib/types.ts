@@ -28,19 +28,30 @@ export interface ReviewPhoto {
   position: number
 }
 
+export type WatchedWhere = 'cinema' | 'streaming' | 'casa' | 'outro'
+
 export interface Review {
   id: string
   user_id: string
-  rating: number
+  /** vazio = "vi" sem nota */
+  rating: number | null
   body: string | null
   criteria_scores: Record<string, number>
   visibility: Visibility
   created_at: string
+  /** dia em que viu / ouviu / foi (diário) */
+  experienced_at: string
+  rewatch: boolean
+  /** ♥ no item (não confundir com curtidas na review) */
+  loved: boolean
+  watched_where: WatchedWhere | null
   item: Item
   author: Profile
   photos: ReviewPhoto[]
-  /** "Contém spoiler" (coluna chega na F2; até lá, use ||trecho|| no texto) */
-  spoiler?: boolean
+  /** "Contém spoiler": o texto inteiro fica borrado até o toque */
+  spoiler: boolean
+  /** amigos marcados em "vi com quem" */
+  companions?: { user: Profile }[]
   /** quem curtiu (só as curtidas que você pode ver) */
   likes?: { user_id: string }[]
   /** contagem de comentários */
@@ -68,11 +79,14 @@ export interface Comment {
 
 export interface Notification {
   id: string
-  type: 'friend_request' | 'friend_accepted' | 'like' | 'comment'
+  type: 'friend_request' | 'friend_accepted' | 'like' | 'comment' | 'companion'
   created_at: string
   read_at: string | null
   review_id: string | null
   actor: Profile
+  /** 'companion': o item e a data em que viram juntos */
+  item: { id: string; title: string; category: string } | null
+  meta: { watched_on?: string; watched_where?: WatchedWhere | null }
   review: { id: string; item: { id: string; title: string } } | null
   comment: { body: string } | null
 }
@@ -84,6 +98,28 @@ export interface TasteRow {
   image_url: string | null
   my_rating: number
   their_rating: number
+}
+
+export interface WatchlistRow {
+  user_id: string
+  item_id: string
+  visibility: Visibility
+  created_at: string
+  item: Item & { providers?: { flatrate?: { id: number; name: string }[] } | null }
+  person?: Profile
+}
+
+export interface UserService {
+  provider_id: number
+  name: string
+  logo_path: string | null
+}
+
+export const WATCHED_WHERE_LABEL: Record<WatchedWhere, string> = {
+  cinema: 'Cinema',
+  streaming: 'Streaming',
+  casa: 'Em casa',
+  outro: 'Outro',
 }
 
 export const VISIBILITY_LABEL: Record<Visibility, string> = {

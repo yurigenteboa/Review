@@ -1,16 +1,18 @@
-// Página do filme 2.0 (F1). Usada pela rota /item/:id quando o item é um filme do TMDB.
-// Ordem da tela: topo → ações → amigos → notas → onde assistir → sinopse → trailer
-//                → elenco/equipe → gêneros → reviews → parecidos.
+// Página do filme 2.0 (F1 + F2). Usada pela rota /item/:id quando o item é um filme do TMDB.
+// Ordem da tela: topo → ações → seu diário → amigos → notas → onde assistir → sinopse
+//                → trailer → elenco/equipe → gêneros → reviews → parecidos.
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import '../components/movie/movie.css'
 import { SOURCE_CREDIT } from '../components/review/CatalogResults'
 import type { ComposeStart } from '../components/review/ComposeSheet'
-import { Avatar, ReviewCard } from '../components/review/ReviewCard'
+import { Avatar, EntryLine, ReviewCard } from '../components/review/ReviewCard'
 import { Glass } from '../components/ui/Glass'
+import { HeartIcon } from '../components/ui/Icons'
 import { Stars } from '../components/ui/Stars'
 import { useAuth } from '../lib/auth'
 import { formatRating } from '../lib/categories'
+import { formatDay, useItemWatchers, useMyNotes, useMyServices, useToggleLoved, useToggleService, useToggleWatchlist } from '../lib/diary'
 import { displayName, initials } from '../lib/format'
 import {
   certificationLabel,
@@ -21,9 +23,9 @@ import {
   type MovieProvider,
   type MovieSimilar,
 } from '../lib/movie'
-import { useDeleteReview, useItemReviews, useOpenCatalogItem, type CatalogResult } from '../lib/queries'
+import { averageRating, latestPerPerson, sortDiary, useDeleteReview, useItemReviews, useOpenCatalogItem, type CatalogResult } from '../lib/queries'
 import { useFriends } from '../lib/social'
-import type { Item, Review } from '../lib/types'
+import type { Item, Profile, Review } from '../lib/types'
 import { LoadingCards } from './states'
 
 interface Props {
@@ -36,24 +38,38 @@ export default function Filme({ item, onCompose }: Props) {
   const movie = useMovieDetails(item)
   const reviews = useItemReviews(item.id)
   const friends = useFriends()
+  const watchers = useItemWatchers(item.id)
   const d = movie.data?.details
 
   const friendIds = useMemo(
     () => new Set((friends.data ?? []).filter((f) => f.status === 'aceita').map((f) => f.id)),
     [friends.data],
   )
-  const list = reviews.data ?? []
-  const mine = list.find((r) => r.user_id === userId)
-  const fromFriends = list.filter((r) => friendIds.has(r.user_id))
-  const others = list.filter((r) => r.user_id !== userId && !friendIds.has(r.user_id))
+  // diário: várias entradas por pessoa; "amigos que viram" e médias usam a mais recente
+  const all = sortDiary(reviews.data ?? [])
+  const latest = latestPerPerson(all)
+  const myEntries = all.filter((r) => r.user_id === userId)
+  const mine = myEntries[0]
+  const fromFriends = latest.filter((r) => friendIds.has(r.user_id))
+  const friendsEntries = all.filter((r) => friendIds.has(r.user_id))
+  const others = all.filter((r) => r.user_id !== userId && !friendIds.has(r.user_id))
+  const iWant = (watchers.data ?? []).some((w) => w.user_id === userId)
+  const friendsWant = (watchers.data ?? []).filter((w) => friendIds.has(w.user_id)).map((w) => w.person)
 
-  const openCompose = () => onCompose({ category: 'filme', title: item.title, itemId: item.id })
+  const base: ComposeStart = { category: 'filme', title: item.title, itemId: item.id }
 
   return (
     <div className="page">
       <Hero item={item} d={d} />
 
-      <ActionBar item={item} d={d} mine={mine} onCompose={openCompose} />
+      <ActionBar
+        item={item}
+        d={d}
+        mine={mine}
+        iWant={iWant}
+        onCompose={() => onCompose(base)}
+        onLoveFirst={() => onCompose({ ...base, loved: true })}
+      />
 
       {movie.data?.missingKey && (
         <p className="notice">A ficha completa ainda não foi ligada (falta a chave {movie.data.missingKey} no Supabase).</p>
@@ -62,8 +78,10 @@ export default function Filme({ item, onCompose }: Props) {
         <p className="notice" role="alert">Não deu para carregar a ficha do TMDB agora. As reviews continuam abaixo.</p>
       )}
 
-      <FriendsBlock friendsReviews={fromFriends} mine={mine} />
-      <RatingsBlock reviews={list} mine={mine} loading={reviews.isLoading} />
+      {myEntries.length > 0 && <MyDiary entries={myEntries} onEdit={(r) => onCompose({ edit: r })} />}
+
+      <FriendsBlock friendsReviews={fromFriends} mine={mine} friendsWant={friendsWant} iWant={iWant} />
+      <RatingsBlock reviews={all} mine={mine} loading={reviews.isLoading} />
 
       {movie.isLoading && !d && (
         <div className="movie-section">
@@ -92,7 +110,7 @@ export default function Filme({ item, onCompose }: Props) {
         </>
       )}
 
-      <ReviewsBlock mine={mine} fromFriends={fromFriends} others={others} loading={reviews.isLoading} onCompose={openCompose} />
+      <ReviewsBlock hasMine={Boolean(mine)} fromFriends={friendsEntries} others={others} loading={reviews.isLoading} onCompose={() => onCompose(base)} />
 
       {d && d.recommendations.length > 0 && <SimilarRow list={d.recommendations} />}
 
@@ -171,9 +189,25 @@ function Hero({ item, d }: { item: Item; d: MovieDetails | undefined }) {
 
 // ---------- Barra de ações ----------
 
-function ActionBar({ item, d, mine, onCompose }: { item: Item; d: MovieDetails | undefined; mine: Review | undefined; onCompose: () => void }) {
+function ActionBar({
+  item,
+  d,
+  mine,
+  iWant,
+  onCompose,
+  onLoveFirst,
+}: {
+  item: Item
+  d: MovieDetails | undefined
+  mine: Review | undefined
+  iWant: boolean
+  onCompose: () => void
+  onLoveFirst: () => void
+}) {
   const navigate = useNavigate()
   const [copied, setCopied] = useState(false)
+  const love = useToggleLoved()
+  const want = useToggleWatchlist()
   // detecta quando a barra "gruda" no topo, para mostrar o botão de voltar dentro dela
   const sentinel = useRef<HTMLDivElement>(null)
   const [stuck, setStuck] = useState(false)
@@ -194,7 +228,7 @@ function ActionBar({ item, d, mine, onCompose }: { item: Item; d: MovieDetails |
   async function share() {
     const url = window.location.href
     const title = d?.title ?? item.title
-    const text = mine ? `Dei ${formatRating(mine.rating)} para ${title} no MMISC` : `${title} no MMISC`
+    const text = mine?.rating != null ? `Dei ${formatRating(mine.rating)} para ${title} no MMISC` : `${title} no MMISC`
     try {
       if (navigator.share) {
         await navigator.share({ title, text, url })
@@ -207,6 +241,10 @@ function ActionBar({ item, d, mine, onCompose }: { item: Item; d: MovieDetails |
     }
   }
 
+  // ♥ marca a sua entrada mais recente; sem entrada, abre o registro com ♥ ligado
+  const loved = love.isPending ? !mine?.loved : Boolean(mine?.loved)
+  const wanted = want.isPending ? !iWant : iWant
+
   return (
     <>
       <div ref={sentinel} aria-hidden="true" style={{ height: 1 }} />
@@ -217,24 +255,91 @@ function ActionBar({ item, d, mine, onCompose }: { item: Item; d: MovieDetails |
           </button>
         )}
         <button type="button" className="btn btn--primary tap" onClick={onCompose}>
-          {mine ? (
-            <>
-              <Stars value={mine.rating} size={15} />
-              <span>Você deu {formatRating(mine.rating)}</span>
-            </>
-          ) : (
-            <>
-              <EyeIcon />
-              <span>Vi · avaliar</span>
-            </>
-          )}
+          <EyeIcon />
+          <span>{mine ? 'Vi de novo' : 'Vi'}</span>
         </button>
-        <button type="button" className="btn btn--plain tap" onClick={share} aria-label={copied ? 'Link copiado' : 'Compartilhar'}>
+        <button
+          type="button"
+          className="btn btn--plain tap action-icon"
+          aria-label={loved ? 'Tirar o curti' : 'Curti'}
+          aria-pressed={loved}
+          disabled={love.isPending}
+          onClick={() => (mine ? love.mutate({ review: mine, loved: !mine.loved }) : onLoveFirst())}
+        >
+          <HeartIcon size={20} filled={loved} />
+        </button>
+        <button
+          type="button"
+          className="btn btn--plain tap action-icon"
+          aria-label={wanted ? 'Tirar do quero ver' : 'Quero ver'}
+          aria-pressed={wanted}
+          disabled={want.isPending}
+          onClick={() => want.mutate({ itemId: item.id, on: !iWant })}
+        >
+          <BookmarkIcon filled={wanted} />
+        </button>
+        <button type="button" className="btn btn--plain tap action-icon" onClick={share} aria-label={copied ? 'Link copiado' : 'Compartilhar'}>
           <ShareIcon />
-          <span aria-live="polite">{copied ? 'Copiado' : ''}</span>
         </button>
       </Glass>
+      <span className="visually-hidden" aria-live="polite">
+        {copied ? 'Link copiado' : ''}
+      </span>
     </>
+  )
+}
+
+// ---------- Seu diário com este filme ----------
+
+function MyDiary({ entries, onEdit }: { entries: Review[]; onEdit: (r: Review) => void }) {
+  const notes = useMyNotes(entries.map((e) => e.id))
+  const del = useDeleteReview()
+  // histórico da nota, do mais antigo para o mais recente
+  const rated = [...entries].reverse().filter((r): r is Review & { rating: number } => r.rating != null)
+  return (
+    <section className="movie-section" aria-labelledby="sec-diario">
+      <h2 id="sec-diario">Seu diário</h2>
+      {rated.length > 1 && (
+        <p className="rating-history" aria-label="Como sua nota mudou">
+          {rated.map((r, i) => (
+            <span key={r.id}>
+              {i > 0 && <span aria-hidden="true"> → </span>}
+              <strong>{formatRating(r.rating)}</strong> <span style={{ color: 'var(--text-3)' }}>em {formatDay(r.experienced_at)}</span>
+            </span>
+          ))}
+        </p>
+      )}
+      <div className="group">
+        {entries.map((r) => (
+          <div key={r.id} className="group__row" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 6 }}>
+            <EntryLine review={r} big />
+            {notes.data?.[r.id] && (
+              <p className="private-note">
+                <span aria-hidden="true">🔒 </span>
+                <span className="visually-hidden">Nota privada: </span>
+                {notes.data[r.id]}
+              </p>
+            )}
+            <span style={{ display: 'flex', gap: 16 }}>
+              <button type="button" className="link-btn" onClick={() => onEdit(r)}>
+                Editar
+              </button>
+              <button
+                type="button"
+                className="link-btn"
+                style={{ color: 'var(--cat-filme-ink)' }}
+                disabled={del.isPending}
+                onClick={() => {
+                  if (window.confirm('Apagar esta entrada do diário? Isso não pode ser desfeito.')) del.mutate(r)
+                }}
+              >
+                Apagar
+              </button>
+            </span>
+          </div>
+        ))}
+      </div>
+    </section>
   )
 }
 
@@ -247,12 +352,22 @@ function starsDiff(n: number): string {
   return `${formatRating(v).replace(',0', '')} ${v >= 2 ? 'estrelas' : 'estrela'}`
 }
 
-function FriendsBlock({ friendsReviews, mine }: { friendsReviews: Review[]; mine: Review | undefined }) {
-  const rated = friendsReviews.filter((r) => r.rating > 0)
+function FriendsBlock({
+  friendsReviews,
+  mine,
+  friendsWant,
+  iWant,
+}: {
+  friendsReviews: Review[]
+  mine: Review | undefined
+  friendsWant: Profile[]
+  iWant: boolean
+}) {
+  const rated = friendsReviews.filter((r): r is Review & { rating: number } => r.rating != null)
   const avg = rated.length ? rated.reduce((s, r) => s + r.rating, 0) / rated.length : 0
 
   let comparison: string | null = null
-  if (mine && rated.length) {
+  if (mine?.rating != null && rated.length) {
     const diff = mine.rating - avg
     if (Math.abs(diff) < 0.25) comparison = 'Você deu praticamente a mesma nota que a média dos seus amigos.'
     else comparison = `Você deu ${starsDiff(diff)} a ${diff > 0 ? 'mais' : 'menos'} que a média dos seus amigos.`
@@ -270,21 +385,46 @@ function FriendsBlock({ friendsReviews, mine }: { friendsReviews: Review[]; mine
           <>
             <div className="friend-row no-scrollbar">
               {friendsReviews.map((r) => (
-                <Link key={r.id} to={`/u/${r.user_id}`} className="friend-chip tap" aria-label={`${displayName(r.author)}: ${formatRating(r.rating)}`}>
+                <Link
+                  key={r.id}
+                  to={`/u/${r.user_id}`}
+                  className="friend-chip tap"
+                  aria-label={`${displayName(r.author)}: ${r.rating != null ? formatRating(r.rating) : 'viu, sem nota'}${r.loved ? ', curtiu' : ''}`}
+                >
                   <Avatar profile={r.author} size={48} />
                   <span className="friend-chip__name">{displayName(r.author)}</span>
-                  <span className="friend-chip__rate">★ {formatRating(r.rating)}</span>
+                  <span className="friend-chip__rate">
+                    {r.rating != null ? `★ ${formatRating(r.rating)}` : 'viu'}
+                    {r.loved && <span style={{ color: 'var(--like)' }}> ♥</span>}
+                  </span>
                 </Link>
               ))}
             </div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 14 }}>
-              <span className="score-big__value">{formatRating(avg)}</span>
-              <span style={{ fontSize: 'var(--fs-footnote)', color: 'var(--text-3)' }}>
-                média de {rated.length} {rated.length === 1 ? 'amigo' : 'amigos'}
-              </span>
-            </div>
+            {rated.length > 0 && (
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 14 }}>
+                <span className="score-big__value">{formatRating(avg)}</span>
+                <span style={{ fontSize: 'var(--fs-footnote)', color: 'var(--text-3)' }}>
+                  média de {rated.length} {rated.length === 1 ? 'amigo' : 'amigos'}
+                </span>
+              </div>
+            )}
             {comparison && <p style={{ margin: '6px 0 0', fontSize: 'var(--fs-callout)', color: 'var(--text-2)' }}>{comparison}</p>}
           </>
+        )}
+        {friendsWant.length > 0 && (
+          <div className="want-row">
+            <span className="want-row__faces" aria-hidden="true">
+              {friendsWant.slice(0, 4).map((p) => (
+                <Avatar key={p.id} profile={p} size={28} />
+              ))}
+            </span>
+            <span>
+              {friendsWant.length === 1
+                ? `${displayName(friendsWant[0])} quer ver`
+                : `${friendsWant.length} amigos querem ver`}
+              {iWant ? ', como você. Bom para marcar sessão.' : '.'}
+            </span>
+          </div>
         )}
       </div>
     </section>
@@ -296,11 +436,12 @@ function FriendsBlock({ friendsReviews, mine }: { friendsReviews: Review[]; mine
 const BINS = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]
 
 function RatingsBlock({ reviews, mine, loading }: { reviews: Review[]; mine: Review | undefined; loading: boolean }) {
-  const rated = reviews.filter((r) => r.rating > 0)
-  const avg = rated.length ? rated.reduce((s, r) => s + r.rating, 0) / rated.length : 0
+  // a entrada mais recente de cada pessoa, só as com nota
+  const rated = latestPerPerson(reviews).filter((r): r is Review & { rating: number } => r.rating != null)
+  const { avg } = averageRating(reviews)
   const counts = BINS.map((b) => rated.filter((r) => Math.round(r.rating * 2) / 2 === b).length)
   const max = Math.max(1, ...counts)
-  const mineBin = mine ? Math.round(mine.rating * 2) / 2 : null
+  const mineBin = mine?.rating != null ? Math.round(mine.rating * 2) / 2 : null
 
   return (
     <section className="movie-section" aria-labelledby="sec-notas">
@@ -348,46 +489,92 @@ function RatingsBlock({ reviews, mine, loading }: { reviews: Review[]; mine: Rev
 
 // ---------- Onde assistir ----------
 
-function ProviderGroup({ label, list }: { label: string; list: MovieProvider[] }) {
+function ProviderGroup({
+  label,
+  list,
+  mineIds,
+  editing,
+  onToggle,
+}: {
+  label: string
+  list: MovieProvider[]
+  mineIds: Set<number>
+  editing: boolean
+  onToggle: (p: MovieProvider, on: boolean) => void
+}) {
   if (!list.length) return null
   return (
     <div className="providers__group">
       <span className="providers__label">{label}</span>
       <ul className="providers__logos" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-        {list.map((p) => (
-          <li key={p.id}>
-            {p.logo ? <img src={tmdbImg(p.logo, 'w92')!} alt={p.name} title={p.name} loading="lazy" /> : <span className="genre">{p.name}</span>}
-          </li>
-        ))}
+        {list.map((p) => {
+          const mine = mineIds.has(p.id)
+          const logo = p.logo ? <img src={tmdbImg(p.logo, 'w92')!} alt="" loading="lazy" /> : <span className="genre">{p.name}</span>
+          return (
+            <li key={p.id} className="provider" data-mine={mine}>
+              {editing ? (
+                <button type="button" className="provider__btn tap" aria-pressed={mine} aria-label={`${p.name}: ${mine ? 'você assina' : 'marcar que assino'}`} onClick={() => onToggle(p, !mine)}>
+                  {logo}
+                </button>
+              ) : (
+                <span role="img" aria-label={mine ? `${p.name} (você assina)` : p.name} title={p.name}>
+                  {logo}
+                </span>
+              )}
+              {mine && <span className="provider__tag">assino</span>}
+            </li>
+          )
+        })}
       </ul>
     </div>
   )
 }
 
 function WhereToWatch({ providers }: { providers: MovieDetails['providers'] }) {
+  const services = useMyServices()
+  const toggle = useToggleService()
+  const [editing, setEditing] = useState(false)
+  const mineIds = new Set((services.data ?? []).map((s) => s.provider_id))
   const empty = !providers || (!providers.flatrate.length && !providers.rent.length && !providers.buy.length)
+  const onMine = (providers?.flatrate ?? []).filter((p) => mineIds.has(p.id))
+  const onToggle = (p: MovieProvider, on: boolean) =>
+    toggle.mutate({ service: { provider_id: p.id, name: p.name, logo_path: p.logo }, on })
+
   return (
     <section className="movie-section" aria-labelledby="sec-onde">
       <h2 id="sec-onde">Onde assistir no Brasil</h2>
       <div className="movie-card">
+        {onMine.length > 0 && !editing && (
+          <p className="on-my-service">
+            Está no {onMine.map((p) => p.name).join(' e no ')}, que você assina.
+          </p>
+        )}
         {empty ? (
           <p style={{ margin: 0, fontSize: 'var(--fs-callout)', color: 'var(--text-3)' }}>Não está em streaming, aluguel ou venda no Brasil agora.</p>
         ) : (
           <div className="providers">
-            <ProviderGroup label="Streaming" list={providers!.flatrate} />
-            <ProviderGroup label="Alugar" list={providers!.rent} />
-            <ProviderGroup label="Comprar" list={providers!.buy} />
+            <ProviderGroup label="Streaming" list={providers!.flatrate} mineIds={mineIds} editing={editing} onToggle={onToggle} />
+            {!editing && <ProviderGroup label="Alugar" list={providers!.rent} mineIds={new Set()} editing={false} onToggle={onToggle} />}
+            {!editing && <ProviderGroup label="Comprar" list={providers!.buy} mineIds={new Set()} editing={false} onToggle={onToggle} />}
           </div>
         )}
-        <p className="credit">
-          Dados: JustWatch
-          {providers?.link && (
-            <>
-              {' · '}
-              <a href={providers.link} target="_blank" rel="noopener noreferrer">
-                ver opções
-              </a>
-            </>
+        {editing && <p className="credit">Toque nos serviços que você assina. Isso vale para todos os filmes e para o filtro do seu “quero ver”.</p>}
+        <p className="credit" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0 12px' }}>
+          <span>
+            Dados: JustWatch
+            {providers?.link && (
+              <>
+                {' · '}
+                <a href={providers.link} target="_blank" rel="noopener noreferrer">
+                  ver opções
+                </a>
+              </>
+            )}
+          </span>
+          {providers && providers.flatrate.length > 0 && (
+            <button type="button" className="link-btn" style={{ fontSize: 13, minHeight: 36 }} onClick={() => setEditing((e) => !e)}>
+              {editing ? 'Pronto' : 'Meus streamings'}
+            </button>
           )}
         </p>
       </div>
@@ -485,46 +672,28 @@ function CastAndCrew({ d }: { d: MovieDetails }) {
 // ---------- Reviews (amigos primeiro) ----------
 
 function ReviewsBlock({
-  mine,
+  hasMine,
   fromFriends,
   others,
   loading,
   onCompose,
 }: {
-  mine: Review | undefined
+  hasMine: boolean
   fromFriends: Review[]
   others: Review[]
   loading: boolean
   onCompose: () => void
 }) {
-  const del = useDeleteReview()
   const withText = (l: Review[]) => l.filter((r) => r.body || r.photos.length)
   const friendsText = withText(fromFriends)
   const othersText = withText(others)
-  const empty = !mine && friendsText.length === 0 && othersText.length === 0
+  const empty = friendsText.length === 0 && othersText.length === 0
 
   return (
     <section className="movie-section" aria-labelledby="sec-reviews">
       <h2 id="sec-reviews">Reviews</h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {loading && <LoadingCards count={1} />}
-        {mine && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <span className="providers__label">A sua</span>
-            <ReviewCard review={mine} showItem={false} />
-            <button
-              type="button"
-              className="tap"
-              disabled={del.isPending}
-              onClick={() => {
-                if (window.confirm('Apagar a sua review? Isso não pode ser desfeito.')) del.mutate(mine)
-              }}
-              style={{ alignSelf: 'flex-end', border: 'none', background: 'none', color: 'var(--cat-filme-ink)', fontSize: 14, fontWeight: 600, minHeight: 44 }}
-            >
-              Apagar minha review
-            </button>
-          </div>
-        )}
         {friendsText.length > 0 && <span className="providers__label">Dos seus amigos</span>}
         {friendsText.map((r) => (
           <ReviewCard key={r.id} review={r} showItem={false} />
@@ -535,10 +704,14 @@ function ReviewsBlock({
         ))}
         {!loading && empty && (
           <div className="movie-card" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-            <span style={{ color: 'var(--text-3)' }}>Ninguém escreveu sobre este filme ainda.</span>
-            <button type="button" className="btn btn--plain tap" onClick={onCompose}>
-              Escrever a primeira
-            </button>
+            <span style={{ color: 'var(--text-3)' }}>
+              {hasMine ? 'Só você escreveu sobre este filme até agora (está no seu diário, acima).' : 'Ninguém escreveu sobre este filme ainda.'}
+            </span>
+            {!hasMine && (
+              <button type="button" className="btn btn--plain tap" onClick={onCompose}>
+                Escrever a primeira
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -615,6 +788,14 @@ function EyeIcon() {
     <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" />
       <circle cx="12" cy="12" r="3" />
+    </svg>
+  )
+}
+
+function BookmarkIcon({ filled }: { filled: boolean }) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill={filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinejoin="round">
+      <path d="M6.5 3.5h11v17l-5.5-4-5.5 4z" />
     </svg>
   )
 }

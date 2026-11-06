@@ -4,20 +4,45 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { CategoryId } from './categories'
 import { compressImage } from './images'
 import { PHOTO_BUCKET, supabase } from './supabase'
-import type { Item, Profile, Review, Visibility } from './types'
+import type { Item, Profile, Review, Visibility, WatchedWhere } from './types'
 
-const REVIEW_SELECT = `
+export const REVIEW_SELECT = `
   id, user_id, rating, body, criteria_scores, visibility, created_at,
+  experienced_at, rewatch, loved, spoiler, watched_where,
   item:items!inner ( id, category, title, subtitle, image_url, year ),
   author:profiles!reviews_user_id_fkey ( id, username, display_name, avatar_url ),
   photos:review_photos ( storage_path, position ),
+  companions:entry_companions ( user:profiles ( id, username, display_name, avatar_url ) ),
   likes ( user_id ),
   comments ( count )
 `
 
-// O Postgres devolve numeric como string; aqui vira número.
-const normalize = (rows: unknown[]): Review[] =>
-  (rows as Review[]).map((r) => ({ ...r, rating: Number(r.rating) }))
+// O Postgres devolve numeric como string; aqui vira número (vazio continua vazio = "vi sem nota").
+export const normalize = (rows: unknown[]): Review[] =>
+  (rows as Review[]).map((r) => ({ ...r, rating: r.rating == null ? null : Number(r.rating) }))
+
+/**
+ * Diário: a mesma pessoa pode ter várias entradas do mesmo item.
+ * Para médias, histograma e "amigos que viram", vale a entrada mais recente de cada pessoa.
+ */
+export function latestPerPerson(list: Review[]): Review[] {
+  const seen = new Map<string, Review>()
+  for (const r of sortDiary(list)) if (!seen.has(r.user_id)) seen.set(r.user_id, r)
+  return [...seen.values()]
+}
+
+/** Mais recentes primeiro: data em que viu, depois a hora do registro. */
+export function sortDiary(list: Review[]): Review[] {
+  return [...list].sort((a, b) =>
+    a.experienced_at === b.experienced_at ? b.created_at.localeCompare(a.created_at) : b.experienced_at.localeCompare(a.experienced_at),
+  )
+}
+
+/** Média só das entradas com nota (as mais recentes de cada pessoa). */
+export function averageRating(list: Review[]): { avg: number; n: number } {
+  const rated = latestPerPerson(list).filter((r): r is Review & { rating: number } => r.rating != null)
+  return { avg: rated.length ? rated.reduce((s, r) => s + r.rating, 0) / rated.length : 0, n: rated.length }
+}
 
 // ---------- Leituras ----------
 
@@ -44,6 +69,7 @@ export function useUserReviews(userId: string | null) {
         .from('reviews')
         .select(REVIEW_SELECT)
         .eq('user_id', userId!)
+        .order('experienced_at', { ascending: false })
         .order('created_at', { ascending: false })
       if (error) throw error
       return normalize(data ?? [])
@@ -76,6 +102,7 @@ export function useItemReviews(itemId: string | undefined) {
         .from('reviews')
         .select(REVIEW_SELECT)
         .eq('item_id', itemId!)
+        .order('experienced_at', { ascending: false })
         .order('created_at', { ascending: false })
       if (error) throw error
       return normalize(data ?? [])
@@ -232,6 +259,8 @@ export function useOpenCatalogItem() {
 // ---------- Escritas ----------
 
 export interface NewReview {
+  /** preenchido = editar essa entrada do diário; vazio = nova entrada */
+  reviewId?: string
   category: CategoryId
   /** item já existente escolhido na lista; se vazio, cria (ou reaproveita) pelo título */
   itemId?: string
@@ -239,11 +268,21 @@ export interface NewReview {
   external?: CatalogResult
   title: string
   subtitle?: string
-  rating: number
+  /** vazio = "vi" sem nota */
+  rating: number | null
   body: string
   criteria: Record<string, number>
   visibility: Visibility
   photos: File[]
+  experiencedAt: string
+  rewatch: boolean
+  loved: boolean
+  spoiler: boolean
+  watchedWhere: WatchedWhere | null
+  /** nota privada (só você vê); vazio apaga */
+  note: string
+  /** ids de amigos em "vi com quem" */
+  companions: string[]
 }
 
 export function useCreateReview() {
@@ -277,43 +316,69 @@ export function useCreateReview() {
         }
       }
 
-      // 2. Review (se você já avaliou esse item, atualiza a sua review)
-      const { data: review, error: reviewError } = await supabase
-        .from('reviews')
-        .upsert(
-          {
-            user_id: uid,
-            item_id: itemId,
-            rating: input.rating,
-            body: input.body.trim() || null,
-            criteria_scores: input.criteria,
-            visibility: input.visibility,
-          },
-          { onConflict: 'user_id,item_id' },
-        )
-        .select('id')
-        .single()
-      if (reviewError) throw reviewError
+      // 2. Entrada do diário: nova, ou edição de uma que já existe
+      const fields = {
+        rating: input.rating,
+        body: input.body.trim() || null,
+        criteria_scores: input.criteria,
+        visibility: input.visibility,
+        experienced_at: input.experiencedAt,
+        rewatch: input.rewatch,
+        loved: input.loved,
+        spoiler: input.spoiler && Boolean(input.body.trim()),
+        watched_where: input.watchedWhere,
+      }
+      const saved = input.reviewId
+        ? await supabase.from('reviews').update(fields).eq('id', input.reviewId).eq('user_id', uid).select('id').single()
+        : await supabase.from('reviews').insert({ ...fields, user_id: uid, item_id: itemId }).select('id').single()
+      if (saved.error) throw saved.error
+      const reviewId = saved.data.id as string
 
-      // 3. Fotos: comprime no aparelho, envia para a pasta do usuário e registra
+      // 3. Nota privada (tabela só do dono)
+      const note = input.note.trim()
+      if (note) {
+        const { error } = await supabase.from('entry_notes').upsert({ review_id: reviewId, user_id: uid, body: note })
+        if (error) throw error
+      } else if (input.reviewId) {
+        await supabase.from('entry_notes').delete().eq('review_id', reviewId)
+      }
+
+      // 4. Vi com quem: acrescenta os novos e tira os desmarcados
+      const { data: current } = input.reviewId
+        ? await supabase.from('entry_companions').select('user_id').eq('review_id', reviewId)
+        : { data: [] as { user_id: string }[] }
+      const before = new Set((current ?? []).map((c) => c.user_id))
+      const after = new Set(input.companions)
+      const add = [...after].filter((id) => !before.has(id))
+      const remove = [...before].filter((id) => !after.has(id))
+      if (add.length) {
+        const { error } = await supabase.from('entry_companions').insert(add.map((user_id) => ({ review_id: reviewId, user_id })))
+        if (error) throw error
+      }
+      if (remove.length) await supabase.from('entry_companions').delete().eq('review_id', reviewId).in('user_id', remove)
+
+      // 5. Fotos: comprime no aparelho, envia para a pasta do usuário e registra
+      const { count } = await supabase.from('review_photos').select('id', { count: 'exact', head: true }).eq('review_id', reviewId)
       for (const [i, file] of input.photos.entries()) {
         const blob = await compressImage(file)
-        const path = `${uid}/${review.id}/${crypto.randomUUID()}.webp`
+        const path = `${uid}/${reviewId}/${crypto.randomUUID()}.webp`
         const { error: upErr } = await supabase.storage
           .from(PHOTO_BUCKET)
           .upload(path, blob, { contentType: 'image/webp' })
         if (upErr) throw upErr
-        const { error: phErr } = await supabase.from('review_photos').insert({ review_id: review.id, storage_path: path, position: i })
+        const { error: phErr } = await supabase.from('review_photos').insert({ review_id: reviewId, storage_path: path, position: (count ?? 0) + i })
         if (phErr) throw phErr
       }
 
-      return { reviewId: review.id, itemId }
+      return { reviewId, itemId, edited: Boolean(input.reviewId) }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['feed'] })
       qc.invalidateQueries({ queryKey: ['user-reviews'] })
       qc.invalidateQueries({ queryKey: ['item-reviews'] })
       qc.invalidateQueries({ queryKey: ['search'] })
+      qc.invalidateQueries({ queryKey: ['watchlist'] })
+      qc.invalidateQueries({ queryKey: ['entry-note'] })
     },
   })
 }

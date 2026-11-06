@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom'
 import { catInk, categoryById, formatRating, type CategoryId } from '../../lib/categories'
 import { avatarColor, displayName, initials, timeAgo } from '../../lib/format'
 import { usePhotoUrls } from '../../lib/queries'
-import { VISIBILITY_LABEL, type Item, type Profile, type Review } from '../../lib/types'
+import { VISIBILITY_LABEL, WATCHED_WHERE_LABEL, type Item, type Profile, type Review } from '../../lib/types'
+import { DID_VERB, formatDay } from '../../lib/diary'
 import { Stars } from '../ui/Stars'
 import { CommentIcon, HeartIcon } from '../ui/Icons'
 import { useAuth } from '../../lib/auth'
@@ -85,6 +86,33 @@ export function PhotoStrip({ paths }: { paths: string[] }) {
   )
 }
 
+/** Linha do diário: nota (ou "vi"), ♥, revi, dia, onde e com quem. */
+export function EntryLine({ review, big = false }: { review: Review; big?: boolean }) {
+  const verb = DID_VERB[review.item.category]
+  const people = review.companions?.map((c) => displayName(c.user)) ?? []
+  return (
+    <span className="entry-meta" style={{ marginTop: big ? 0 : 2 }}>
+      {review.rating != null ? (
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--text)' }}>
+          <Stars value={review.rating} size={big ? 16 : 14} />
+          <strong style={{ fontSize: big ? 14 : 13 }}>{formatRating(review.rating)}</strong>
+        </span>
+      ) : (
+        <strong style={{ color: 'var(--text-2)', fontWeight: 600 }}>{verb}, sem nota</strong>
+      )}
+      {review.loved && (
+        <span className="loved" role="img" aria-label="Curtiu">
+          ♥
+        </span>
+      )}
+      {review.rewatch && <span>↻ de novo</span>}
+      <span>{formatDay(review.experienced_at)}</span>
+      {review.watched_where && <span>{WATCHED_WHERE_LABEL[review.watched_where]}</span>}
+      {people.length > 0 && <span>com {people.join(', ')}</span>}
+    </span>
+  )
+}
+
 /** Card do feed: capa, título, nota, texto, fotos, autor, curtidas e comentários. */
 export function ReviewCard({ review, showItem = true }: { review: Review; showItem?: boolean }) {
   const { item, author } = review
@@ -109,19 +137,11 @@ export function ReviewCard({ review, showItem = true }: { review: Review; showIt
             <CategoryTag category={item.category} />
             <span className="review-card__title">{item.title}</span>
             {item.subtitle && <span className="review-card__sub">{item.subtitle}</span>}
-            <span style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
-              <Stars value={review.rating} />
-              <strong style={{ fontSize: 13 }}>{formatRating(review.rating)}</strong>
-            </span>
+            <EntryLine review={review} />
           </div>
         </Link>
       )}
-      {!showItem && (
-        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <Stars value={review.rating} size={16} />
-          <strong style={{ fontSize: 14 }}>{formatRating(review.rating)}</strong>
-        </span>
-      )}
+      {!showItem && <EntryLine review={review} big />}
       {review.body && <SpoilerText className="review-card__text" text={review.body} whole={review.spoiler === true} />}
       <PhotoStrip paths={photos} />
       <div className="review-card__foot">

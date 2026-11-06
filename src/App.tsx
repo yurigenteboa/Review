@@ -81,7 +81,7 @@ function Shell() {
             <Route path="/buscar" element={<Buscar onCompose={openCompose} />} />
             <Route path="/amigos" element={<Amigos />} />
             <Route path="/u/:id" element={<Pessoa />} />
-            <Route path="/notificacoes" element={<Notificacoes />} />
+            <Route path="/notificacoes" element={<Notificacoes onCompose={openCompose} />} />
             <Route path="/convite/:code" element={<div className="page" aria-busy="true" />} />
             <Route path="/mapa" element={<Mapa />} />
             <Route path="/perfil" element={<Perfil />} />

@@ -1,11 +1,15 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Avatar, Cover } from '../components/review/ReviewCard'
+import { Link, useSearchParams } from 'react-router-dom'
+import { DiaryList, WatchlistGrid } from '../components/review/DiaryViews'
+import { useMyServices } from '../lib/diary'
+import { Avatar } from '../components/review/ReviewCard'
 import { Glass } from '../components/ui/Glass'
 import { signOut, useAuth } from '../lib/auth'
 import { formatRating } from '../lib/categories'
 import { displayName } from '../lib/format'
 import { useMyProfile, useUpdateProfile, useUserReviews } from '../lib/queries'
+
+const thisYear = String(new Date().getFullYear())
 
 export default function Perfil() {
   const { userId, session } = useAuth()
@@ -13,6 +17,10 @@ export default function Perfil() {
   const { data: mine = [] } = useUserReviews(userId)
   const update = useUpdateProfile()
   const [editing, setEditing] = useState(false)
+  const [params, setParams] = useSearchParams()
+  const tab = params.get('aba') === 'quero' ? 'quero' : 'diario'
+  const setTab = (t: 'diario' | 'quero') => setParams(t === 'quero' ? { aba: 'quero' } : {}, { replace: true })
+  const services = useMyServices()
   const [name, setName] = useState('')
   const [username, setUsername] = useState('')
 
@@ -22,12 +30,14 @@ export default function Perfil() {
     setEditing(true)
   }
 
-  const cats = new Set(mine.map((r) => r.item.category)).size
-  const avg = mine.length ? mine.reduce((s, r) => s + r.rating, 0) / mine.length : 0
+  const yearCount = mine.filter((r) => r.experienced_at.startsWith(thisYear)).length
+  const items = new Set(mine.map((r) => r.item.id)).size
+  const rated = mine.filter((r): r is typeof r & { rating: number } => r.rating != null)
+  const avg = rated.length ? rated.reduce((s, r) => s + r.rating, 0) / rated.length : 0
   const stats = [
-    { value: String(mine.length), label: mine.length === 1 ? 'review' : 'reviews' },
-    { value: String(cats), label: cats === 1 ? 'categoria' : 'categorias' },
-    { value: mine.length ? formatRating(avg) : '–', label: 'nota média' },
+    { value: String(yearCount), label: `em ${thisYear}` },
+    { value: String(items), label: items === 1 ? 'item' : 'itens' },
+    { value: rated.length ? formatRating(avg) : '–', label: 'nota média' },
   ]
 
   return (
@@ -100,23 +110,26 @@ export default function Perfil() {
         </div>
       </Glass>
 
-      <h2 style={{ margin: '24px 20px 10px', fontSize: 22, letterSpacing: -0.4 }}>Suas reviews</h2>
-      {mine.length === 0 ? (
-        <p style={{ margin: '0 20px', color: 'var(--text-3)' }}>Você ainda não fez nenhuma review.</p>
-      ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8, padding: '0 16px' }}>
-          {mine.map((r) => (
-            <Link key={r.id} to={`/item/${r.item.id}`} aria-label={r.item.title} className="tap" style={{ position: 'relative', aspectRatio: '1 / 1', display: 'block' }}>
-              <div style={{ position: 'absolute', inset: 0 }}>
-                <Cover item={r.item} fill radius={18} />
-              </div>
-              <span className="glass glass--pill" style={{ position: 'absolute', left: 8, bottom: 8, padding: '3px 8px', fontSize: 12, fontWeight: 700, boxShadow: 'none', color: 'var(--text)' }}>
-                ★ {formatRating(r.rating)}
-              </span>
-            </Link>
-          ))}
+      <div style={{ padding: '24px 16px 0', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="segmented" role="tablist" aria-label="Suas listas" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+          <button type="button" role="tab" aria-selected={tab === 'diario'} aria-checked={tab === 'diario'} onClick={() => setTab('diario')}>
+            Diário ({mine.length})
+          </button>
+          <button type="button" role="tab" aria-selected={tab === 'quero'} aria-checked={tab === 'quero'} onClick={() => setTab('quero')}>
+            Quero ver
+          </button>
         </div>
-      )}
+        {tab === 'diario' ? (
+          <DiaryList entries={mine} empty="Seu diário está vazio. Registre o primeiro pelo + da barra." />
+        ) : (
+          userId && <WatchlistGrid userId={userId} empty="Nada na lista. Toque no marcador da página de um filme (ou em “Quero …” nos outros itens)." />
+        )}
+        {services.data && services.data.length > 0 && tab === 'quero' && (
+          <p className="field-hint" style={{ margin: 0 }}>
+            Você assina: {services.data.map((s) => s.name).join(', ')}.
+          </p>
+        )}
+      </div>
 
       <div style={{ padding: '32px 16px 0', display: 'flex', flexDirection: 'column', gap: 8 }}>
         <button type="button" className="btn btn--plain tap" onClick={() => signOut()}>

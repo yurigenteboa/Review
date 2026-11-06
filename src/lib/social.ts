@@ -243,8 +243,9 @@ export function useNotifications() {
       const { data, error } = await supabase
         .from('notifications')
         .select(
-          `id, type, created_at, read_at, review_id,
+          `id, type, created_at, read_at, review_id, meta,
            actor:profiles!notifications_actor_id_fkey ( ${PROFILE_FIELDS} ),
+           item:items ( id, title, category ),
            review:reviews ( id, item:items ( id, title ) ),
            comment:comments ( body )`,
         )

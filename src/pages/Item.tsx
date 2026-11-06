@@ -6,7 +6,8 @@ import { Stars } from '../components/ui/Stars'
 import { useAuth } from '../lib/auth'
 import { categoryById, formatRating } from '../lib/categories'
 import { initials } from '../lib/format'
-import { useDeleteReview, useItem, useItemReviews } from '../lib/queries'
+import { averageRating, latestPerPerson, sortDiary, useDeleteReview, useItem, useItemReviews } from '../lib/queries'
+import { DID_VERB, WANT_VERB, useItemWatchers, useToggleWatchlist } from '../lib/diary'
 import { isTmdbMovie } from '../lib/movie'
 import Filme from './Filme'
 import { ErrorState, LoadingCards } from './states'
@@ -18,6 +19,9 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
   const item = useItem(id)
   const reviews = useItemReviews(id)
   const del = useDeleteReview()
+  const watchers = useItemWatchers(id)
+  const want = useToggleWatchlist()
+  const iWant = (watchers.data ?? []).some((w) => w.user_id === userId)
 
   if (item.error) return <div className="page"><ErrorState error={item.error} /></div>
   if (!item.data) return <div className="page"><div className="page__body"><LoadingCards count={2} /></div></div>
@@ -26,12 +30,15 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
   // Filmes do TMDB ganham a página completa (F1); o resto segue o layout geral.
   if (isTmdbMovie(it)) return <Filme key={it.id} item={it} onCompose={onCompose} />
   const cat = categoryById(it.category)
-  const list = reviews.data ?? []
-  const avg = list.length ? list.reduce((s, r) => s + r.rating, 0) / list.length : 0
+  // diário: várias entradas por pessoa; média e critérios usam a mais recente de cada um
+  const list = sortDiary(reviews.data ?? [])
+  const latest = latestPerPerson(list)
+  const { avg, n: rated } = averageRating(list)
   const mine = list.find((r) => r.user_id === userId)
+  const verb = DID_VERB[it.category]
 
   const crit = cat.criteria.map((c) => {
-    const vals = list.map((r) => r.criteria_scores?.[c]).filter((v): v is number => typeof v === 'number' && v > 0)
+    const vals = latest.map((r) => r.criteria_scores?.[c]).filter((v): v is number => typeof v === 'number' && v > 0)
     const v = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0
     return { label: c, value: v, n: vals.length }
   })
@@ -94,16 +101,17 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
         {it.subtitle && <p style={{ margin: 0, fontSize: 15, color: 'var(--text-2)' }}>{it.subtitle}</p>}
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16 }}>
-          <span style={{ fontSize: 40, fontWeight: 800, letterSpacing: -1 }}>{list.length ? formatRating(avg) : '–'}</span>
+          <span style={{ fontSize: 40, fontWeight: 800, letterSpacing: -1 }}>{rated ? formatRating(avg) : '–'}</span>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             <Stars value={avg} size={20} />
             <span style={{ fontSize: 13, color: 'var(--text-2)' }}>
-              {list.length === 0 ? 'Sem reviews ainda' : list.length === 1 ? '1 review' : `${list.length} reviews`}
+              {rated === 0 ? 'Sem notas ainda' : rated === 1 ? '1 nota' : `${rated} notas`}
+              {list.length > rated ? ` · ${list.length} ${list.length === 1 ? 'registro' : 'registros'}` : ''}
             </span>
           </div>
         </div>
 
-        {list.length > 0 && (
+        {crit.some((c) => c.n > 0) && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 18 }}>
             {crit.map((c) => (
               <div key={c.label} style={{ display: 'grid', gridTemplateColumns: '96px minmax(0, 1fr) 28px', alignItems: 'center', gap: 10 }}>
@@ -117,14 +125,26 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
           </div>
         )}
 
-        <button
-          type="button"
-          className="btn btn--primary tap"
-          style={{ width: '100%', marginTop: 20 }}
-          onClick={() => onCompose({ category: it.category, title: it.title, itemId: it.id })}
-        >
-          {mine ? 'Refazer minha review' : 'Avaliar'}
-        </button>
+        <div style={{ display: 'flex', gap: 8, marginTop: 20 }}>
+          <button
+            type="button"
+            className="btn btn--primary tap"
+            style={{ flex: 1 }}
+            onClick={() => onCompose({ category: it.category, title: it.title, itemId: it.id })}
+          >
+            {mine ? `${verb} de novo` : `${verb} · registrar`}
+          </button>
+          <button
+            type="button"
+            className="btn btn--plain tap"
+            aria-pressed={iWant}
+            disabled={want.isPending}
+            onClick={() => want.mutate({ itemId: it.id, on: !iWant })}
+            style={iWant ? { background: 'color-mix(in srgb, var(--accent) 16%, var(--fill))', color: 'var(--accent-ink)' } : undefined}
+          >
+            {iWant ? '✓ Na lista' : `Quero ${WANT_VERB[it.category]}`}
+          </button>
+        </div>
       </Glass>
 
       <h2 style={{ margin: '24px 20px 10px', fontSize: 22, letterSpacing: -0.4 }}>Reviews</h2>
@@ -134,23 +154,28 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
           <div key={r.id} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <ReviewCard review={r} showItem={false} />
             {r.user_id === userId && (
-              <button
-                type="button"
-                className="tap"
-                disabled={del.isPending}
-                onClick={() => {
-                  if (window.confirm('Apagar a sua review? Isso não pode ser desfeito.')) del.mutate(r)
-                }}
-                style={{ alignSelf: 'flex-end', border: 'none', background: 'none', color: 'var(--cat-filme-ink)', fontSize: 14, fontWeight: 600, minHeight: 36 }}
-              >
-                Apagar minha review
-              </button>
+              <span style={{ alignSelf: 'flex-end', display: 'flex', gap: 16 }}>
+                <button type="button" className="link-btn" style={{ fontSize: 14 }} onClick={() => onCompose({ edit: r })}>
+                  Editar
+                </button>
+                <button
+                  type="button"
+                  className="link-btn"
+                  disabled={del.isPending}
+                  onClick={() => {
+                    if (window.confirm('Apagar esta entrada do diário? Isso não pode ser desfeito.')) del.mutate(r)
+                  }}
+                  style={{ fontSize: 14, color: 'var(--cat-filme-ink)' }}
+                >
+                  Apagar
+                </button>
+              </span>
             )}
           </div>
         ))}
         {!reviews.isLoading && list.length === 0 && (
           <p style={{ margin: 0, padding: 20, textAlign: 'center', background: 'var(--surface)', borderRadius: 'var(--r-lg)', color: 'var(--text-3)' }}>
-            Ninguém avaliou ainda. Seja o primeiro.
+            Ninguém registrou ainda. Seja o primeiro.
           </p>
         )}
       </div>

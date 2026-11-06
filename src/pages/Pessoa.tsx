@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
+import { DiaryList, WatchlistGrid } from '../components/review/DiaryViews'
 import { Avatar, Cover, ReviewCard } from '../components/review/ReviewCard'
 import { smallBtn } from '../components/social/PersonRow'
 import { Glass } from '../components/ui/Glass'
@@ -20,6 +22,7 @@ export default function Pessoa() {
   const request = useRequestFriend()
   const respond = useRespondFriend()
   const remove = useRemoveFriend()
+  const [tab, setTab] = useState<'reviews' | 'diario' | 'quero'>('reviews')
 
   if (id && id === userId) return <Navigate to="/perfil" replace />
   if (profile.error) return <div className="page"><ErrorState error={profile.error} /></div>
@@ -29,6 +32,7 @@ export default function Pessoa() {
   const list = reviews.data ?? []
   const busy = request.isPending || respond.isPending || remove.isPending
   const match = taste.data
+  const withText = list.filter((r) => r.body || r.photos.length)
 
   const action =
     state === 'amigos' ? (
@@ -112,16 +116,32 @@ export default function Pessoa() {
         </section>
       )}
 
-      <h2 style={{ margin: '24px 20px 10px', fontSize: 22, letterSpacing: -0.4 }}>Reviews</h2>
-      <div className="page__body" style={{ paddingTop: 0 }}>
+      <div style={{ padding: '24px 16px 0' }}>
+        <div className="segmented" role="tablist" aria-label="Listas" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
+          {(['reviews', 'diario', 'quero'] as const).map((t) => (
+            <button key={t} type="button" role="tab" aria-selected={tab === t} aria-checked={tab === t} onClick={() => setTab(t)}>
+              {t === 'reviews' ? 'Reviews' : t === 'diario' ? 'Diário' : 'Quero ver'}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="page__body">
         {reviews.isLoading && <LoadingCards count={2} />}
-        {list.map((r) => (
-          <ReviewCard key={r.id} review={r} />
-        ))}
-        {!reviews.isLoading && list.length === 0 && (
-          <p style={{ margin: 0, padding: 20, textAlign: 'center', background: 'var(--surface)', borderRadius: 'var(--r-lg)', color: 'var(--text-3)' }}>
-            {state === 'amigos' ? 'Nenhuma review ainda.' : 'Nenhuma review pública. Adicione como amigo para ver mais.'}
-          </p>
+        {tab === 'reviews' && (
+          <>
+            {withText.map((r) => (
+              <ReviewCard key={r.id} review={r} />
+            ))}
+            {!reviews.isLoading && withText.length === 0 && (
+              <p className="empty-note">
+                {state === 'amigos' ? 'Nenhuma review com texto ainda.' : 'Nenhuma review pública. Adicione como amigo para ver mais.'}
+              </p>
+            )}
+          </>
+        )}
+        {tab === 'diario' && <DiaryList entries={list} empty={state === 'amigos' ? 'Diário vazio.' : 'Nada público no diário. Adicione como amigo para ver mais.'} />}
+        {tab === 'quero' && p && (
+          <WatchlistGrid userId={p.id} empty={state === 'amigos' ? 'Lista vazia (ou só com itens privados).' : 'Adicione como amigo para ver o que essa pessoa quer ver.'} />
         )}
       </div>
     </div>
