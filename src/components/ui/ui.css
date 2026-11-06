@@ -846,3 +846,244 @@
     filter: brightness(1.06);
   }
 }
+
+/* =========================================================
+   D1 · Casca do tablet/desktop
+   Celular (< 700px) fica exatamente como era.
+   ========================================================= */
+.shell__main {
+  max-width: var(--content-w);
+  margin: 0 auto;
+}
+@media (min-width: 700px) {
+  .mobile-only {
+    display: none !important;
+  }
+  .shell__main {
+    max-width: var(--content-w-tablet);
+    margin-left: calc(var(--sidebar-w-compact) + max(0px, (100vw - var(--sidebar-w-compact) - var(--content-w-tablet)) / 2));
+    margin-right: auto;
+  }
+  /* Sem barra de abas embaixo: sobra só um respiro no fim da página */
+  .page {
+    padding-bottom: 56px;
+  }
+  /* Avisos centralizados na área do conteúdo, não na tela toda */
+  .toast {
+    left: var(--sidebar-w-compact);
+  }
+  .notice {
+    left: calc(var(--sidebar-w-compact) + 12px);
+  }
+}
+@media (min-width: 1100px) {
+  .shell__main {
+    max-width: var(--content-w);
+    margin-left: calc(var(--sidebar-w) + max(0px, (100vw - var(--sidebar-w) - var(--content-w)) / 2));
+  }
+  .toast {
+    left: var(--sidebar-w);
+  }
+  .notice {
+    left: calc(var(--sidebar-w) + 12px);
+  }
+}
+
+/* ============ Barra lateral ============ */
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 20;
+  width: var(--sidebar-w);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: calc(var(--safe-top) + 20px) 14px 24px;
+  border-bottom: none;
+  border-right: 0.5px solid var(--separator);
+}
+.sidebar--compact {
+  width: var(--sidebar-w-compact);
+  padding-left: 10px;
+  padding-right: 10px;
+  align-items: center;
+}
+.sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  margin: 0 0 18px;
+  padding: 0 10px;
+  border-radius: var(--r-md);
+  color: var(--text);
+  text-decoration: none;
+  font-size: var(--fs-title);
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+.sidebar--compact .sidebar__brand {
+  padding: 0;
+  justify-content: center;
+  width: 52px;
+}
+.sidebar__brand img {
+  border-radius: 8px;
+}
+.sidebar__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.sidebar__item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 48px;
+  padding: 0 12px;
+  border-radius: var(--r-md);
+  color: var(--text-2);
+  text-decoration: none;
+  font-size: var(--fs-body);
+  font-weight: 600;
+}
+.sidebar--compact .sidebar__item {
+  width: 52px;
+  padding: 0;
+  justify-content: center;
+}
+.sidebar__item.active {
+  color: var(--accent-ink);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.sidebar__item.active .sidebar__label {
+  font-weight: 750;
+}
+.sidebar__icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+}
+.sidebar__badge {
+  top: -6px;
+  right: -10px;
+}
+.sidebar__compose {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 50px;
+  margin-top: 16px;
+  padding: 0 18px;
+  border: 0.5px solid color-mix(in srgb, var(--accent) 60%, transparent);
+  border-radius: var(--r-pill);
+  background: var(--accent);
+  color: #fff;
+  font-size: var(--fs-body);
+  font-weight: 700;
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.sidebar--compact .sidebar__compose {
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .sidebar__item,
+  .sidebar__brand,
+  .sidebar__compose {
+    transition: background-color 0.15s ease, color 0.15s ease, filter 0.15s ease;
+  }
+  .sidebar__item:not(.active):hover,
+  .sidebar__brand:hover {
+    color: var(--text);
+    background: var(--hover-fill);
+  }
+  .sidebar__compose:hover {
+    filter: brightness(1.08);
+  }
+}
+
+/* ============ Sheet: celular (de baixo), janela no centro, painel lateral ============ */
+.sheet-frame {
+  position: fixed;
+  z-index: 41;
+}
+.sheet-frame--bottom {
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+.sheet:focus {
+  outline: none;
+}
+.sheet__top {
+  position: sticky;
+  top: -8px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: -8px -4px 8px;
+  padding: 8px 0 4px;
+}
+.sheet__top .sheet__title {
+  flex: 1;
+  margin: 0;
+  text-align: left;
+  font-size: var(--fs-title);
+  font-weight: 750;
+  letter-spacing: -0.3px;
+}
+.sheet__close {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  margin-left: auto;
+}
+
+/* Janela no centro */
+.sheet-frame--dialog {
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 32px;
+  pointer-events: none;
+}
+.sheet--dialog {
+  pointer-events: auto;
+  width: min(560px, 100%);
+  max-width: none;
+  max-height: min(86dvh, 820px);
+  margin: 0;
+  padding: 20px 24px 24px;
+  border-radius: var(--r-xl);
+  border-bottom: 0.5px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-highlight);
+}
+
+/* Painel à direita */
+.sheet-frame--side {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(440px, 100vw);
+}
+.sheet--side {
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: calc(var(--safe-top) + 20px) 22px 24px;
+  border-radius: var(--r-xl) 0 0 var(--r-xl);
+  border-bottom: 0.5px solid var(--glass-border);
+}

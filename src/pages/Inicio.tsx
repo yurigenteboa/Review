@@ -23,7 +23,8 @@ export default function Inicio({ onCompose }: { onCompose: () => void }) {
         title="Início"
         subtitle="Suas reviews e as dos seus amigos"
         trailing={
-          <span style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          // No tablet/desktop, sininho e perfil já estão na barra lateral
+          <span className="mobile-only" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
             <Link to="/notificacoes" className="icon-btn tap" aria-label={unread ? `Notificações (${unread} novas)` : 'Notificações'}>
               <BellIcon size={22} />
               {unread > 0 && <span className="badge">{unread > 9 ? '9+' : unread}</span>}

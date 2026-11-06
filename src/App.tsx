@@ -4,6 +4,8 @@ import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import { BrowserRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { ComposeSheet, type ComposeStart } from './components/review/ComposeSheet'
 import { TabBar } from './components/ui/TabBar'
+import { SideBar } from './components/ui/SideBar'
+import { useBreakpoint } from './lib/breakpoints'
 import { Glass } from './components/ui/Glass'
 import { AuthProvider, FROM_APP_PARAM, isStandalone, useAuth } from './lib/auth'
 import Legal, { LEGAL_PATHS, type LegalDoc } from './pages/Legal'
@@ -60,6 +62,7 @@ function Shell() {
   const navigate = useNavigate()
   const qc = useQueryClient()
   const { session, loading } = useAuth()
+  const bp = useBreakpoint()
   const [compose, setCompose] = useState<{ open: boolean; start: ComposeStart; key: number }>({ open: false, start: {}, key: 0 })
   const [toast, setToast] = useState<string | null>(null)
   const [handoff, setHandoff] = useState(returnParams.handedOffToBrowser)
@@ -106,7 +109,14 @@ function Shell() {
   if (!session) return <Login />
 
   return (
-    <>
+    <div className={`shell shell--${bp}`}>
+      {/* Celular: abas embaixo. Tablet/desktop: barra lateral (D1 do plano desktop). */}
+      {bp === 'mobile' ? (
+        <TabBar onCompose={() => openCompose()} />
+      ) : (
+        <SideBar onCompose={() => openCompose()} compact={bp === 'tablet'} />
+      )}
+
       <AnimatePresence mode="wait">
         <motion.main
           key={location.pathname}
@@ -114,7 +124,7 @@ function Shell() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.18 }}
-          style={{ maxWidth: 640, margin: '0 auto' }}
+          className="shell__main"
         >
           <Routes location={location}>
             <Route path="/" element={<Inicio onCompose={() => openCompose()} />} />
@@ -133,8 +143,6 @@ function Shell() {
           </Routes>
         </motion.main>
       </AnimatePresence>
-
-      <TabBar onCompose={() => openCompose()} />
 
       <ComposeSheet key={compose.key} open={compose.open} start={compose.start} onClose={closeCompose} onDone={setToast} />
 
@@ -164,7 +172,7 @@ function Shell() {
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+    </div>
   )
 }
 

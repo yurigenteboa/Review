@@ -24,7 +24,7 @@ export function CommentsSheet({ review, open, onClose }: { review: Review; open:
   }
 
   return (
-    <Sheet open={open} onClose={onClose} title={`Comentários · ${review.item.title}`}>
+    <Sheet open={open} onClose={onClose} title={`Comentários · ${review.item.title}`} desktop="side">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         {comments.isLoading && <span className="field-hint">Carregando…</span>}
         {comments.data?.length === 0 && (

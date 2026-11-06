@@ -1,4 +1,4 @@
-import type { ElementType, HTMLAttributes, ReactNode } from 'react'
+import type { ElementType, HTMLAttributes, ReactNode, Ref } from 'react'
 
 type Variant = 'card' | 'bar' | 'pill' | 'sheet'
 
@@ -6,6 +6,8 @@ interface GlassProps extends HTMLAttributes<HTMLElement> {
   variant?: Variant
   as?: ElementType
   children?: ReactNode
+  /** React 19: ref passa como prop comum (usado pela Sheet para prender o foco) */
+  ref?: Ref<HTMLElement>
 }
 
 /**
