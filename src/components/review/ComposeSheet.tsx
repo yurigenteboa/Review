@@ -234,6 +234,7 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
             onChange={(e) => setBody(e.target.value)}
             style={{ height: 'auto', padding: '12px 14px', resize: 'none', lineHeight: 1.4 }}
           />
+          <span className="field-hint">Para esconder um spoiler, escreva entre barras duplas: ||o final||</span>
         </label>
 
         <div>

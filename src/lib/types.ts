@@ -19,6 +19,8 @@ export interface Item {
   year: number | null
   source?: string
   external_id?: string | null
+  /** dados extras da fonte (ex.: ficha do TMDB em metadata.tmdb, com metadata.fetched_at) */
+  metadata?: Record<string, unknown> | null
 }
 
 export interface ReviewPhoto {
@@ -37,6 +39,8 @@ export interface Review {
   item: Item
   author: Profile
   photos: ReviewPhoto[]
+  /** "Contém spoiler" (coluna chega na F2; até lá, use ||trecho|| no texto) */
+  spoiler?: boolean
   /** quem curtiu (só as curtidas que você pode ver) */
   likes?: { user_id: string }[]
   /** contagem de comentários */

@@ -7,6 +7,8 @@ import { useAuth } from '../lib/auth'
 import { categoryById, formatRating } from '../lib/categories'
 import { initials } from '../lib/format'
 import { useDeleteReview, useItem, useItemReviews } from '../lib/queries'
+import { isTmdbMovie } from '../lib/movie'
+import Filme from './Filme'
 import { ErrorState, LoadingCards } from './states'
 
 export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => void }) {
@@ -21,6 +23,8 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
   if (!item.data) return <div className="page"><div className="page__body"><LoadingCards count={2} /></div></div>
 
   const it = item.data
+  // Filmes do TMDB ganham a página completa (F1); o resto segue o layout geral.
+  if (isTmdbMovie(it)) return <Filme key={it.id} item={it} onCompose={onCompose} />
   const cat = categoryById(it.category)
   const list = reviews.data ?? []
   const avg = list.length ? list.reduce((s, r) => s + r.rating, 0) / list.length : 0

@@ -17,8 +17,9 @@ O dono entende a lógica (SQL, Python, Node), mas não escreve do zero: explique
 src/
   components/ui/      Glass, TabBar, PageHeader, Sheet, Chips, Stars, Icons, ui.css
   components/review/  ReviewCard, Cover, CategoryTag
-  pages/              Inicio, Buscar, Mapa, Perfil, Kit
-  lib/                categories.ts, sample.ts (dados falsos da Fase 1), supabase.ts
+  components/movie/   movie.css (página do filme 2.0)
+  pages/              Inicio, Buscar, Amigos, Pessoa, Perfil, Item, Filme, Kit
+  lib/                categories.ts, queries.ts, social.ts, movie.ts, supabase.ts
   styles/tokens.css   todas as cores, raios, blur e fontes (claro + escuro)
 supabase/migrations/  um arquivo .sql por mudança de banco
 ```
@@ -59,9 +60,12 @@ Agora: UX de filmes (F1 → F2 → F3, abaixo). Depois: 5 PWA (offline, push, ma
 ## Estado atual (UX de filmes — em andamento)
 - Plano completo no doc "MMISC · Filmes: UX e próximos passos": https://claude.ai/artifact/Vp8QC4MxMcT3jVEp83LdNp (comparação com Letterboxd/IMDb/Filmow, página do filme 2.0, diário, mudanças no banco, prioridade).
 - Ordem aprovada pelo dono ("siga da forma que achar melhor"):
-  - **F1 página do filme 2.0 (próximo passo):** Edge Function nova `movie-details` chama TMDB `/movie/{id}?append_to_response=credits,videos,watch/providers,release_dates,recommendations&language=pt-BR` e guarda em `items.metadata` (com `fetched_at`, cache 7 dias). Tela do item para filme: backdrop + pôster, título original, ano, direção, duração, classificação BR; barra de ações (Vi, ♥, Quero ver, Compartilhar); amigos que viram + médias + histograma 0,5–5; onde assistir no Brasil (crédito "Dados: JustWatch" obrigatório); sinopse; trailer (YouTube); elenco/equipe; gêneros; reviews (amigos primeiro); parecidos. Aviso de spoiler (texto borrado até tocar). Sem nota do IMDb. F1 NÃO mexe em RLS.
+  - **F1 página do filme 2.0 (CÓDIGO PRONTO, falta publicar):** Edge Function nova `movie-details` chama TMDB `/movie/{id}?append_to_response=credits,videos,watch/providers,release_dates,recommendations&language=pt-BR` e guarda em `items.metadata` (com `fetched_at`, cache 7 dias). Tela do item para filme: backdrop + pôster, título original, ano, direção, duração, classificação BR; barra de ações (Vi, ♥, Quero ver, Compartilhar); amigos que viram + médias + histograma 0,5–5; onde assistir no Brasil (crédito "Dados: JustWatch" obrigatório); sinopse; trailer (YouTube); elenco/equipe; gêneros; reviews (amigos primeiro); parecidos. Aviso de spoiler (texto borrado até tocar). Sem nota do IMDb. F1 NÃO mexe em RLS.
   - **F2 registro:** `reviews` ganha `watched_on`, `rewatch`, `liked`, `spoiler`, `watched_where`; tirar unique (user_id,item_id) (filme vira diário; outras categorias seguem atualizando a última entrada); `rating` pode ser nulo; tabelas `watchlist` e `favorites`; `taste_match` usa a nota mais recente. Registro rápido em 2 toques, detalhes recolhidos. MEXE EM RLS → explicar plano e esperar aprovação.
   - **F3 perfil cinéfilo:** 4 favoritos, estatísticas do ano, importar CSV do Letterboxd.
+- F1 entregue em 06/11: `supabase/functions/movie-details/index.ts` (confere login com `auth.getUser`, lê/grava como o usuário; cache no banco 7 dias + memória 10 min; devolve dados antigos se o TMDB cair), `src/lib/movie.ts` (tipo `MovieDetails`, `useMovieDetails`), `src/pages/Filme.tsx` + `src/components/movie/movie.css` (Item.tsx desvia para Filme quando `source = 'tmdb-movie'`), `SpoilerText` (trechos entre `||barras||` ficam borrados; prop `whole` pronta para a coluna `spoiler` da F2). Tokens novos: `--cls-*` (classificação indicativa), `--scrim`, `--spoiler-blur`.
+  - Gravar o cache: a policy de `items` só deixa o criador editar, então a migração `202611061500_f1_movie_cache.sql` cria a RPC `cache_movie_details` (security definer, só grava `metadata.tmdb`/`fetched_at` de filme TMDB com tmdb_id batendo e cache vencido). NÃO altera policies, mas contorna RLS de forma estreita → aplicar só com OK do dono. Sem ela a função funciona igual, só cacheia os itens que o próprio usuário cadastrou.
+  - ♥ Curti e Quero ver ficam para a F2 (precisam de tabela). Nota do TMDB vem na ficha (`tmdb_rating`) mas não aparece (decisão em aberto).
 - Decisões em aberto (no fim do doc): diário com várias entradas (recomendado), critérios opcionais para filme, mostrar nota TMDB, "quero ver" visível a amigos, importação já na F3.
 
 ## Como trabalhamos (para uma conversa nova)

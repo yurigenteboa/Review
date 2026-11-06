@@ -58,7 +58,7 @@ export function useItem(id: string | undefined) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('items')
-        .select('id, category, title, subtitle, image_url, year')
+        .select('id, category, title, subtitle, image_url, year, source, external_id, metadata')
         .eq('id', id!)
         .single()
       if (error) throw error

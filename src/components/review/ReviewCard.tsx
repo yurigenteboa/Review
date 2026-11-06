@@ -9,6 +9,7 @@ import { CommentIcon, HeartIcon } from '../ui/Icons'
 import { useAuth } from '../../lib/auth'
 import { useToggleLike } from '../../lib/social'
 import { CommentsSheet } from './CommentsSheet'
+import { SpoilerText } from './SpoilerText'
 
 type CoverItem = Pick<Item, 'title' | 'category' | 'image_url'>
 
@@ -121,7 +122,7 @@ export function ReviewCard({ review, showItem = true }: { review: Review; showIt
           <strong style={{ fontSize: 14 }}>{formatRating(review.rating)}</strong>
         </span>
       )}
-      {review.body && <p className="review-card__text">{review.body}</p>}
+      {review.body && <SpoilerText className="review-card__text" text={review.body} whole={review.spoiler === true} />}
       <PhotoStrip paths={photos} />
       <div className="review-card__foot">
         <Link to={authorLink} className="review-card__author tap" style={{ textDecoration: 'none', minWidth: 0 }}>

@@ -65,6 +65,15 @@
   --cat-bar: #FF9500;      --cat-bar-ink: #B34700;
   --cat-banheiro: #0A84FF; --cat-banheiro-ink: #0058B8;
   --cat-cidade: #30B0C7;   --cat-cidade-ink: #0B6F80;
+
+  /* Classificação indicativa brasileira (cores oficiais do ClassInd) */
+  --cls-L: #00A651;  --cls-10: #0090D0;  --cls-12: #F7C600;
+  --cls-14: #F58220; --cls-16: #E2001A;  --cls-18: #1C1C1C;
+  --cls-ink-light: #FFFFFF; --cls-ink-dark: #1C1C1C;
+
+  /* Página do filme: véu escuro sobre o backdrop e o spoiler borrado */
+  --scrim: rgba(0, 0, 0, 0.45);
+  --spoiler-blur: blur(5px);
 }
 
 /* Tema escuro automático */
