@@ -293,11 +293,12 @@ export function useRemoveProfileImage() {
 export function useSaveProfileExtras() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: async (p: { userId: string; links?: ProfileLink[]; showcase?: CategoryId[]; cover_mode?: 'auto' | 'foto' }) => {
+    mutationFn: async (p: { userId: string; links?: ProfileLink[]; showcase?: CategoryId[]; cover_mode?: 'auto' | 'foto'; is_public?: boolean }) => {
       const patch: Record<string, unknown> = {}
       if (p.links) patch.links = p.links
       if (p.showcase) patch.showcase = p.showcase
       if (p.cover_mode) patch.cover_mode = p.cover_mode
+      if (p.is_public !== undefined) patch.is_public = p.is_public
       const { error } = await supabase.from('profiles').update(patch).eq('id', p.userId)
       if (error) {
         if (error.code === '23514') throw new Error('Confira os links: só endereços que começam com https://, até 5.')

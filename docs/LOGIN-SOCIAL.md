@@ -92,6 +92,8 @@ Fotos ficam no bucket privado `review-photos/<user_id>/...`. Tudo é chaveado pe
 - Supabase: provedor Google LIGADO (ID e segredo colados pelo dono; skip nonce e allow without email desligados). URL Configuration já estava certa (Site URL `https://www.mmisc.com.br`; redirects `www`, apex, `review-one-omega.vercel.app`, localhost e 127.0.0.1, todos com `/**`). Manual linking: desligado (conferido).
 - Migração `202611061900_login_google_perfil.sql` APLICADA e conferida: gatilhos `on_auth_user_created` e `on_auth_identity_created` ativos, funções security definer, sem execute para anon/authenticated.
 
+**06/11 (tarde):** botão do Google ligado para todo mundo por decisão do dono (sem esperar o teste no iPhone); o interruptor do /kit saiu; `VITE_LOGIN_GOOGLE=off` esconde de novo.
+
 **Falta (Google):** push do front; e-mail contato@mmisc.com.br recebendo; testar (computador, Safari do iPhone, app instalado, convite, vínculo com a conta antiga em `auth.identities`); depois `VITE_LOGIN_GOOGLE=on` na Vercel; Search Console (DNS) e verificação de marca.
 
 ## 5. Regras do projeto que valem aqui

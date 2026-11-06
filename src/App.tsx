@@ -7,6 +7,8 @@ import { TabBar } from './components/ui/TabBar'
 import { Glass } from './components/ui/Glass'
 import { AuthProvider, FROM_APP_PARAM, isStandalone, useAuth } from './lib/auth'
 import Legal, { LEGAL_PATHS, type LegalDoc } from './pages/Legal'
+import PublicProfile from './pages/PublicProfile'
+import { parseHandle } from './lib/publicProfile'
 import Buscar from './pages/Buscar'
 import Inicio from './pages/Inicio'
 import Item from './pages/Item'
@@ -93,6 +95,8 @@ function Shell() {
   // Páginas públicas abrem com ou sem login (o Google exige que sejam acessíveis).
   const publicDoc = PUBLIC_PAGES.find(([, path]) => location.pathname === path)?.[0]
   if (publicDoc) return <Legal doc={publicDoc} />
+  // Perfil público (mmisc.com.br/@usuario): abre com ou sem login.
+  if (parseHandle(location.pathname)) return <PublicProfile />
 
   if (loading) return <div style={{ minHeight: '100dvh' }} aria-busy="true" />
   if (!session) return <Login />

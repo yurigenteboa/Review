@@ -15,6 +15,8 @@ export interface ProfileFull extends Profile {
   links: ProfileLink[]
   /** categorias da vitrine de favoritos, em ordem */
   showcase: CategoryId[]
+  /** perfil público em /@usuario (padrão: ligado) */
+  is_public: boolean
 }
 
 export function useProfileFull(id: string | null | undefined) {
@@ -24,7 +26,7 @@ export function useProfileFull(id: string | null | undefined) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, username, display_name, avatar_url, bio, cover_mode, cover_url, links, showcase')
+        .select('id, username, display_name, avatar_url, bio, cover_mode, cover_url, links, showcase, is_public')
         .eq('id', id!)
         .single()
       if (error) throw error

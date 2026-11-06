@@ -97,6 +97,15 @@ const DOCS: Record<LegalDoc, { title: string; subtitle?: string; body: ReactNode
           quem tem conta no MMISC.
         </p>
 
+        <h2>Perfil público</h2>
+        <p>
+          Todo perfil com @ tem um link público (por exemplo, mmisc.com.br/@seunome) que abre sem login. Ele vem ligado e
+          pode ser desligado a qualquer momento em Perfil → Editar → Perfil público. Quem abre o link vê nome, @, foto,
+          capa, bio, links e apenas o que você marcou como Público: reviews, favoritos e Top 10. Nunca aparecem a lista de
+          amigos, metas, quero ver, notas privadas, com quem você viu algo, fotos das reviews ou qualquer coisa marcada
+          para amigos ou só para você. A prévia do link em apps como o WhatsApp usa o mesmo conteúdo público.
+        </p>
+
         <h2>Serviços que usamos</h2>
         <ul>
           <li>Supabase (banco de dados, login e arquivos), em servidores em São Paulo.</li>

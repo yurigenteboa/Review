@@ -721,3 +721,127 @@
   color: var(--cat-filme-ink);
   font-size: 14px;
 }
+
+/* ============ Etapa 3: perfil público ============ */
+.public-banner {
+  position: absolute;
+  top: calc(var(--safe-top) + 12px);
+  left: var(--gutter);
+  right: var(--gutter);
+  z-index: 10;
+  max-width: 560px;
+  margin: 0 auto;
+  min-height: 44px;
+  padding: 6px 8px 6px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: var(--fs-footnote);
+}
+.public-banner a {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: var(--r-pill);
+  background: var(--accent);
+  color: #fff;
+  font-weight: 650;
+  text-decoration: none;
+}
+.public-cta {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: center;
+}
+.public-cta p {
+  margin: 0;
+  font-size: var(--fs-callout);
+  line-height: 1.45;
+}
+.public-cta__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+.public-missing {
+  padding: calc(var(--safe-top) + 80px) 24px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  text-align: center;
+}
+.public-missing h1 {
+  margin: 0;
+  font-size: var(--fs-title);
+}
+.public-missing p {
+  margin: 0 0 8px;
+  color: var(--text-2);
+}
+.public-reviews {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.public-reviews li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.public-reviews__body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  flex: 1;
+}
+.public-reviews__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--fs-footnote);
+  color: var(--text-3);
+}
+.public-reviews__text {
+  margin: 4px 0 0;
+  font-size: var(--fs-callout);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.public-page .profile__sections {
+  padding-bottom: calc(var(--safe-bottom) + 32px);
+}
+.public-notice {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1.5px solid color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.public-notice p {
+  margin: 0;
+  font-size: var(--fs-callout);
+  line-height: 1.45;
+}
+.public-notice__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.public-notice__actions .btn {
+  min-height: 44px;
+  padding: 0 16px;
+  font-size: 15px;
+}
+.public-page .legal__nav a {
+  font-size: var(--fs-footnote);
+  color: var(--text-2);
+}

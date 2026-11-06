@@ -6,7 +6,6 @@ import { Glass } from '../components/ui/Glass'
 import { PageHeader } from '../components/ui/PageHeader'
 import { Sheet } from '../components/ui/Sheet'
 import { Stars } from '../components/ui/Stars'
-import { googleLoginEnabled, setGoogleLoginTest } from '../lib/auth'
 import { CATEGORIES, type CategoryId } from '../lib/categories'
 import type { Review } from '../lib/types'
 
@@ -34,7 +33,6 @@ export default function Kit() {
   const [cat, setCat] = useState<CategoryId | 'all'>('all')
   const [open, setOpen] = useState(false)
   const [rating, setRating] = useState(3.5)
-  const [googleTest, setGoogleTest] = useState(googleLoginEnabled)
 
   const h2 = { margin: '8px 4px 0', fontSize: 15, color: 'var(--text-3)' }
 
@@ -74,29 +72,6 @@ export default function Kit() {
 
         <h2 style={h2}>Card de review</h2>
         <ReviewCard review={DEMO} />
-
-        <h2 style={h2}>Teste: login com Google</h2>
-        <div className="group">
-          <div className="group__row">
-            <span style={{ flex: 1 }}>
-              Mostrar “Continuar com o Google” neste aparelho
-              <span className="field-hint" style={{ margin: '2px 0 0' }}>
-                Fica salvo só aqui. Depois saia da conta (Perfil → Sair) para ver a tela de login.
-              </span>
-            </span>
-            <button
-              type="button"
-              className="toggle-chip tap"
-              aria-pressed={googleTest}
-              onClick={() => {
-                setGoogleLoginTest(!googleTest)
-                setGoogleTest(!googleTest)
-              }}
-            >
-              {googleTest ? 'Ligado' : 'Desligado'}
-            </button>
-          </div>
-        </div>
 
         <h2 style={h2}>Botões e sheet</h2>
         <div style={{ display: 'flex', gap: 8 }}>

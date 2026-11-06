@@ -11,6 +11,7 @@ import {
   useUploadProfileImage,
   type ProfileLink,
 } from '../../lib/profileData'
+import { publicProfileUrl } from '../../lib/publicProfile'
 
 /** Editar perfil: nome, @, bio, foto, capa, links e as categorias da vitrine. */
 export function EditProfileSheet({ profile: p, onClose }: { profile: ProfileFull; onClose: () => void }) {
@@ -24,6 +25,8 @@ export function EditProfileSheet({ profile: p, onClose }: { profile: ProfileFull
   const [links, setLinks] = useState<ProfileLink[]>(p.links ?? [])
   const [showcase, setShowcase] = useState<CategoryId[]>(p.showcase ?? [])
   const [coverMode, setCoverMode] = useState<'auto' | 'foto'>(p.cover_mode ?? 'auto')
+  const [isPublic, setIsPublic] = useState(p.is_public ?? true)
+  const [copied, setCopied] = useState(false)
   const [linkError, setLinkError] = useState<string | null>(null)
   const avatarInput = useRef<HTMLInputElement>(null)
   const coverInput = useRef<HTMLInputElement>(null)
@@ -49,7 +52,7 @@ export function EditProfileSheet({ profile: p, onClose }: { profile: ProfileFull
     setLinkError(null)
     try {
       await save.mutateAsync({ id: p.id, display_name: name, username, bio })
-      await extras.mutateAsync({ userId: p.id, links: clean, showcase, cover_mode: coverMode === 'foto' && !p.cover_url ? 'auto' : coverMode })
+      await extras.mutateAsync({ userId: p.id, links: clean, showcase, cover_mode: coverMode === 'foto' && !p.cover_url ? 'auto' : coverMode, is_public: isPublic })
       onClose()
     } catch {
       /* mensagem abaixo */
@@ -194,6 +197,48 @@ export function EditProfileSheet({ profile: p, onClose }: { profile: ProfileFull
               )
             })}
           </div>
+        </fieldset>
+
+        <fieldset className="edit-block">
+          <legend className="field-label">Perfil público</legend>
+          <div className="segmented" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+            <button type="button" aria-pressed={isPublic} aria-selected={isPublic} onClick={() => setIsPublic(true)}>
+              Público
+            </button>
+            <button type="button" aria-pressed={!isPublic} aria-selected={!isPublic} onClick={() => setIsPublic(false)}>
+              Privado
+            </button>
+          </div>
+          <span className="field-hint" style={{ margin: '0 4px' }}>
+            {isPublic
+              ? 'Qualquer pessoa com o link vê: nome, @, foto, capa, bio, links, e o que estiver como Público (reviews, favoritos, Top 10). Amigos, metas, quero ver, notas privadas e o que é só para amigos ficam de fora.'
+              : 'Ninguém sem conta vê seu perfil. Quem tem conta no MMISC continua vendo seu nome e o que você deixar visível.'}
+          </span>
+          {isPublic && (username ? (
+            <span className="field-hint" style={{ margin: '0 4px' }}>
+              Seu link: <strong>{publicProfileUrl(username).replace(/^https?:\/\//, '')}</strong>{' '}
+              <button
+                type="button"
+                className="link-btn"
+                onClick={async () => {
+                  const url = publicProfileUrl(username)
+                  try {
+                    if (navigator.share) await navigator.share({ title: 'Meu perfil no MMISC', url })
+                    else {
+                      await navigator.clipboard.writeText(url)
+                      setCopied(true)
+                    }
+                  } catch {
+                    /* cancelou o compartilhamento */
+                  }
+                }}
+              >
+                {copied ? 'Copiado ✓' : 'Compartilhar'}
+              </button>
+            </span>
+          ) : (
+            <span className="field-hint" style={{ margin: '0 4px' }}>Escolha um @ acima para ter seu link.</span>
+          ))}
         </fieldset>
 
         {error && <span role="alert" className="form-error">{error.message}</span>}

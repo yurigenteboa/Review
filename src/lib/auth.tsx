@@ -67,26 +67,11 @@ export function isStandaloneIOS(): boolean {
 }
 
 /**
- * Botão do Google: escondido até o teste no iPhone.
- * Liga para todo mundo com VITE_LOGIN_GOOGLE=on (Vercel) ou, só neste aparelho,
- * pelo interruptor em /kit (fica no localStorage).
+ * Botão do Google: ligado para todo mundo desde 06/11.
+ * Para esconder de novo (ex.: problema no Google), ponha VITE_LOGIN_GOOGLE=off na Vercel.
  */
-const GOOGLE_TEST_KEY = 'mmisc.googleLoginTest'
 export function googleLoginEnabled(): boolean {
-  if (import.meta.env.VITE_LOGIN_GOOGLE === 'on') return true
-  try {
-    return localStorage.getItem(GOOGLE_TEST_KEY) === '1'
-  } catch {
-    return false
-  }
-}
-export function setGoogleLoginTest(on: boolean) {
-  try {
-    if (on) localStorage.setItem(GOOGLE_TEST_KEY, '1')
-    else localStorage.removeItem(GOOGLE_TEST_KEY)
-  } catch {
-    /* modo privado: ignora */
-  }
+  return import.meta.env.VITE_LOGIN_GOOGLE !== 'off'
 }
 
 /** Marca na URL de volta que o login começou no app instalado (para detectar a ida ao Safari). */

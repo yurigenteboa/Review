@@ -9,7 +9,8 @@ import { catColor, categoryById, formatRating, type CategoryId } from '../../lib
 import { useMyServices } from '../../lib/diary'
 import { displayName } from '../../lib/format'
 import { useProfileFull, type ProfileFull } from '../../lib/profile'
-import { friendsLabel, useFavorites, useRatingVsFriends } from '../../lib/profileData'
+import { friendsLabel, useFavorites, useRatingVsFriends, useSaveProfileExtras } from '../../lib/profileData'
+import { publicProfileUrl } from '../../lib/publicProfile'
 import {
   byCategory,
   categoriesWithEntries,
@@ -138,6 +139,7 @@ export function ProfileView({ userId, isMe }: { userId: string; isMe: boolean })
       )}
 
       <div className="profile__sections">
+        {isMe && <PublicNotice profile={p} />}
         {!isMe && <CompatCard otherId={userId} name={displayName(p)} cat={cat} />}
 
         <Showcase userId={userId} isMe={isMe} showcase={p.showcase ?? []} cat={cat} entries={all} />
@@ -210,6 +212,11 @@ export function ProfileView({ userId, isMe }: { userId: string; isMe: boolean })
 
         {isMe && (
           <div className="profile__footer">
+            {p.is_public && p.username && (
+              <Link to={`/@${p.username}`} className="btn btn--plain tap public-cta__btn">
+                Ver meu perfil público
+              </Link>
+            )}
             <button type="button" className="btn btn--plain tap" onClick={() => signOut()}>
               Sair da conta
             </button>
@@ -369,4 +376,62 @@ function MyServicesHint() {
   const services = useMyServices()
   if (!services.data?.length) return null
   return <p className="field-hint" style={{ margin: 0 }}>Você assina: {services.data.map((s) => s.name).join(', ')}.</p>
+}
+
+/** Aviso de primeira vez: o perfil passou a ter link público (ligado por padrão). */
+const PUBLIC_NOTICE_KEY = 'mmisc.publicNoticeSeen'
+function PublicNotice({ profile: p }: { profile: ProfileFull }) {
+  const extras = useSaveProfileExtras()
+  const [seen, setSeen] = useState(() => {
+    try {
+      return localStorage.getItem(PUBLIC_NOTICE_KEY) === '1'
+    } catch {
+      return false
+    }
+  })
+  const close = () => {
+    try {
+      localStorage.setItem(PUBLIC_NOTICE_KEY, '1')
+    } catch {
+      /* modo privado: o aviso volta na próxima vez */
+    }
+    setSeen(true)
+  }
+  if (seen || !p.is_public) return null
+  return (
+    <section className="profile-section public-notice" aria-labelledby="sec-public-notice">
+      <h2 id="sec-public-notice" className="profile-section__title" style={{ margin: 0 }}>
+        Seu perfil agora tem um link público
+      </h2>
+      <p>
+        {p.username ? (
+          <>
+            Quem abrir <strong>{publicProfileUrl(p.username).replace(/^https?:\/\//, '')}</strong> vê
+          </>
+        ) : (
+          <>Quando você escolher um @, quem abrir o seu link vai ver</>
+        )}{' '}
+        nome, foto, bio, links e só o que estiver como Público (reviews, favoritos, Top 10). Amigos, metas, quero ver e o que é só para
+        amigos ficam de fora.
+      </p>
+      <div className="public-notice__actions">
+        {p.username && (
+          <Link to={`/@${p.username}`} className="btn btn--primary tap public-cta__btn" onClick={close}>
+            Ver como fica
+          </Link>
+        )}
+        <button
+          type="button"
+          className="btn btn--plain tap"
+          disabled={extras.isPending}
+          onClick={() => extras.mutate({ userId: p.id, is_public: false }, { onSuccess: close })}
+        >
+          Deixar privado
+        </button>
+        <button type="button" className="btn btn--plain tap" onClick={close}>
+          Ok
+        </button>
+      </div>
+    </section>
+  )
 }
