@@ -1909,3 +1909,29 @@ li.is-done .starter__text strong {
   padding: 0 16px;
   font-size: var(--fs-callout);
 }
+
+/* ---------- Fase 0: aviso quando uma tela quebra (ErrorBoundary) ---------- */
+.crash {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  padding: 64px 24px;
+}
+.crash__title {
+  font-size: 20px;
+  color: var(--text);
+}
+.crash__text {
+  font-size: 15px;
+  color: var(--text-3);
+  max-width: 34ch;
+}
+.crash__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+}

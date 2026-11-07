@@ -7,6 +7,8 @@ import './index.css'
 import './components/ui/ui.css'
 import App from './App.tsx'
 import { countVisit, listenInstallPrompt } from './lib/install'
+import { installGlobalErrorHandlers } from './lib/telemetry'
+import { ErrorBoundary } from './components/ui/ErrorBoundary'
 // Layout de desktop das telas ricas: depois do App, para vir por último na cascata
 import './styles/desktop-pages.css'
 
@@ -19,12 +21,17 @@ registerSW({
   },
 })
 
+// Fase 0: erros fora do React (e promessas sem catch) vão para client_errors
+installGlobalErrorHandlers()
+
 // M4: guarda o aviso de "pode instalar" do Android e conta os dias de uso
 listenInstallPrompt()
 countVisit()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <ErrorBoundary scope="app">
+      <App />
+    </ErrorBoundary>
   </StrictMode>,
 )

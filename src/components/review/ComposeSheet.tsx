@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { categoryById, catColor, type CategoryId } from '../../lib/categories'
+import { track } from '../../lib/telemetry'
 import { DID_VERB, localDay, useEntryNote } from '../../lib/diary'
 import { displayName } from '../../lib/format'
 import { useDebounced, useNearMe } from '../../lib/hooks'
@@ -115,6 +116,14 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
   const navigate = useNavigate()
   const { userId } = useAuth()
   const edit = start.edit
+  // Fase 0: tempo de registro (abrir o "+" até salvar) e desistência. O App remonta a cada abertura.
+  const [openedAt] = useState(() => ({ current: Date.now() }))
+  const saved = useRef(false)
+  const close = () => {
+    if (!saved.current) track('compose_cancel', { ms: Date.now() - openedAt.current, editou: Boolean(edit) })
+    saved.current = true // conta uma vez só, mesmo se Esc e o botão fecharem juntos
+    onClose()
+  }
   // "+" puro (sem item, edição ou pré-preenchimento) usa e guarda rascunho
   const blank = !edit && !start.itemId && !start.external && !start.title && !start.category && !start.prefill && !start.loved
   const [draft, setDraft] = useState<Draft | null>(() => (blank ? readDraft() : null))
@@ -260,6 +269,15 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
         companions,
       })
       haptic('success')
+      saved.current = true
+      track('compose_saved', {
+        ms: Date.now() - openedAt.current,
+        categoria: category,
+        editou: Boolean(res.edited),
+        detalhes: details,
+        nota: rating > 0,
+        fotos: photos.length,
+      })
       if (blank) writeDraft(null)
       onDone(res.edited ? 'Entrada atualizada' : 'Registrado no seu diário')
       onClose()
@@ -281,7 +299,7 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
   const yesterday = localDay(-1)
 
   return (
-    <Sheet open={open} onClose={onClose} title={edit ? 'Editar entrada' : 'Registrar'}>
+    <Sheet open={open} onClose={close} title={edit ? 'Editar entrada' : 'Registrar'}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {draft && (
           <div className="draft-note" role="status">

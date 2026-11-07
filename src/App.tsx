@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'motion/react'
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import { BrowserRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
@@ -17,6 +17,8 @@ import Inicio from './pages/Inicio'
 import Login from './pages/Login'
 import { acceptInvite, savePendingInvite, takePendingInvite } from './lib/social'
 import { useQueryClient } from '@tanstack/react-query'
+import { ErrorBoundary } from './components/ui/ErrorBoundary'
+import { reportError, track, trackAppOpen } from './lib/telemetry'
 
 // M0 (velocidade no celular): só Início e Login vêm no primeiro download.
 // As outras telas viram arquivos separados e são baixadas em segundo plano logo
@@ -62,7 +64,17 @@ const loadingPage = <div className="page" aria-busy="true" />
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: true } },
+  // Fase 0: consulta ou gravação que falhou também vira aviso (erros de rede são filtrados em telemetry.ts)
+  queryCache: new QueryCache({ onError: (e, q) => reportError('query', withKey(e, q.queryKey)) }),
+  mutationCache: new MutationCache({ onError: (e, _v, _c, m) => reportError('mutation', withKey(e, m.options.mutationKey ?? ['sem-chave'])) }),
 })
+
+/** Junta a chave da consulta ao erro (só o primeiro pedaço: nome da consulta, sem ids). */
+function withKey(e: Error, key: readonly unknown[]) {
+  const named = new Error(`[${String(key[0])}] ${e.message}`)
+  named.stack = e.stack
+  return named
+}
 
 /**
  * Lido uma vez, quando a página abre na volta do Google:
@@ -102,10 +114,10 @@ function Shell() {
   const [toast, setToast] = useState<string | null>(null)
   const [handoff, setHandoff] = useState(returnParams.handedOffToBrowser)
 
-  const openCompose = useCallback(
-    (start: ComposeStart = {}) => setCompose((c) => ({ open: true, start, key: c.key + 1 })),
-    [],
-  )
+  const openCompose = useCallback((start: ComposeStart = {}) => {
+    track('compose_open', { editou: Boolean(start.edit) })
+    setCompose((c) => ({ open: true, start, key: c.key + 1 }))
+  }, [])
   const closeCompose = useCallback(() => setCompose((c) => ({ ...c, open: false })), [])
 
   // Atalhos de teclado (desktop): N = nova review, / = buscar. Ignorados enquanto se digita
@@ -141,9 +153,11 @@ function Shell() {
   const inviteMatch = location.pathname.match(/^\/convite\/([a-z0-9]+)/i)
   if (inviteMatch) savePendingInvite(inviteMatch[1])
 
-  // Com a pessoa logada, baixa as outras telas em segundo plano
+  // Com a pessoa logada, baixa as outras telas em segundo plano (e conta "abriu o app" 1x por dia)
   useEffect(() => {
-    if (session) prefetchScreens()
+    if (!session) return
+    prefetchScreens()
+    trackAppOpen()
   }, [session])
 
   // Registrar pedido de qualquer canto (menu do card, diário…): ver lib/composeBus.ts
@@ -212,6 +226,7 @@ function Shell() {
           id="conteudo"
           tabIndex={-1}
         >
+          <ErrorBoundary key={location.pathname}>
           <Suspense fallback={loadingPage}>
           <Routes location={location}>
             <Route path="/" element={<Inicio onCompose={() => openCompose()} />} />
@@ -229,6 +244,7 @@ function Shell() {
             <Route path="*" element={<Inicio onCompose={() => openCompose()} />} />
           </Routes>
           </Suspense>
+          </ErrorBoundary>
         </motion.main>
       </AnimatePresence>
 

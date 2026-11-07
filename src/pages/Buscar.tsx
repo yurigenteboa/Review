@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { CatalogResults, NearMeButton } from '../components/review/CatalogResults'
 import type { ComposeStart } from '../components/review/ComposeSheet'
@@ -10,6 +10,7 @@ import { categoryById, type CategoryId } from '../lib/categories'
 import { useDebounced, useNearMe } from '../lib/hooks'
 import { useFinePointer } from '../lib/breakpoints'
 import { useCatalogSearch, useOpenCatalogItem, useSearchItems } from '../lib/queries'
+import { track } from '../lib/telemetry'
 
 export default function Buscar({ onCompose }: { onCompose: (s: ComposeStart) => void }) {
   const navigate = useNavigate()
@@ -31,6 +32,14 @@ export default function Buscar({ onCompose }: { onCompose: (s: ComposeStart) => 
   )
 
   const showExternal: boolean = term.length >= 2 || (placeCat && Boolean(near))
+
+  // Fase 0: busca que não achou nada (só a categoria e o tamanho do termo; o texto não sai do aparelho)
+  const nothingFound =
+    term.length >= 2 && local.isSuccess && external.isSuccess &&
+    (local.data ?? []).length === 0 && (external.data?.results ?? []).length === 0
+  useEffect(() => {
+    if (nothingFound) track('search_empty', { categoria: cat, letras: term.length })
+  }, [nothingFound]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="page page--wide">

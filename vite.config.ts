@@ -3,7 +3,13 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
+// Fase 0: versão que vai junto de cada erro/evento (commit na Vercel, "local" no PC)
+const release = (process.env.VERCEL_GIT_COMMIT_SHA ?? 'local').slice(0, 7)
+
 export default defineConfig({
+  define: {
+    'import.meta.env.VITE_APP_RELEASE': JSON.stringify(release),
+  },
   build: {
     // As bibliotecas (React, Supabase, motion…) num arquivo próprio: mudam pouco, então o
     // celular guarda esse arquivo em cache e, a cada deploy, só baixa de novo o código do app.

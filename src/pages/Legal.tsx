@@ -1,6 +1,7 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { PageHeader } from '../components/ui/PageHeader'
+import { metricsEnabled, setMetricsEnabled } from '../lib/telemetry'
 
 /**
  * Páginas públicas (abrem sem login): exigidas pelo Google para publicar o login
@@ -9,7 +10,7 @@ import { PageHeader } from '../components/ui/PageHeader'
 
 /** E-mail de contato para privacidade e pedidos de exclusão. */
 export const CONTACT_EMAIL = 'contato@mmisc.com.br'
-const UPDATED = '6 de novembro de 2026'
+const UPDATED = '7 de novembro de 2026'
 
 import { LEGAL_PATHS, type LegalDoc } from './legalPaths'
 export { LEGAL_PATHS, type LegalDoc }
@@ -120,8 +121,33 @@ const DOCS: Record<LegalDoc, { title: string; subtitle?: string; body: ReactNode
           identificar sua conta.
         </p>
 
+        <h2>Erros e métricas de uso</h2>
+        <p>
+          Para consertar problemas e saber se o app está funcionando bem, o MMISC registra no próprio banco de dados (no
+          Supabase, em São Paulo, sem nenhuma outra empresa de análise):
+        </p>
+        <ul>
+          <li>
+            <strong>Erros:</strong> a mensagem técnica do erro, a tela onde aconteceu, a versão do app e o navegador.
+          </li>
+          <li>
+            <strong>Uso:</strong> alguns eventos sem conteúdo, como abrir o app (uma vez por dia), abrir, salvar ou cancelar
+            um registro (com o tempo que levou e a categoria) e uma busca sem resultado (só a categoria, nunca o que você
+            digitou).
+          </li>
+        </ul>
+        <p>
+          Nunca entram aí o texto das suas reviews, notas, fotos, e-mail ou localização. Esses dados não são vistos por
+          outros usuários e são apagados depois de 180 dias. Você pode desligar as métricas de uso neste aparelho; os
+          avisos de erro continuam, porque são o que nos deixa corrigir falhas.
+        </p>
+        <MetricsToggle />
+
         <h2>Por quanto tempo guardamos</h2>
-        <p>Enquanto sua conta existir. Quando você pede a exclusão, apagamos a conta e tudo o que está ligado a ela.</p>
+        <p>
+          Enquanto sua conta existir. Quando você pede a exclusão, apagamos a conta e tudo o que está ligado a ela. Erros e
+          métricas de uso: 180 dias.
+        </p>
 
         <h2>Seus direitos</h2>
         <p>
@@ -203,5 +229,21 @@ export default function Legal({ doc }: { doc: LegalDoc }) {
         </nav>
       </article>
     </div>
+  )
+}
+
+/** Fase 0: liga/desliga as métricas de uso neste aparelho (fica no localStorage). */
+function MetricsToggle() {
+  const [on, setOn] = useState(metricsEnabled)
+  const flip = () => {
+    setMetricsEnabled(!on)
+    setOn(!on)
+  }
+  return (
+    <p>
+      <button type="button" className="btn btn--plain tap" aria-pressed={!on} onClick={flip}>
+        {on ? 'Desligar métricas de uso neste aparelho' : 'Métricas desligadas neste aparelho · religar'}
+      </button>
+    </p>
   )
 }
