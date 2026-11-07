@@ -11,6 +11,7 @@ import { averageRating, latestPerPerson, sortDiary, useBestPlaces, useChildItems
 import { useDebounced } from '../lib/hooks'
 import { DID_VERB, WANT_VERB, useItemWatchers, useToggleWatchlist } from '../lib/diary'
 import { isTmdbMovie } from '../lib/movie'
+import { PlaceInfo } from '../components/place/PlaceInfo'
 import Filme from './Filme'
 import { EmptyState, ErrorState, LoadingCards } from './states'
 
@@ -187,6 +188,8 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
       </Glass>
 
       {isGeneric && <BestPlaces generic={it.id} title={it.title} drink={it.category === 'drink'} />}
+
+      {cat.group === 'lugar' && <PlaceInfo item={it} />}
 
       {childCategories(it.category).length > 0 && (
         <PlaceMenu placeId={it.id} onCompose={() => onCompose({ category: it.category, title: it.title, itemId: it.id })} />

@@ -172,3 +172,6 @@ create policy "sugestões: logado lê"   on public.place_suggestions for select 
 create policy "sugestões: logado cria" on public.place_suggestions for insert to authenticated with check (user_id = auth.uid());
 revoke all on public.place_suggestions from anon, authenticated;
 grant select, insert on public.place_suggestions to authenticated;
+
+-- dono do app como administrador (pedido do dono em 07/11; aplicado junto com a migração)
+insert into public.app_admins (user_id) select id from auth.users where email = 'yuri.moraes.soares@gmail.com' on conflict do nothing;

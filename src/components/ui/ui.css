@@ -2241,3 +2241,40 @@ li.is-done .starter__text strong {
     transition: none !important;
   }
 }
+
+/* ---------- Fase 2d: ficha do lugar e sugestões ---------- */
+.ficha__row {
+  width: 100%;
+  border: none;
+  background: none;
+  text-align: left;
+  color: inherit;
+  gap: 12px;
+}
+.ficha__label {
+  flex: none;
+  width: 118px;
+  font-size: 14px;
+  color: var(--text-2);
+}
+.ficha__value {
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+.ficha__value--empty {
+  color: var(--accent);
+}
+.ficha__edit {
+  color: var(--text-3);
+}
+.ficha__sug {
+  gap: 10px;
+}
+.ficha__btn {
+  min-height: 40px;
+  padding: 0 12px;
+  font-size: 14px;
+}
