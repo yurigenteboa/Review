@@ -2162,3 +2162,82 @@ li.is-done .starter__text strong {
   color: var(--text-3);
   text-align: center;
 }
+
+/* ---------- Fase 2c: mapa ---------- */
+.map-wrap {
+  position: relative;
+  /* cabe acima da barra de abas no celular */
+  height: min(calc(100dvh - 330px - var(--safe-top, 0px)), 640px);
+  min-height: 320px;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  background: var(--fill);
+}
+.map-canvas {
+  position: absolute;
+  inset: 0;
+}
+.map-pin {
+  min-width: 36px;
+  height: 28px;
+  padding: 0 7px;
+  border-radius: 14px;
+  border: 2px solid var(--pin);
+  background: var(--surface);
+  color: var(--pin-ink);
+  font: 700 12px/1 var(--font, inherit);
+  box-shadow: var(--pin-shadow);
+  cursor: pointer;
+}
+.map-pin--mine {
+  border-width: 3px;
+  background: color-mix(in srgb, var(--pin) 18%, var(--surface));
+}
+.map-near {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  min-height: 44px;
+  padding: 0 16px;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+}
+.map-card {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 14px 16px;
+}
+.map-card__cat {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.map-card__title {
+  font-size: 18px;
+  font-weight: 700;
+}
+.map-card__sub,
+.map-card__meta {
+  font-size: 14px;
+  color: var(--text-2);
+}
+.map-card__open {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  text-decoration: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .maplibregl-map * {
+    transition: none !important;
+  }
+}

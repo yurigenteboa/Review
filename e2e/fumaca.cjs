@@ -110,6 +110,15 @@ async function healthy(name, page, errors) {
       await healthy(`aba ${label}`, page, errors)
     }
 
+    // Fase 2c: mapa abre pela busca sem quebrar (o fundo do mapa não carrega aqui, só os controles)
+    await page.getByRole('link', { name: 'Buscar' }).first().click()
+    await page.getByRole('link', { name: 'Mapa', exact: true }).click()
+    await page.waitForURL((u) => u.pathname === '/mapa')
+    await page.waitForTimeout(1500)
+    await healthy('mapa', page, errors)
+    await page.getByRole('link', { name: 'Início' }).first().click()
+    await page.waitForTimeout(500)
+
     // registro: abre e cancela
     await page.getByRole('button', { name: /registrar|nova review/i }).first().click()
     await page.waitForTimeout(600)

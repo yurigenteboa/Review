@@ -43,7 +43,14 @@ export default function Buscar({ onCompose }: { onCompose: (s: ComposeStart) => 
 
   return (
     <div className="page page--wide">
-      <PageHeader title="Buscar">
+      <PageHeader
+        title="Buscar"
+        trailing={
+          <Link to="/mapa" className="btn btn--plain tap" style={{ minHeight: 44, padding: '0 16px', display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
+            Mapa
+          </Link>
+        }
+      >
         <label className="search-field">
           <span style={{ color: 'var(--text-3)', display: 'flex' }}>
             <SearchIcon size={18} />

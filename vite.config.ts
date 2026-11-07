@@ -41,6 +41,8 @@ export default defineConfig({
         // Guarda para offline só a Inter do alfabeto latino (português); os outros
         // alfabetos (cirílico, grego, vietnamita) baixam sob demanda, se aparecerem.
         globPatterns: ['**/*.{js,css,html}', 'assets/inter-latin-*.woff2'],
+        // Fase 2c: o mapa (~275 KB comprimido) só baixa quando alguém abre a tela, não na instalação
+        globIgnores: ['**/Mapa-*'],
       },
       manifest: {
         id: '/',

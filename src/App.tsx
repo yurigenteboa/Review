@@ -31,7 +31,6 @@ const SCREENS = {
   Perfil: () => import('./pages/Perfil'),
   Pessoa: () => import('./pages/Pessoa'),
   Notificacoes: () => import('./pages/Notificacoes'),
-  Mapa: () => import('./pages/Mapa'),
   Legal: () => import('./pages/Legal'),
   PublicProfile: () => import('./pages/PublicProfile'),
   // a janela de Registrar também vem depois (é grande) e fica pronta antes do primeiro toque no +
@@ -43,7 +42,8 @@ const Item = lazy(SCREENS.Item)
 const Perfil = lazy(SCREENS.Perfil)
 const Pessoa = lazy(SCREENS.Pessoa)
 const Notificacoes = lazy(SCREENS.Notificacoes)
-const Mapa = lazy(SCREENS.Mapa)
+// Mapa: a biblioteca de mapa é pesada, então só baixa quando a tela abre (fora do prefetch)
+const Mapa = lazy(() => import('./pages/Mapa'))
 const Legal = lazy(SCREENS.Legal)
 const PublicProfile = lazy(SCREENS.PublicProfile)
 // Telas raras: só quando abertas (o leitor de .zip pesa)

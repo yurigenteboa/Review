@@ -176,6 +176,66 @@ export function useGenericOf(itemId: string | undefined, enabled: boolean) {
   })
 }
 
+// ---------- Fase 2c: mapa ----------
+
+export interface MapPlace {
+  id: string
+  title: string
+  subtitle: string | null
+  category: CategoryId
+  lat: number
+  lng: number
+  avg: number
+  rated: number
+  /** você registrou */
+  mine: boolean
+  /** quantas pessoas (que você pode ver) registraram */
+  people: number
+}
+
+/** Lugares com coordenada que você ou quem você pode ver registrou (a RLS de reviews decide). */
+export function useMapPlaces(userId: string | null) {
+  return useQuery({
+    queryKey: ['map-places', userId],
+    enabled: Boolean(userId),
+    staleTime: 60_000,
+    queryFn: async (): Promise<MapPlace[]> => {
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('user_id, rating, experienced_at, created_at, item:items!inner ( id, title, subtitle, category, lat, lng )')
+        .in('item.category', PLACE_SEARCH)
+        .not('item.lat', 'is', null)
+        .order('experienced_at', { ascending: false })
+        .order('created_at', { ascending: false })
+        .limit(1000)
+      if (error) throw error
+      type Row = { user_id: string; rating: number | null; item: { id: string; title: string; subtitle: string | null; category: CategoryId; lat: number; lng: number } }
+      const byItem = new Map<string, { item: Row['item']; latest: Map<string, number | null> }>()
+      for (const r of (data ?? []) as unknown as Row[]) {
+        const e = byItem.get(r.item.id) ?? { item: r.item, latest: new Map<string, number | null>() }
+        // já vem do mais recente para o mais antigo: a primeira de cada pessoa é a que vale
+        if (!e.latest.has(r.user_id)) e.latest.set(r.user_id, r.rating == null ? null : Number(r.rating))
+        byItem.set(r.item.id, e)
+      }
+      return [...byItem.values()].map(({ item, latest }) => {
+        const rated = [...latest.values()].filter((v): v is number => v != null)
+        return {
+          id: item.id,
+          title: item.title,
+          subtitle: item.subtitle,
+          category: item.category,
+          lat: Number(item.lat),
+          lng: Number(item.lng),
+          avg: rated.length ? rated.reduce((a, b) => a + b, 0) / rated.length : 0,
+          rated: rated.length,
+          mine: latest.has(userId!),
+          people: latest.size,
+        }
+      })
+    },
+  })
+}
+
 /** Link de item que foi fundido em outro: devolve o id novo (ou null). */
 export function useItemRedirect(id: string | undefined, enabled: boolean) {
   return useQuery({
