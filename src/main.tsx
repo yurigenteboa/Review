@@ -6,6 +6,7 @@ import '@fontsource-variable/inter/wght.css'
 import './index.css'
 import './components/ui/ui.css'
 import App from './App.tsx'
+import { countVisit, listenInstallPrompt } from './lib/install'
 // Layout de desktop das telas ricas: depois do App, para vir por último na cascata
 import './styles/desktop-pages.css'
 
@@ -17,6 +18,10 @@ registerSW({
     if (reg) setInterval(() => reg.update(), 60 * 60 * 1000)
   },
 })
+
+// M4: guarda o aviso de "pode instalar" do Android e conta os dias de uso
+listenInstallPrompt()
+countVisit()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

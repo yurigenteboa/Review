@@ -11,6 +11,8 @@ import { BellIcon } from '../components/ui/Icons'
 import { EmptyState, ErrorState, LoadingCards } from './states'
 import { HomeAside } from '../components/home/HomeAside'
 import { NowStrip } from '../components/home/NowStrip'
+import { GettingStarted } from '../components/home/GettingStarted'
+import { InstallCard } from '../components/home/InstallCard'
 import { useBreakpoint } from '../lib/breakpoints'
 
 export default function Inicio({ onCompose }: { onCompose: () => void }) {
@@ -46,14 +48,9 @@ export default function Inicio({ onCompose }: { onCompose: () => void }) {
         </PageHeader>
 
         <div className="page__body">
-          {me && !me.username && (
-            <Link to="/perfil" className="review-card tap" style={{ textDecoration: 'none', color: 'inherit', display: 'block', background: 'color-mix(in srgb, var(--accent) 12%, var(--surface))' }}>
-              <strong>Escolha seu @</strong>
-              <span style={{ display: 'block', fontSize: 14, color: 'var(--text-2)', marginTop: 2 }}>
-                É assim que seus amigos vão te achar na busca. Toque para definir.
-              </span>
-            </Link>
-          )}
+          {/* M4: convite para instalar (celular) e primeiros passos (substitui o "Escolha seu @") */}
+          <InstallCard />
+          <GettingStarted />
           {/* M3: fileira "Agora" (você + amigos), só na visão "Tudo" */}
         {cat === 'all' && <NowStrip />}
         {feed.isLoading && <LoadingCards />}
