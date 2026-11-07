@@ -27,3 +27,6 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# Fase 2e: arquivos grandes de lugares (baixados e gerados no PC, não vão para o git)
+dados/

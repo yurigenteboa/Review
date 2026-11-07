@@ -9,13 +9,13 @@ export const SOURCE_CREDIT: Record<CategoryId, string> = {
   serie: 'Dados e pôsteres: TMDB. Este produto usa a API do TMDB, mas não é endossado nem certificado pelo TMDB.',
   jogo: 'Dados e capas: IGDB',
   livro: 'Dados e capas: Open Library',
-  bar: 'Lugares: © colaboradores do OpenStreetMap',
+  bar: 'Lugares: Overture Maps e © colaboradores do OpenStreetMap',
   banheiro: 'Lugares: © colaboradores do OpenStreetMap',
   cidade: 'Cidades: IBGE e © colaboradores do OpenStreetMap',
   drink: '',
   prato: '',
-  restaurante: 'Lugares: © colaboradores do OpenStreetMap',
-  cafe: 'Lugares: © colaboradores do OpenStreetMap',
+  restaurante: 'Lugares: Overture Maps e © colaboradores do OpenStreetMap',
+  cafe: 'Lugares: Overture Maps e © colaboradores do OpenStreetMap',
 }
 
 interface Props {

@@ -1,12 +1,14 @@
 // Sobe um Postgres local (PGlite) com stubs do Supabase (auth, storage, papéis) e roda as migrações em ordem.
 // Sobe um Postgres (PGlite) com stubs do Supabase e roda todas as migrações em ordem.
 import { PGlite } from '@electric-sql/pglite'
+import { pg_trgm } from '@electric-sql/pglite/contrib/pg_trgm'
 import fs from 'fs'
 import path from 'path'
 export async function setup(migDir, { skip = [] } = {}) {
-  const db = new PGlite()
+  const db = new PGlite({ extensions: { pg_trgm } })
   await db.exec(`
 create role anon; create role authenticated; create role service_role;
+create schema if not exists extensions; grant usage on schema extensions to anon, authenticated;
 create schema auth;
 create table auth.users (id uuid primary key, email text, raw_user_meta_data jsonb default '{}', raw_app_meta_data jsonb default '{}');
 create table auth.identities (id uuid primary key default gen_random_uuid(), user_id uuid references auth.users(id), provider text, identity_data jsonb default '{}');

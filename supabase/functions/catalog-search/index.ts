@@ -250,6 +250,22 @@ const PLACE_TYPES: Record<PlaceCategory, string[]> = {
   cafe: ['cafe', 'ice_cream'],
 }
 
+const ALL_KINDS: PlaceCategory[] = ['bar', 'restaurante', 'cafe']
+
+/** Catálogo próprio (tabela place_catalog, Fase 2e), lido como o próprio usuário (a RLS vale). */
+async function catalog(q: string, lat: number | undefined, lng: number | undefined, kinds: PlaceCategory[], auth: string): Promise<any[]> {
+  const key = Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+  if (!SUPABASE_URL || !key || !auth) return []
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/search_place_catalog`, {
+    method: 'POST',
+    headers: { apikey: key, Authorization: auth, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ p_q: q, p_lat: lat ?? null, p_lng: lng ?? null, p_kinds: kinds, p_limit: 20 }),
+    signal: AbortSignal.timeout(5000),
+  })
+  if (!res.ok) throw new Error(`catálogo respondeu ${res.status}`) // ex.: tabela ainda não criada
+  return await res.json()
+}
+
 /** sem localização, a busca de lugares puxa para São Paulo (onde o app começa) */
 const SP_CENTER: [number, number] = [-23.55, -46.64]
 const ALL_PLACE_TYPES = [...PLACE_TYPES.bar, ...PLACE_TYPES.restaurante, ...PLACE_TYPES.cafe]
@@ -286,7 +302,7 @@ async function overpass(query: string): Promise<any[]> {
   return data.elements ?? []
 }
 
-async function searchPlaces(kind: PlaceCategory, q: string, lat?: number, lng?: number): Promise<Result[]> {
+async function searchPlaces(kind: PlaceCategory, q: string, lat?: number, lng?: number, auth = ''): Promise<Result[]> {
   // No Brasil muito lugar é "bar e restaurante" e no OSM fica marcado só como um dos dois
   // (ex.: Jhonys, em Santa Cecília, é restaurant + bakery). Com texto, aceita qualquer lugar de
   // comer/beber e põe primeiro os do tipo pedido. Sem texto (só "perto de você"), só o tipo pedido.
@@ -323,7 +339,8 @@ async function searchPlaces(kind: PlaceCategory, q: string, lat?: number, lng?: 
   }
 
   // As três fontes rodam juntas; se uma cair (o Nominatim limita IPs de nuvem), as outras seguem.
-  const [near, nom, pho] = await Promise.allSettled([
+  const [cat, near, nom, pho] = await Promise.allSettled([
+    catalog(q, lat, lng, q ? ALL_KINDS : [kind], auth),
     hasLoc
       ? overpass(
           `[out:json][timeout:10];(node["amenity"~"${re}"]["name"](around:1500,${lat},${lng});` +
@@ -334,7 +351,19 @@ async function searchPlaces(kind: PlaceCategory, q: string, lat?: number, lng?: 
     q ? photon(q, lat, lng) : Promise.resolve([]),
   ])
   const failed = [near, nom, pho].filter((p) => p.status === 'rejected').length
-  if (failed === 3 || (failed === 2 && !hasLoc && q)) throw new Error('fontes de lugares fora do ar')
+  const catOk = cat.status === 'fulfilled' && cat.value.length > 0
+  if (!catOk && (failed === 3 || (failed === 2 && !hasLoc && q))) throw new Error('fontes de lugares fora do ar')
+
+  // 1º o catálogo próprio (mais completo e tolerante); as fontes ao vivo completam
+  if (cat.status === 'fulfilled') {
+    for (const c of cat.value) {
+      const r = place(`overture:${c.id}`, c.name, c.area ?? c.address ?? null, c.lat, c.lng, c.raw_category ?? c.kind)
+      r.source = 'overture'
+      r.external_id = c.id
+      r.metadata.kind = c.kind
+      add(r)
+    }
+  }
 
   if (near.status === 'fulfilled') {
     for (const e of near.value) {
@@ -366,12 +395,15 @@ async function searchPlaces(kind: PlaceCategory, q: string, lat?: number, lng?: 
   const [refLat, refLng] = hasLoc ? [lat!, lng!] : SP_CENTER
   const score = (r: Result) => {
     const text = !term || norm(r.title).includes(term) ? 0 : 1
-    const type = own.includes(String(r.metadata.amenity)) ? 0 : 1
+    const type = r.metadata.kind ? (r.metadata.kind === kind ? 0 : 1) : own.includes(String(r.metadata.amenity)) ? 0 : 1
     return text * 10 + type
   }
   const far = (r: Result) => (r.lat != null && r.lng != null ? distanceM(refLat, refLng, r.lat, r.lng) : 1e9)
-  out.sort((a, b) => score(a) - score(b) || far(a) - far(b))
-  return out.slice(0, 20)
+  // com o catálogo respondendo, as fontes ao vivo só completam com o que está a menos de 300 km
+  // (antes vinham bares de Varsóvia e da Itália para "bar brama")
+  const kept = catOk ? out.filter((r) => r.source === 'overture' || far(r) < 300_000) : out
+  kept.sort((a, b) => score(a) - score(b) || far(a) - far(b))
+  return kept.slice(0, 20)
 }
 
 async function searchToilets(q: string, lat?: number, lng?: number): Promise<Result[]> {
@@ -487,7 +519,7 @@ async function searchCities(q: string): Promise<Result[]> {
 
 // ---------- roteador ----------
 
-async function run({ category, q, lat, lng }: Query): Promise<Result[]> {
+async function run({ category, q, lat, lng }: Query, auth: string): Promise<Result[]> {
   switch (category) {
     case 'album':
       return searchAlbums(q)
@@ -502,7 +534,7 @@ async function run({ category, q, lat, lng }: Query): Promise<Result[]> {
     case 'bar':
     case 'restaurante':
     case 'cafe':
-      return searchPlaces(category, q, lat, lng)
+      return searchPlaces(category, q, lat, lng, auth)
     case 'banheiro':
       return searchToilets(q, lat, lng)
     case 'cidade':
@@ -539,7 +571,7 @@ Deno.serve(async (req) => {
   if (hit && Date.now() - hit.at < CACHE_MS) return json({ results: hit.data, cached: true })
 
   try {
-    const results = (await run({ category, q, lat, lng })).filter((r) => r.title)
+    const results = (await run({ category, q, lat, lng }, req.headers.get('Authorization') ?? '')).filter((r) => r.title)
     cache.set(key, { at: Date.now(), data: results })
     if (cache.size > 500) cache.delete(cache.keys().next().value!)
     return json({ results })
