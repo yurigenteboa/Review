@@ -1,4 +1,5 @@
 import { useState, type CSSProperties } from 'react'
+import { RankingsSection } from './RankingsSection'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { DiaryList, WatchlistGrid } from '../review/DiaryViews'
 import { Cover, ReviewCard } from '../review/ReviewCard'
@@ -167,6 +168,8 @@ export function ProfileView({ userId, isMe }: { userId: string; isMe: boolean })
         )}
 
         <TopTen userId={userId} isMe={isMe} cat={cat} entries={all} />
+
+        {isMe && <RankingsSection userId={userId} />}
 
         <Goals userId={userId} isMe={isMe} entries={all} />
 

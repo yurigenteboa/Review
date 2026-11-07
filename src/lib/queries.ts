@@ -685,3 +685,54 @@ export function useUpdateProfile() {
     onSuccess: () => qc.invalidateQueries(),
   })
 }
+
+// ---------- Fase 2 · "Meus lugares em ordem" ----------
+
+/** Quantos lugares você já ranqueou em cada categoria (para a seção do perfil). */
+export function useMyRankCounts(userId: string | null) {
+  return useQuery({
+    queryKey: ['place-ranks', userId, 'counts'],
+    enabled: Boolean(userId),
+    queryFn: async (): Promise<Partial<Record<CategoryId, number>>> => {
+      const { data, error } = await supabase.from('place_ranks').select('category').eq('user_id', userId!)
+      if (error) throw error
+      const out: Partial<Record<CategoryId, number>> = {}
+      for (const r of (data ?? []) as { category: CategoryId }[]) out[r.category] = (out[r.category] ?? 0) + 1
+      return out
+    },
+  })
+}
+
+/**
+ * Grava a nova ordem: cada lugar recebe grupo e posição (maior = melhor dentro do grupo).
+ * Só as linhas que mudaram vão para o banco. A nota das entradas do diário não muda.
+ */
+export function useSaveRankOrder(category: CategoryId, userId: string | null) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (changes: { item_id: string; bucket: 1 | 2 | 3; pos: number }[]) => {
+      for (const c of changes) {
+        const { error } = await supabase
+          .from('place_ranks')
+          .update({ bucket: c.bucket, pos: c.pos })
+          .eq('user_id', userId!)
+          .eq('category', category)
+          .eq('item_id', c.item_id)
+        if (error) throw error
+      }
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ['place-ranks', userId] }),
+  })
+}
+
+/** Tira um lugar do seu ranking (o diário continua igual). */
+export function useRemoveRank(category: CategoryId, userId: string | null) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (itemId: string) => {
+      const { error } = await supabase.from('place_ranks').delete().eq('user_id', userId!).eq('category', category).eq('item_id', itemId)
+      if (error) throw error
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ['place-ranks', userId] }),
+  })
+}

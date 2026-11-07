@@ -2278,3 +2278,101 @@ li.is-done .starter__text strong {
   padding: 0 12px;
   font-size: 14px;
 }
+
+/* ---------- Fase 2 · Meus lugares em ordem (/ranking) ---------- */
+.rank-hint {
+  margin: 4px 16px 12px;
+  color: var(--text-2);
+  font-size: 0.875rem;
+}
+.rank-group {
+  margin: 0 16px 20px;
+}
+.rank-group__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+.rank-group__count {
+  margin-left: auto;
+  color: var(--text-2);
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+.rank-group__empty {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 0.875rem;
+}
+.rank-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.rank-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 52px;
+  padding-right: 4px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  border: 1px solid var(--separator);
+  position: relative;
+}
+.rank-row__handle {
+  width: 44px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: none;
+  color: var(--text-2);
+  cursor: grab;
+  touch-action: none;
+  letter-spacing: -2px;
+}
+.rank-row__handle:active {
+  cursor: grabbing;
+}
+.rank-row__place {
+  min-width: 2.2em;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--accent);
+}
+.rank-row__title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+  text-decoration: none;
+  padding: 12px 0;
+}
+.rank-row__actions {
+  display: flex;
+  align-items: center;
+}
+.rank-row__actions .icon-btn:disabled {
+  opacity: 0.3;
+}
+.rank-row__remove {
+  min-width: 44px;
+  min-height: 44px;
+  color: var(--text-2);
+}
+.rank-row__remove.is-confirm {
+  color: var(--like);
+  font-weight: 600;
+}
+.rank-status {
+  margin: 0 16px 24px;
+  color: var(--text-2);
+  font-size: 0.875rem;
+}

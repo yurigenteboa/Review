@@ -49,6 +49,7 @@ const PublicProfile = lazy(SCREENS.PublicProfile)
 // Telas raras: só quando abertas (o leitor de .zip pesa)
 const ImportLetterboxd = lazy(() => import('./pages/ImportLetterboxd'))
 const Retrospectiva = lazy(() => import('./pages/Retrospectiva'))
+const Ranking = lazy(() => import('./pages/Ranking'))
 const Kit = lazy(() => import('./pages/Kit'))
 const ComposeSheet = lazy(() => SCREENS.Compose().then((m) => ({ default: m.ComposeSheet })))
 // Só para mouse/trackpad: no celular nem é baixado
@@ -259,6 +260,7 @@ function Shell() {
             <Route path="/kit" element={<Kit />} />
             <Route path="/importar" element={<ImportLetterboxd />} />
             <Route path="/retrospectiva" element={<Retrospectiva />} />
+            <Route path="/ranking" element={<Ranking />} />
             <Route path="*" element={<Inicio onCompose={() => openCompose()} />} />
           </Routes>
           </Suspense>

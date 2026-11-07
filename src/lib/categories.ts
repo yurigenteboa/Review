@@ -72,3 +72,6 @@ export const catInk = (id: CategoryId) => `var(--cat-${id}-ink)`
 
 /** Formata nota no padrão brasileiro: 4.5 -> "4,5" */
 export const formatRating = (n: number) => n.toFixed(1).replace('.', ',')
+
+/** categorias com nota por comparação e ranking próprio (bar, restaurante, café) */
+export const RANKED_CATEGORIES = CATEGORIES.filter((c) => c.ratingMode === 'comparacao')
