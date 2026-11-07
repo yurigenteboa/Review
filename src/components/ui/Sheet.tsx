@@ -32,6 +32,13 @@ export function Sheet({ open, onClose, title, children, desktop = 'dialog' }: Sh
   const bp = useBreakpoint()
   const panelRef = useRef<HTMLElement>(null)
   const mode = bp === 'mobile' ? 'bottom' : desktop
+  // onClose costuma ser uma função nova a cada render; guardada em ref para o efeito abaixo
+  // rodar só ao abrir/fechar. Antes ele re-rodava a cada tecla: devolvia o foco a quem abriu e
+  // focava o painel de novo, tirando o cursor do campo enquanto a pessoa digitava.
+  const onCloseRef = useRef(onClose)
+  useEffect(() => {
+    onCloseRef.current = onClose
+  })
 
   useEffect(() => {
     if (!open) return
@@ -43,7 +50,7 @@ export function Sheet({ open, onClose, title, children, desktop = 'dialog' }: Sh
       if (!panel || !isTopmost(panel)) return
       if (e.key === 'Escape') {
         e.stopPropagation()
-        onClose()
+        onCloseRef.current()
         return
       }
       if (e.key !== 'Tab') return
@@ -69,7 +76,11 @@ export function Sheet({ open, onClose, title, children, desktop = 'dialog' }: Sh
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     // Foco no painel (não no primeiro campo: no celular isso abriria o teclado sozinho)
-    const t = requestAnimationFrame(() => panelRef.current?.focus({ preventScroll: true }))
+    // Só se o foco ainda não estiver lá dentro (ex.: campo com autoFocus)
+    const t = requestAnimationFrame(() => {
+      const panel = panelRef.current
+      if (panel && !panel.contains(document.activeElement)) panel.focus({ preventScroll: true })
+    })
 
     return () => {
       cancelAnimationFrame(t)
@@ -77,7 +88,7 @@ export function Sheet({ open, onClose, title, children, desktop = 'dialog' }: Sh
       document.body.style.overflow = prev
       if (opener?.isConnected) opener.focus({ preventScroll: true })
     }
-  }, [open, onClose])
+  }, [open])
 
   const motionProps =
     mode === 'bottom'

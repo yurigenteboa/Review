@@ -10,12 +10,18 @@
 //   serie    -> TMDB /search/tv                        (TMDB_TOKEN)
 //   jogo     -> IGDB                                   (TWITCH_CLIENT_ID + TWITCH_CLIENT_SECRET)
 //   livro    -> Open Library                           (sem chave)
-//   bar      -> OpenStreetMap: Nominatim + Overpass    (sem chave)
+//   bar         -> OpenStreetMap: Nominatim + Overpass (sem chave)
+//   restaurante -> OpenStreetMap: Nominatim + Overpass (sem chave)
+//   cafe        -> OpenStreetMap: Nominatim + Overpass (sem chave)
 //   banheiro -> OpenStreetMap: Overpass + Nominatim    (sem chave)
 //   cidade   -> IBGE (Brasil) + Nominatim (mundo)      (sem chave)
+// Login: "Verify JWT with legacy secret" fica DESLIGADO no painel (o projeto assina com ECC);
+// a função confere o token sozinha pelas chaves públicas (JWKS).
 // =====================================================================
 
-type Category = 'album' | 'filme' | 'serie' | 'jogo' | 'livro' | 'bar' | 'banheiro' | 'cidade'
+import { createRemoteJWKSet, jwtVerify } from 'npm:jose@6.1.0'
+
+type Category = 'album' | 'filme' | 'serie' | 'jogo' | 'livro' | 'bar' | 'restaurante' | 'cafe' | 'banheiro' | 'cidade'
 
 interface Result {
   source: string
@@ -37,12 +43,26 @@ interface Query {
   lng?: number
 }
 
-const UA = 'Review/1.0 (app pessoal de reviews; https://review-one-omega.vercel.app)'
+const UA = 'MMISC/1.0 (app de reviews; https://www.mmisc.com.br)'
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
+}
+
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? ''
+const JWKS = createRemoteJWKSet(new URL(`${SUPABASE_URL}/auth/v1/.well-known/jwks.json`))
+
+async function isLoggedIn(req: Request): Promise<boolean> {
+  const token = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '')
+  if (!token) return false
+  try {
+    const { payload } = await jwtVerify(token, JWKS, { issuer: `${SUPABASE_URL}/auth/v1` })
+    return payload.role === 'authenticated'
+  } catch {
+    return false
+  }
 }
 
 class MissingKey extends Error {
@@ -222,7 +242,27 @@ async function searchBooks(q: string): Promise<Result[]> {
 
 // ---------- Lugares: OpenStreetMap ----------
 
-const BAR_TYPES = new Set(['bar', 'pub', 'biergarten', 'nightclub', 'restaurant', 'cafe', 'fast_food', 'food_court'])
+// Fase 2: cada categoria de lugar procura só os seus tipos do OSM (antes, "bar" trazia restaurante e café juntos)
+type PlaceCategory = 'bar' | 'restaurante' | 'cafe'
+const PLACE_TYPES: Record<PlaceCategory, string[]> = {
+  bar: ['bar', 'pub', 'biergarten', 'nightclub'],
+  restaurante: ['restaurant', 'fast_food', 'food_court'],
+  cafe: ['cafe', 'ice_cream'],
+}
+
+/** sem localização, a busca de lugares puxa para São Paulo (onde o app começa) */
+const SP_CENTER: [number, number] = [-23.55, -46.64]
+const ALL_PLACE_TYPES = [...PLACE_TYPES.bar, ...PLACE_TYPES.restaurante, ...PLACE_TYPES.cafe]
+/** lojas que no Brasil funcionam como bar/café (padaria, empório de bebidas) */
+const PLACE_SHOPS = ['bakery', 'pastry', 'coffee', 'beverages', 'alcohol', 'confectionery']
+
+/** Photon (Komoot): busca do OSM que tolera erro de digitação ("jhonys" acha "Johnny's"). */
+async function photon(q: string, lat?: number, lng?: number): Promise<any[]> {
+  const [bLat, bLng] = lat != null && lng != null ? [lat, lng] : SP_CENTER
+  const near = `&lat=${bLat}&lon=${bLng}&location_bias_scale=0.4`
+  const data = await getJSON(`https://photon.komoot.io/api/?limit=20${near}&q=${encodeURIComponent(q)}`)
+  return data.features ?? []
+}
 
 function placeArea(addr: Record<string, string> = {}) {
   const hood = addr.suburb ?? addr.neighbourhood ?? addr.quarter ?? addr.city_district ?? null
@@ -246,60 +286,91 @@ async function overpass(query: string): Promise<any[]> {
   return data.elements ?? []
 }
 
-async function searchBars(q: string, lat?: number, lng?: number): Promise<Result[]> {
-  const out: Result[] = []
+async function searchPlaces(kind: PlaceCategory, q: string, lat?: number, lng?: number): Promise<Result[]> {
+  // No Brasil muito lugar é "bar e restaurante" e no OSM fica marcado só como um dos dois
+  // (ex.: Jhonys, em Santa Cecília, é restaurant + bakery). Com texto, aceita qualquer lugar de
+  // comer/beber e põe primeiro os do tipo pedido. Sem texto (só "perto de você"), só o tipo pedido.
+  const own = PLACE_TYPES[kind]
+  const types = q ? ALL_PLACE_TYPES : own
+  const re = `^(${types.join('|')})$`
   const hasLoc = lat != null && lng != null
+  // compara sem acento, espaço ou apóstrofo ("Johnny's" = "johnnys")
+  const norm = (t: string) => strip(t).replace(/[^a-z0-9]/g, '')
+  const term = norm(q)
+  const out: Result[] = []
+  const seen = new Set<string>()
+  const add = (r: Result) => {
+    if (!r.title || seen.has(r.external_id)) return
+    // o mesmo lugar marcado duas vezes no OSM (ex.: restaurante + padaria): mesmo nome a < 300 m
+    if (out.some((o) => norm(o.title) === norm(r.title) && distanceM(o.lat!, o.lng!, r.lat!, r.lng!) < 300)) return
+    seen.add(r.external_id)
+    out.push(r)
+  }
+  const place = (id: string, title: string, subtitle: string | null, pLat: number, pLng: number, amenity: string): Result => {
+    const d = hasLoc ? distanceM(lat!, lng!, pLat, pLng) : null
+    return {
+      source: 'osm',
+      external_id: id,
+      category: kind,
+      title,
+      subtitle: [d != null && d < 50000 ? fmtDist(d) : null, subtitle].filter(Boolean).join(' · ') || null,
+      image_url: null,
+      year: null,
+      lat: pLat,
+      lng: pLng,
+      metadata: { amenity, ...(d != null ? { distance_m: d } : {}) },
+    }
+  }
 
-  // Perto de mim (sem texto ou com texto filtrando pelo nome)
-  if (hasLoc) {
-    const els = await overpass(
-      `[out:json][timeout:10];(node["amenity"~"^(bar|pub|biergarten|nightclub|restaurant|cafe)$"]["name"](around:1200,${lat},${lng});` +
-        `way["amenity"~"^(bar|pub|biergarten|nightclub|restaurant|cafe)$"]["name"](around:1200,${lat},${lng}););out center 60;`,
-    ).catch(() => [])
-    const term = strip(q)
-    for (const e of els) {
+  // As três fontes rodam juntas; se uma cair (o Nominatim limita IPs de nuvem), as outras seguem.
+  const [near, nom, pho] = await Promise.allSettled([
+    hasLoc
+      ? overpass(
+          `[out:json][timeout:10];(node["amenity"~"${re}"]["name"](around:1500,${lat},${lng});` +
+            `way["amenity"~"${re}"]["name"](around:1500,${lat},${lng}););out center 80;`,
+        )
+      : Promise.resolve([]),
+    q ? nominatim(q, lat, lng) : Promise.resolve([]),
+    q ? photon(q, lat, lng) : Promise.resolve([]),
+  ])
+  const failed = [near, nom, pho].filter((p) => p.status === 'rejected').length
+  if (failed === 3 || (failed === 2 && !hasLoc && q)) throw new Error('fontes de lugares fora do ar')
+
+  if (near.status === 'fulfilled') {
+    for (const e of near.value) {
       const name: string = e.tags?.name ?? ''
-      if (term && !strip(name).includes(term)) continue
-      const eLat = e.lat ?? e.center?.lat
-      const eLng = e.lon ?? e.center?.lon
-      const d = distanceM(lat!, lng!, eLat, eLng)
-      out.push({
-        source: 'osm',
-        external_id: `${e.type}/${e.id}`,
-        category: 'bar',
-        title: name,
-        subtitle: [fmtDist(d), e.tags?.['addr:street']].filter(Boolean).join(' · '),
-        image_url: null,
-        year: null,
-        lat: eLat,
-        lng: eLng,
-        metadata: { amenity: e.tags?.amenity, distance_m: d },
-      })
+      if (term && !norm(name).includes(term)) continue
+      add(place(`${e.type}/${e.id}`, name, e.tags?.['addr:street'] ?? null, e.lat ?? e.center?.lat, e.lon ?? e.center?.lon, e.tags?.amenity))
     }
-    out.sort((a, b) => (a.metadata.distance_m as number) - (b.metadata.distance_m as number))
+  }
+  if (nom.status === 'fulfilled') {
+    for (const r of nom.value) {
+      const ok = (r.category === 'amenity' && types.includes(r.type)) || (q && r.category === 'shop' && PLACE_SHOPS.includes(r.type))
+      if (!ok) continue
+      add(place(`${r.osm_type}/${r.osm_id}`, r.name || r.display_name.split(',')[0], placeArea(r.address), Number(r.lat), Number(r.lon), r.type))
+    }
+  }
+  if (pho.status === 'fulfilled') {
+    const OSM_TYPE: Record<string, string> = { N: 'node', W: 'way', R: 'relation' }
+    for (const f of pho.value) {
+      const p = f.properties ?? {}
+      const ok = (p.osm_key === 'amenity' && types.includes(p.osm_value)) || (p.osm_key === 'shop' && PLACE_SHOPS.includes(p.osm_value))
+      if (!ok || !OSM_TYPE[p.osm_type]) continue
+      const area = [p.district ?? p.locality, p.city].filter(Boolean).join(', ') || null
+      const [pLng, pLat] = f.geometry?.coordinates ?? []
+      add(place(`${OSM_TYPE[p.osm_type]}/${p.osm_id}`, p.name, area, pLat, pLng, p.osm_value))
+    }
   }
 
-  // Busca por nome em qualquer lugar
-  if (q) {
-    const rows = await nominatim(q, lat, lng)
-    for (const r of rows) {
-      if (r.category !== 'amenity' || !BAR_TYPES.has(r.type)) continue
-      const id = `${r.osm_type}/${r.osm_id}`
-      if (out.some((o) => o.external_id === id)) continue
-      out.push({
-        source: 'osm',
-        external_id: id,
-        category: 'bar',
-        title: r.name || r.display_name.split(',')[0],
-        subtitle: placeArea(r.address),
-        image_url: null,
-        year: null,
-        lat: Number(r.lat),
-        lng: Number(r.lon),
-        metadata: { amenity: r.type },
-      })
-    }
+  // ordem: nome que contém o texto > tipo pedido > mais perto (de você ou, sem localização, do centro de SP)
+  const [refLat, refLng] = hasLoc ? [lat!, lng!] : SP_CENTER
+  const score = (r: Result) => {
+    const text = !term || norm(r.title).includes(term) ? 0 : 1
+    const type = own.includes(String(r.metadata.amenity)) ? 0 : 1
+    return text * 10 + type
   }
+  const far = (r: Result) => (r.lat != null && r.lng != null ? distanceM(refLat, refLng, r.lat, r.lng) : 1e9)
+  out.sort((a, b) => score(a) - score(b) || far(a) - far(b))
   return out.slice(0, 20)
 }
 
@@ -429,7 +500,9 @@ async function run({ category, q, lat, lng }: Query): Promise<Result[]> {
     case 'livro':
       return searchBooks(q)
     case 'bar':
-      return searchBars(q, lat, lng)
+    case 'restaurante':
+    case 'cafe':
+      return searchPlaces(category, q, lat, lng)
     case 'banheiro':
       return searchToilets(q, lat, lng)
     case 'cidade':
@@ -445,6 +518,7 @@ const json = (body: unknown, status = 200) =>
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
   if (req.method !== 'POST') return json({ error: 'Use POST' }, 405)
+  if (!(await isLoggedIn(req))) return json({ error: 'Entre na sua conta para buscar.' }, 401)
 
   let input: Query
   try {
@@ -457,7 +531,7 @@ Deno.serve(async (req) => {
   const lat = typeof input.lat === 'number' ? Math.round(input.lat * 1000) / 1000 : undefined
   const lng = typeof input.lng === 'number' ? Math.round(input.lng * 1000) / 1000 : undefined
   const category = input.category
-  const needsText = !(category === 'bar' || category === 'banheiro') || lat == null
+  const needsText = !(['bar', 'restaurante', 'cafe', 'banheiro'] as string[]).includes(category) || lat == null
   if (needsText && q.length < 2) return json({ results: [] })
 
   const key = JSON.stringify([category, strip(q), lat, lng])
