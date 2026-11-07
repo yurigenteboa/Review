@@ -100,3 +100,10 @@ button {
     animation-duration: 0.01ms !important;
   }
 }
+
+/* M1: telas entram/saem de lado (transição e arrastar da borda); `clip` corta o que passa
+   da largura sem virar caixa de rolagem, então os cabeçalhos fixos (sticky) continuam funcionando */
+html,
+body {
+  overflow-x: clip;
+}

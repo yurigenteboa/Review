@@ -86,9 +86,10 @@ export function useItem(id: string | undefined) {
         .from('items')
         .select('id, category, title, subtitle, image_url, year, source, external_id, metadata')
         .eq('id', id!)
-        .single()
+        .maybeSingle()
       if (error) throw error
-      return data as Item
+      // null = item não existe (link antigo, item apagado): a tela mostra "não encontrado", não é erro
+      return (data as Item | null) ?? null
     },
   })
 }

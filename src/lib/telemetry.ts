@@ -35,7 +35,10 @@ export function setMetricsEnabled(on: boolean) {
   } catch {
     /* modo privado: fica valendo só nesta visita */
   }
-  if (!on) queue.length = 0
+  if (!on) {
+    queue.length = 0
+    storeQueue()
+  }
 }
 
 // ---------- Erros ----------
@@ -130,13 +133,36 @@ interface QueuedEvent {
   props: EventProps
   created_at: string
 }
-const queue: QueuedEvent[] = []
+// A fila também fica no aparelho: se o app recarregar antes do envio (troca de versão depois
+// de um deploy, fechar a aba), os eventos saem na próxima abertura em vez de se perderem.
+const QUEUE_KEY = 'mmisc.eventQueue'
+const queue: QueuedEvent[] = readStoredQueue()
 let timer: ReturnType<typeof setTimeout> | null = null
+
+function readStoredQueue(): QueuedEvent[] {
+  try {
+    const raw = localStorage.getItem(QUEUE_KEY)
+    const list: unknown = raw ? JSON.parse(raw) : []
+    return Array.isArray(list) ? (list as QueuedEvent[]).slice(-50) : []
+  } catch {
+    return []
+  }
+}
+
+function storeQueue() {
+  try {
+    if (queue.length) localStorage.setItem(QUEUE_KEY, JSON.stringify(queue.slice(-50)))
+    else localStorage.removeItem(QUEUE_KEY)
+  } catch {
+    /* sem storage: fica só na memória */
+  }
+}
 
 /** Registra um evento de uso. Vai em lote a cada 10 s ou quando o app sai de cena. */
 export function track(name: EventName, props: EventProps = {}) {
   if (!metricsEnabled()) return
   queue.push({ name, props, created_at: new Date().toISOString() })
+  storeQueue()
   if (isDev) console.info('[MMISC evento]', name, props)
   if (!timer) timer = setTimeout(flush, 10_000)
 }
@@ -146,21 +172,26 @@ async function flush() {
   timer = null
   if (!queue.length || !supabaseReady || isDev) {
     queue.length = 0
+    storeQueue()
     return
   }
   const { data } = await supabase.auth.getSession()
-  if (!data.session) {
-    queue.length = 0
-    return
-  }
+  // sem login ainda: a fila espera (fica guardada) até a próxima tentativa
+  if (!data.session) return
   const batch = queue.splice(0, queue.length)
   const sid = sessionId()
+  // A cópia guardada só é atualizada depois da resposta: se a página fechar no meio do envio,
+  // o lote sai de novo na próxima abertura (melhor um evento repetido que um perdido).
   const { error } = await supabase
     .from('app_events')
     .insert(batch.map((e) => ({ ...e, session_id: sid, release: cut(RELEASE, 40) })))
-  // falhou (sem rede): devolve à fila uma vez, sem crescer sem limite
+  // falhou (sem rede): devolve à fila, sem passar de 50
   if (error && queue.length < 50) queue.unshift(...batch.slice(0, 50 - queue.length))
+  storeQueue()
 }
+
+// Sobrou fila de uma visita anterior: tenta mandar logo depois que o app abrir
+if (typeof window !== 'undefined' && queue.length) timer = setTimeout(flush, 3_000)
 
 if (typeof document !== 'undefined') {
   document.addEventListener('visibilitychange', () => {

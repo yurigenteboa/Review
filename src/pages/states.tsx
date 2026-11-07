@@ -36,8 +36,12 @@ export function EmptyState({
 export function ErrorState({ error, onRetry }: { error: unknown; onRetry?: () => void }) {
   return (
     <div role="alert" style={{ textAlign: 'center', padding: '40px 24px', display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center' }}>
-      <strong>Algo deu errado</strong>
-      <span style={{ fontSize: 14, color: 'var(--text-3)' }}>{(error as Error)?.message ?? 'Erro desconhecido'}</span>
+      <strong>Não deu para carregar</strong>
+      <span style={{ fontSize: 14, color: 'var(--text-3)' }}>
+        {/network|fetch|load failed/i.test((error as Error)?.message ?? '')
+          ? 'Parece que a internet caiu. Confira a conexão e tente de novo.'
+          : 'Tente de novo em instantes.'}
+      </span>
       {onRetry && (
         <button type="button" className="btn btn--plain tap" onClick={onRetry}>
           Tentar de novo

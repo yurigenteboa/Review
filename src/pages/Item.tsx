@@ -10,7 +10,7 @@ import { averageRating, latestPerPerson, sortDiary, useDeleteReview, useItem, us
 import { DID_VERB, WANT_VERB, useItemWatchers, useToggleWatchlist } from '../lib/diary'
 import { isTmdbMovie } from '../lib/movie'
 import Filme from './Filme'
-import { ErrorState, LoadingCards } from './states'
+import { EmptyState, ErrorState, LoadingCards } from './states'
 
 export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => void }) {
   const { id } = useParams()
@@ -23,7 +23,17 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
   const want = useToggleWatchlist()
   const iWant = (watchers.data ?? []).some((w) => w.user_id === userId)
 
-  if (item.error) return <div className="page"><ErrorState error={item.error} /></div>
+  if (item.error) return <div className="page"><ErrorState error={item.error} onRetry={() => void item.refetch()} /></div>
+  if (item.isSuccess && !item.data)
+    return (
+      <div className="page">
+        <EmptyState
+          title="Esse item não existe mais"
+          text="O link pode ser antigo ou o item foi apagado."
+          action={{ label: 'Ir para a busca', onClick: () => navigate('/buscar') }}
+        />
+      </div>
+    )
   if (!item.data) return <div className="page"><div className="page__body"><LoadingCards count={2} /></div></div>
 
   const it = item.data

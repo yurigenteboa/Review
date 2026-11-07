@@ -1,12 +1,13 @@
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence, motion, useReducedMotion, type Variants } from 'motion/react'
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
-import { BrowserRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
+import { BrowserRouter, Route, Routes, useLocation, useNavigate, useNavigationType } from 'react-router-dom'
 import type { ComposeStart } from './components/review/ComposeSheet'
 import { TabBar } from './components/ui/TabBar'
 import { SideBar } from './components/ui/SideBar'
 import { useBreakpoint, useFinePointer } from './lib/breakpoints'
-import { useScrollMemory } from './lib/navigation'
+import { TAB_ROOTS, useScrollMemory } from './lib/navigation'
+import { EdgeSwipeBack } from './components/ui/EdgeSwipeBack'
 import { COMPOSE_EVENT } from './lib/composeBus'
 import { PullToRefresh } from './components/ui/PullToRefresh'
 import { Glass } from './components/ui/Glass'
@@ -62,6 +63,18 @@ function prefetchScreens() {
 
 const loadingPage = <div className="page" aria-busy="true" />
 
+/**
+ * M1: transição entre telas. Abrir uma tela nova (item, pessoa…) entra pela direita;
+ * voltar entra pela esquerda; trocar de aba só esmaece. `custom` = direção (1, -1 ou 0),
+ * passado também ao AnimatePresence para a tela que sai saber para onde ir.
+ */
+const pageVariants: Variants = {
+  enter: (d: number) => ({ opacity: 0, x: d * 28, y: d === 0 ? 8 : 0 }),
+  center: { opacity: 1, x: 0, y: 0 },
+  exit: (d: number) => ({ opacity: 0, x: d * -14 }),
+}
+const stillVariants: Variants = { enter: { opacity: 0 }, center: { opacity: 1 }, exit: { opacity: 0 } }
+
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: true } },
   // Fase 0: consulta ou gravação que falhou também vira aviso (erros de rede são filtrados em telemetry.ts)
@@ -110,6 +123,9 @@ function Shell() {
   const finePointer = useFinePointer()
   // M1: rolagem lembrada ao voltar e por aba; telas novas abrem no topo
   const restoreScroll = useScrollMemory()
+  const navType = useNavigationType()
+  const reduceMotion = useReducedMotion()
+  const pageDir = TAB_ROOTS.includes(location.pathname) && navType !== 'POP' ? 0 : navType === 'POP' ? -1 : 1
   const [compose, setCompose] = useState<{ open: boolean; start: ComposeStart; key: number }>({ open: false, start: {}, key: 0 })
   const [toast, setToast] = useState<string | null>(null)
   const [handoff, setHandoff] = useState(returnParams.handedOffToBrowser)
@@ -215,13 +231,15 @@ function Shell() {
         <SideBar onCompose={() => openCompose()} compact={bp === 'tablet'} />
       )}
 
-      <AnimatePresence mode="wait" onExitComplete={restoreScroll}>
+      <AnimatePresence mode="wait" onExitComplete={restoreScroll} custom={pageDir}>
         <motion.main
           key={location.pathname}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.18 }}
+          custom={pageDir}
+          variants={reduceMotion ? stillVariants : pageVariants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={{ duration: 0.18, ease: [0.2, 0.8, 0.2, 1] }}
           className="shell__main"
           id="conteudo"
           tabIndex={-1}
@@ -257,6 +275,8 @@ function Shell() {
 
       {/* Toque: puxar para baixo no topo da tela atualiza os dados (M1) */}
       {!finePointer && <PullToRefresh />}
+      {/* App instalado no iPhone: arrastar da borda esquerda volta (M1) */}
+      {!finePointer && <EdgeSwipeBack />}
 
       {compose.key > 0 && (
         <Suspense fallback={null}>
