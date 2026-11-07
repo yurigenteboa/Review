@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { CategoryTag, ReviewCard } from '../components/review/ReviewCard'
 import type { ComposeStart } from '../components/review/ComposeSheet'
@@ -7,7 +7,8 @@ import { Stars } from '../components/ui/Stars'
 import { useAuth } from '../lib/auth'
 import { catColor, categoryById, childCategories, formatRating } from '../lib/categories'
 import { initials } from '../lib/format'
-import { averageRating, latestPerPerson, sortDiary, useChildItems, useDeleteReview, useItem, useItemRedirect, useItemReviews } from '../lib/queries'
+import { averageRating, latestPerPerson, sortDiary, useBestPlaces, useChildItems, useDeleteReview, useGenericOf, useItem, useItemRedirect, useItemReviews } from '../lib/queries'
+import { useDebounced } from '../lib/hooks'
 import { DID_VERB, WANT_VERB, useItemWatchers, useToggleWatchlist } from '../lib/diary'
 import { isTmdbMovie } from '../lib/movie'
 import Filme from './Filme'
@@ -25,6 +26,9 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
   const iWant = (watchers.data ?? []).some((w) => w.user_id === userId)
   // Fase 1: item fundido em outro (duplicado) -> abre o certo, sem empilhar o link velho no histórico
   const missing = item.isSuccess && !item.data
+  // Fase 2: drink/prato de um lugar -> link para "onde mais tem"
+  const consumoNoLugar = Boolean(item.data?.parent_id) && (item.data?.category === 'drink' || item.data?.category === 'prato')
+  const generic = useGenericOf(item.data?.id, consumoNoLugar)
   const redirect = useItemRedirect(id, missing)
   useEffect(() => {
     if (redirect.data) navigate(`/item/${redirect.data}`, { replace: true })
@@ -54,6 +58,7 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
   const { avg, n: rated } = averageRating(list)
   const mine = list.find((r) => r.user_id === userId)
   const verb = DID_VERB[it.category]
+  const isGeneric = it.source === 'generico'
 
   const crit = cat.criteria.map((c) => {
     const vals = latest.map((r) => r.criteria_scores?.[c]).filter((v): v is number => typeof v === 'number' && v > 0)
@@ -122,8 +127,13 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
             no {it.parent_title ?? 'lugar'} ›
           </Link>
         )}
+        {generic.data && (
+          <Link to={`/item/${generic.data}`} className="link-btn tap" style={{ display: 'inline-flex', minHeight: 36, alignItems: 'center', fontSize: 15, marginLeft: it.parent_id ? 12 : 0 }}>
+            Onde mais tem {it.title} ›
+          </Link>
+        )}
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16 }}>
+        {!isGeneric && <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16 }}>
           <span style={{ fontSize: 40, fontWeight: 800, letterSpacing: -1 }}>{rated ? formatRating(avg) : '–'}</span>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             <Stars value={avg} size={20} />
@@ -132,7 +142,7 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
               {list.length > rated ? ` · ${list.length} ${list.length === 1 ? 'registro' : 'registros'}` : ''}
             </span>
           </div>
-        </div>
+        </div>}
 
         {crit.some((c) => c.n > 0) && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 18 }}>
@@ -148,6 +158,11 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
           </div>
         )}
 
+        {isGeneric ? (
+          <p style={{ margin: '16px 0 0', fontSize: 14, color: 'var(--text-2)' }}>
+            Registre {it.title} dentro de um lugar (bar, restaurante ou café) em “O que você pediu?”.
+          </p>
+        ) : (
         <div style={{ display: 'flex', gap: 8, marginTop: 20 }}>
           <button
             type="button"
@@ -168,12 +183,16 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
             {iWant ? '✓ Na lista' : `Quero ${WANT_VERB[it.category]}`}
           </button>
         </div>
+        )}
       </Glass>
+
+      {isGeneric && <BestPlaces generic={it.id} title={it.title} drink={it.category === 'drink'} />}
 
       {childCategories(it.category).length > 0 && (
         <PlaceMenu placeId={it.id} onCompose={() => onCompose({ category: it.category, title: it.title, itemId: it.id })} />
       )}
 
+      {!isGeneric && (<>
       <h2 style={{ margin: '24px 20px 10px', fontSize: 22, letterSpacing: -0.4 }}>Reviews</h2>
       <div className="page__body" style={{ paddingTop: 0 }}>
         {reviews.isLoading && <LoadingCards count={1} />}
@@ -206,6 +225,7 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
           </p>
         )}
       </div>
+      </>)}
     </div>
   )
 }
@@ -243,6 +263,57 @@ function PlaceMenu({ placeId, onCompose }: { placeId: string; onCompose: () => v
             action={{ label: 'Registrar o que pedi', onClick: onCompose }}
           />
         )}
+      </div>
+    </section>
+  )
+}
+
+/** Fase 2 · "Onde tomar Negroni": lugares do melhor para o pior (notas que você pode ver), com filtro de bairro/cidade. */
+function BestPlaces({ generic, title, drink }: { generic: string; title: string; drink: boolean }) {
+  const [area, setArea] = useState('')
+  const debounced = useDebounced(area, 350)
+  const best = useBestPlaces(generic, debounced)
+  const list = best.data ?? []
+  return (
+    <section aria-labelledby="onde-tem">
+      <h2 id="onde-tem" style={{ margin: '24px 20px 10px', fontSize: 22, letterSpacing: -0.4 }}>
+        Onde {drink ? 'tomar' : 'comer'} {title}
+      </h2>
+      <div className="page__body" style={{ paddingTop: 0 }}>
+        <label style={{ display: 'block' }}>
+          <span className="visually-hidden">Bairro ou cidade</span>
+          <input className="field" value={area} placeholder="Filtrar por bairro ou cidade (ex.: Pinheiros)" onChange={(e) => setArea(e.target.value)} />
+        </label>
+        {best.isLoading && <LoadingCards count={1} />}
+        {list.length > 0 && (
+          <div className="group">
+            {list.map((b, i) => (
+              <Link key={b.item_id} to={`/item/${b.item_id}`} className="group__row tap place-menu__row">
+                <span className="best__rank">{b.ratings ? `${i + 1}º` : '–'}</span>
+                <span style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                  <strong style={{ fontWeight: 600 }}>{b.place_title}</strong>
+                  <span style={{ fontSize: 12, color: 'var(--text-3)' }}>
+                    {categoryById(b.place_category).label}
+                    {b.place_area ? ` · ${b.place_area}` : ''}
+                  </span>
+                </span>
+                <span className="place-menu__meta">
+                  <strong>{b.avg_rating != null ? formatRating(b.avg_rating) : '–'}</strong>
+                  {b.ratings === 1 ? '1 nota' : `${b.ratings} notas`}
+                </span>
+              </Link>
+            ))}
+          </div>
+        )}
+        {!best.isLoading && list.length === 0 && (
+          <EmptyState
+            title={debounced.trim() ? `Nada em “${debounced.trim()}” ainda` : 'Ninguém registrou ainda'}
+            text={`Quando alguém pedir ${title} num bar, restaurante ou café, o lugar aparece aqui.`}
+          />
+        )}
+        <p style={{ margin: '4px 4px 0', fontSize: 12, color: 'var(--text-3)' }}>
+          Nota de cada lugar = média das notas que você pode ver (suas, de amigos e públicas). Lugares com poucas notas ficam mais perto do meio.
+        </p>
       </div>
     </section>
   )

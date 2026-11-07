@@ -14,6 +14,8 @@ export const CATEGORY_PLURAL: Record<CategoryId, string> = {
   cidade: 'cidades',
   drink: 'drinks',
   prato: 'pratos',
+  restaurante: 'restaurantes',
+  cafe: 'cafés',
 }
 
 export type CategoryFilter = CategoryId | 'all'

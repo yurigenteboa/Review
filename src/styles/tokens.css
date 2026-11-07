@@ -81,6 +81,8 @@
   --cat-cidade: #30B0C7;   --cat-cidade-ink: #0B6F80;
   --cat-drink: #FF6482;    --cat-drink-ink: #B8173C;
   --cat-prato: #C7A000;    --cat-prato-ink: #7A5F00;
+  --cat-restaurante: #E8503A; --cat-restaurante-ink: #A8301C;
+  --cat-cafe: #8E5B3C;     --cat-cafe-ink: #6B3E22;
 
   /* Classificação indicativa brasileira (cores oficiais do ClassInd) */
   --cls-L: #00A651;  --cls-10: #0090D0;  --cls-12: #F7C600;
@@ -136,6 +138,8 @@
     --cat-cidade-ink: #6FD6E6;
     --cat-drink-ink: #FF8FA6;
     --cat-prato-ink: #F2CF4A;
+    --cat-restaurante-ink: #FF8A75;
+    --cat-cafe-ink: #D9A782;
 
     --google-bg: #131314;
     --google-border: #8E918F;

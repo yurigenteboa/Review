@@ -20,7 +20,7 @@ import { ErrorState, LoadingCards } from './states'
 const thisYear = new Date().getFullYear()
 
 const NOW_VERB: Record<CategoryId, string> = {
-  album: 'ouvindo', filme: 'vendo', serie: 'vendo', jogo: 'jogando', livro: 'lendo', bar: 'indo ao', banheiro: 'usando', cidade: 'em', drink: 'tomando', prato: 'comendo',
+  album: 'ouvindo', filme: 'vendo', serie: 'vendo', jogo: 'jogando', livro: 'lendo', bar: 'indo ao', banheiro: 'usando', cidade: 'em', drink: 'tomando', prato: 'comendo', restaurante: 'comendo no', cafe: 'no',
 }
 
 /**

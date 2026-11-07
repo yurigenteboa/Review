@@ -26,7 +26,7 @@ function text(n: Notification) {
     case 'comment':
       return `${who} comentou na sua review${item ? ` de ${item}` : ''}${n.comment?.body ? `: “${n.comment.body.slice(0, 80)}”` : ''}`
     case 'companion':
-      return `${who} registrou que vocês ${n.item?.category === 'album' ? 'ouviram' : n.item?.category === 'bar' || n.item?.category === 'cidade' ? 'foram a' : 'viram'} ${n.item?.title ?? 'algo'} juntos${n.meta?.watched_on ? ` (${formatDay(n.meta.watched_on)})` : ''}`
+      return `${who} registrou que vocês ${n.item?.category === 'album' ? 'ouviram' : ['bar', 'restaurante', 'cafe', 'cidade'].includes(n.item?.category ?? '') ? 'foram a' : 'viram'} ${n.item?.title ?? 'algo'} juntos${n.meta?.watched_on ? ` (${formatDay(n.meta.watched_on)})` : ''}`
   }
 }
 

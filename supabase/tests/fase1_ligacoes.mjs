@@ -1,7 +1,7 @@
 // Testes da migração da Fase 1 num Postgres local (PGlite) com todas as migrações.
 // Rodar: npm i --no-save @electric-sql/pglite && node supabase/tests/fase1_ligacoes.mjs
 import { setup, actor } from './harness.mjs'
-const { db } = await setup(new URL('../migrations', import.meta.url).pathname, { skip: ['pg_cron'] })
+const { db } = await setup(new URL('../migrations', import.meta.url).pathname, { skip: ['pg_cron', 'fase2_lugares'] })
 const as = actor(db)
 const A='aaaaaaaa-0000-0000-0000-000000000001', B='bbbbbbbb-0000-0000-0000-000000000002', C='cccccccc-0000-0000-0000-000000000003'
 for (const u of [A,B,C]) await db.query(`insert into auth.users(id,email) values ($1,$2)`, [u, u.slice(0,1)+'@x.com'])

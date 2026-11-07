@@ -19,6 +19,8 @@ export const WANT_VERB: Record<CategoryId, string> = {
   cidade: 'conhecer',
   drink: 'provar',
   prato: 'provar',
+  restaurante: 'ir',
+  cafe: 'ir',
 }
 
 /** Verbo do registro por categoria: "Vi", "Ouvi", "Joguei"... */
@@ -33,6 +35,8 @@ export const DID_VERB: Record<CategoryId, string> = {
   cidade: 'Fui',
   drink: 'Provei',
   prato: 'Provei',
+  restaurante: 'Fui',
+  cafe: 'Fui',
 }
 
 // ---------- Quero ver ----------

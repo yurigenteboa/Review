@@ -6,7 +6,7 @@ import { Cover } from '../components/review/ReviewCard'
 import { CategoryChips } from '../components/ui/Chips'
 import { SearchIcon } from '../components/ui/Icons'
 import { PageHeader } from '../components/ui/PageHeader'
-import { categoryById, type CategoryId } from '../lib/categories'
+import { categoryById, PLACE_SEARCH, type CategoryId } from '../lib/categories'
 import { useDebounced, useNearMe } from '../lib/hooks'
 import { useFinePointer } from '../lib/breakpoints'
 import { useCatalogSearch, useOpenCatalogItem, useSearchItems } from '../lib/queries'
@@ -18,7 +18,7 @@ export default function Buscar({ onCompose }: { onCompose: (s: ComposeStart) => 
   const [cat, setCat] = useState<CategoryId | 'all'>('all')
   const term = useDebounced(q.trim(), 400)
   const { near, status, request, clear } = useNearMe()
-  const placeCat = cat === 'bar' || cat === 'banheiro'
+  const placeCat = cat !== 'all' && PLACE_SEARCH.includes(cat)
   // Com mouse/teclado, o cursor já entra no campo (no celular não: abriria o teclado sozinho)
   const finePointer = useFinePointer()
 

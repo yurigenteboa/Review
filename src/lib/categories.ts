@@ -12,6 +12,8 @@ export type CategoryId =
   | 'cidade'
   | 'drink'
   | 'prato'
+  | 'restaurante'
+  | 'cafe'
 
 /** Grupo da categoria (igual à coluna categories.grupo do banco). */
 export type CategoryGroup = 'cultura' | 'lugar' | 'consumo' | 'evento'
@@ -24,7 +26,15 @@ export interface Category {
   group: CategoryGroup
   /** Categorias "pai" onde esta pode morar (drink mora em bar). Igual a categories.mora_em. */
   livesIn?: CategoryId[]
+  /** Fase 2: lugares levam nota por comparação (gostei/ok/não gostei + melhor ou pior que). Igual a categories.modo_nota. */
+  ratingMode?: 'estrelas' | 'comparacao'
 }
+
+/** Lugares que têm coisas dentro (drink, prato, banheiro). */
+const PLACES_WITH_INSIDE: CategoryId[] = ['bar', 'restaurante', 'cafe']
+
+/** Lugares buscados no OpenStreetMap (com "perto de você"). */
+export const PLACE_SEARCH: CategoryId[] = ['bar', 'restaurante', 'cafe', 'banheiro']
 
 export const CATEGORIES: Category[] = [
   { id: 'album', label: 'Álbum', criteria: ['Produção', 'Letras', 'Coesão'], group: 'cultura' },
@@ -32,11 +42,13 @@ export const CATEGORIES: Category[] = [
   { id: 'serie', label: 'Série', criteria: ['Roteiro', 'Elenco', 'Final'], group: 'cultura' },
   { id: 'jogo', label: 'Jogo', criteria: ['Jogabilidade', 'Visual', 'História'], group: 'cultura' },
   { id: 'livro', label: 'Livro', criteria: ['Escrita', 'Ritmo', 'Final'], group: 'cultura' },
-  { id: 'bar', label: 'Bar', criteria: ['Bebida', 'Comida', 'Ambiente', 'Preço'], group: 'lugar' },
-  { id: 'banheiro', label: 'Banheiro', criteria: ['Limpeza', 'Papel', 'Cheiro', 'Acessível'], group: 'lugar', livesIn: ['bar'] },
+  { id: 'bar', label: 'Bar', criteria: ['Bebida', 'Comida', 'Ambiente', 'Preço'], group: 'lugar', ratingMode: 'comparacao' },
+  { id: 'restaurante', label: 'Restaurante', criteria: ['Comida', 'Atendimento', 'Ambiente', 'Preço'], group: 'lugar', ratingMode: 'comparacao' },
+  { id: 'cafe', label: 'Café', criteria: ['Café', 'Comida', 'Ambiente', 'Preço'], group: 'lugar', ratingMode: 'comparacao' },
+  { id: 'banheiro', label: 'Banheiro', criteria: ['Limpeza', 'Papel', 'Cheiro', 'Acessível'], group: 'lugar', livesIn: PLACES_WITH_INSIDE },
   { id: 'cidade', label: 'Cidade', criteria: ['Andar a pé', 'Comida', 'Custo'], group: 'lugar' },
-  { id: 'drink', label: 'Drink', criteria: ['Sabor', 'Equilíbrio', 'Preço'], group: 'consumo', livesIn: ['bar'] },
-  { id: 'prato', label: 'Prato', criteria: ['Sabor', 'Porção', 'Preço'], group: 'consumo', livesIn: ['bar'] },
+  { id: 'drink', label: 'Drink', criteria: ['Sabor', 'Equilíbrio', 'Preço'], group: 'consumo', livesIn: PLACES_WITH_INSIDE },
+  { id: 'prato', label: 'Prato', criteria: ['Sabor', 'Porção', 'Preço'], group: 'consumo', livesIn: PLACES_WITH_INSIDE },
 ]
 
 /**

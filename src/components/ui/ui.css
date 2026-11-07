@@ -2076,3 +2076,89 @@ li.is-done .starter__text strong {
   font-size: 16px;
   color: var(--text);
 }
+
+/* ---------- Fase 2: nota por comparação (CompareRating) ---------- */
+.compare {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+.compare__q {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+.compare__buckets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+.compare__bucket {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-height: 72px;
+  padding: 10px 6px;
+  border: 1px solid transparent;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+}
+.compare__bucket span {
+  font-size: 24px;
+  line-height: 1;
+}
+.compare__bucket[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+}
+.compare__vs {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+.compare__other {
+  font-size: 20px;
+  font-weight: 750;
+  letter-spacing: -0.3px;
+}
+.compare__answers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  width: 100%;
+}
+.compare__done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.compare__score {
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  color: var(--text);
+}
+.compare__place {
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+/* ---------- Fase 2: "Onde tomar X" (página do genérico) ---------- */
+.best__rank {
+  flex: none;
+  width: 28px;
+  font-size: 15px;
+  font-weight: 750;
+  color: var(--text-3);
+  text-align: center;
+}

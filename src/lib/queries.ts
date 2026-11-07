@@ -1,7 +1,7 @@
 // Todas as leituras e escritas no Supabase passam por aqui.
 // As regras de quem vê o quê estão no banco (RLS): o app só pede, o banco filtra.
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { CategoryId } from './categories'
+import { PLACE_SEARCH, type CategoryId } from './categories'
 import { compressImage } from './images'
 import { PHOTO_BUCKET, supabase } from './supabase'
 import type { ChildEntry, ChildItem, Item, Profile, Review, Visibility, WatchedWhere } from './types'
@@ -107,6 +107,71 @@ export function useChildItems(parentId: string | undefined) {
           }
         })
         .sort((a, b) => b.rated - a.rated || b.avg - a.avg || a.title.localeCompare(b.title, 'pt-BR'))
+    },
+  })
+}
+
+// ---------- Fase 2: ranking pessoal de lugares (comparação) e "onde tomar X" ----------
+
+export interface PlaceRank {
+  item_id: string
+  title: string
+  bucket: 1 | 2 | 3
+  pos: number
+}
+
+/** Seus lugares de uma categoria, em ordem: grupo (gostei > ok > não gostei) e posição dentro dele. */
+export function useMyPlaceRanks(category: CategoryId, userId: string | null) {
+  return useQuery({
+    queryKey: ['place-ranks', userId, category],
+    enabled: Boolean(userId),
+    queryFn: async (): Promise<PlaceRank[]> => {
+      const { data, error } = await supabase
+        .from('place_ranks')
+        .select('item_id, bucket, pos, item:items!inner ( title )')
+        .eq('user_id', userId!)
+        .eq('category', category)
+        .order('bucket', { ascending: false })
+        .order('pos', { ascending: false })
+      if (error) throw error
+      type Row = { item_id: string; bucket: 1 | 2 | 3; pos: number; item: { title: string } }
+      return ((data ?? []) as unknown as Row[]).map((r) => ({ item_id: r.item_id, title: r.item.title, bucket: r.bucket, pos: Number(r.pos) }))
+    },
+  })
+}
+
+export interface BestPlace {
+  item_id: string
+  place_id: string
+  place_title: string
+  place_area: string | null
+  place_category: CategoryId
+  avg_rating: number | null
+  ratings: number
+}
+
+/** Onde tomar/comer um genérico ("Negroni"), do melhor para o pior, com as notas que você pode ver. */
+export function useBestPlaces(genericId: string | undefined, area: string) {
+  const a = area.trim()
+  return useQuery({
+    queryKey: ['best-places', genericId, a.toLowerCase()],
+    enabled: Boolean(genericId),
+    queryFn: async (): Promise<BestPlace[]> => {
+      const { data, error } = await supabase.rpc('best_places_for', { p_generic: genericId!, p_area: a || null })
+      if (error) throw error
+      return ((data ?? []) as BestPlace[]).map((r) => ({ ...r, avg_rating: r.avg_rating == null ? null : Number(r.avg_rating) }))
+    },
+  })
+}
+
+/** O genérico de um drink/prato de lugar ("Negroni do Bar X" -> "Negroni"). */
+export function useGenericOf(itemId: string | undefined, enabled: boolean) {
+  return useQuery({
+    queryKey: ['generic-of', itemId],
+    enabled: Boolean(itemId) && enabled,
+    queryFn: async () => {
+      const { data } = await supabase.from('item_links').select('to_item').eq('from_item', itemId!).eq('tipo', 'e_um').maybeSingle()
+      return (data?.to_item as string | undefined) ?? null
     },
   })
 }
@@ -279,7 +344,7 @@ export function useCatalogSearch(
   near?: { lat: number; lng: number } | null,
 ) {
   const q = term.trim()
-  const placeCat = category === 'bar' || category === 'banheiro'
+  const placeCat = category !== 'all' && PLACE_SEARCH.includes(category)
   const enabled = category !== 'all' && (q.length >= 2 || (placeCat && Boolean(near)))
   return useQuery({
     queryKey: ['catalog', category, q.toLowerCase(), near?.lat, near?.lng],
@@ -373,6 +438,8 @@ export interface NewReview {
   companions: string[]
   /** Fase 1: o que foi pedido no lugar (vira entradas filhas). Item novo = só o nome. */
   orders?: OrderInput[]
+  /** Fase 2: lugar ranqueado por comparação (grupo + posição); grava em place_ranks */
+  rank?: { bucket: 1 | 2 | 3; pos: number } | null
 }
 
 export interface OrderInput {
@@ -469,6 +536,19 @@ export function useCreateReview() {
         if (phErr) throw phErr
       }
 
+      // 6a. Fase 2: posição no seu ranking de lugares (comparação)
+      if (input.rank) {
+        const { error } = await supabase.from('place_ranks').upsert({
+          user_id: uid,
+          category: input.category,
+          item_id: itemId,
+          bucket: input.rank.bucket,
+          pos: input.rank.pos,
+          visibility: input.visibility,
+        })
+        if (error) throw error
+      }
+
       // 6. Fase 1: o que foi pedido vira entradas filhas desta (o banco copia visibilidade e data)
       const orders = (input.orders ?? []).filter((o) => o.title.trim())
       if (orders.length) {
@@ -509,6 +589,8 @@ export function useCreateReview() {
       qc.invalidateQueries({ queryKey: ['watchlist'] })
       qc.invalidateQueries({ queryKey: ['entry-note'] })
       qc.invalidateQueries({ queryKey: ['child-items'] })
+      qc.invalidateQueries({ queryKey: ['place-ranks'] })
+      qc.invalidateQueries({ queryKey: ['best-places'] })
     },
   })
 }

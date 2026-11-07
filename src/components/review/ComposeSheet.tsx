@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { categoryById, catColor, childCategories, type CategoryId } from '../../lib/categories'
+import { categoryById, catColor, childCategories, PLACE_SEARCH, type CategoryId } from '../../lib/categories'
 import { track } from '../../lib/telemetry'
 import { DID_VERB, localDay, useEntryNote } from '../../lib/diary'
 import { displayName } from '../../lib/format'
 import { useDebounced, useNearMe } from '../../lib/hooks'
-import { useCatalogSearch, useCreateReview, useItem, useItemReviews, useSearchItems, type CatalogResult, type OrderInput } from '../../lib/queries'
+import { useCatalogSearch, useCreateReview, useItem, useItemReviews, useMyPlaceRanks, useSearchItems, type CatalogResult, type OrderInput } from '../../lib/queries'
 import { useAuth } from '../../lib/auth'
 import { useFriends } from '../../lib/social'
 import { WATCHED_WHERE_LABEL, type Review, type Visibility, type WatchedWhere } from '../../lib/types'
@@ -16,6 +16,7 @@ import { Avatar, Cover } from './ReviewCard'
 import { CriterionInput, RatingInput } from './RatingInput'
 import { haptic } from '../../lib/haptics'
 import { OrderPicker } from './OrderPicker'
+import { CompareRating, type CompareResult } from './CompareRating'
 
 export interface ComposeStart {
   category?: CategoryId
@@ -54,6 +55,8 @@ const PLACEHOLDER: Record<CategoryId, string> = {
   cidade: 'Ex.: Paraty',
   drink: 'Ex.: Negroni',
   prato: 'Ex.: Coxinha',
+  restaurante: 'Ex.: Mocotó',
+  cafe: 'Ex.: Café Girondino',
 }
 
 const WHERE_OPTIONS = Object.keys(WATCHED_WHERE_LABEL) as WatchedWhere[]
@@ -162,7 +165,7 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
 
   const picked = Boolean(itemId || external)
   const term = useDebounced(picked ? '' : title.trim(), 400)
-  const placeCat = category === 'bar' || category === 'banheiro'
+  const placeCat = PLACE_SEARCH.includes(category)
   const screen = category === 'filme' || category === 'serie'
   const local = useSearchItems(term, category)
   const remote = useCatalogSearch(picked ? 'all' : category, term, placeCat ? near : null)
@@ -240,11 +243,18 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
     setItemId(undefined)
     setExternal(undefined)
     setOrders([])
+    setCompare(null)
+    setCompareKey((k) => k + 1)
   }
 
   // Fase 1: o que pode morar no item (bar -> drink, prato, banheiro) e o que foi pedido
   const orderKinds = childCategories(category)
   const [orders, setOrders] = useState<OrderInput[]>([])
+  // Fase 2: bar, restaurante e café levam nota por comparação
+  const comparing = categoryById(category).ratingMode === 'comparacao'
+  const placeRanks = useMyPlaceRanks(category, comparing ? userId : null)
+  const [compare, setCompare] = useState<CompareResult | null>(null)
+  const [compareKey, setCompareKey] = useState(0)
 
   const toggleDetails = () => {
     setDetails((d) => {
@@ -276,6 +286,7 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
         note: noteValue,
         companions,
         orders,
+        rank: comparing && compare ? { bucket: compare.bucket, pos: compare.pos } : null,
       })
       haptic('success')
       saved.current = true
@@ -329,6 +340,7 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
               setCategory(v)
               unpick()
               setCriteria({})
+              setRating(0)
             }}
           />
         )}
@@ -412,9 +424,32 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
         )}
 
         {/* ---------- registro rápido: nota, dia, ♥ e revi ---------- */}
-        <RatingInput value={rating} onChange={setRating} />
+        {comparing ? (
+          <CompareRating
+            key={`${category}-${compareKey}`}
+            category={category}
+            itemId={itemId}
+            ranks={placeRanks.data ?? []}
+            value={compare}
+            onChange={(v) => {
+              setCompare(v)
+              setRating(v?.rating ?? 0)
+            }}
+          />
+        ) : (
+          <RatingInput value={rating} onChange={setRating} />
+        )}
         {rating > 0 && (
-          <button type="button" className="link-btn" style={{ alignSelf: 'center', marginTop: -10, minHeight: 36, fontSize: 14 }} onClick={() => setRating(0)}>
+          <button
+            type="button"
+            className="link-btn"
+            style={{ alignSelf: 'center', marginTop: -10, minHeight: 36, fontSize: 14 }}
+            onClick={() => {
+              setRating(0)
+              setCompare(null)
+              setCompareKey((k) => k + 1)
+            }}
+          >
             Registrar sem nota
           </button>
         )}
