@@ -1,12 +1,13 @@
-import { useNavigate, useParams } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { CategoryTag, ReviewCard } from '../components/review/ReviewCard'
 import type { ComposeStart } from '../components/review/ComposeSheet'
 import { Glass } from '../components/ui/Glass'
 import { Stars } from '../components/ui/Stars'
 import { useAuth } from '../lib/auth'
-import { categoryById, formatRating } from '../lib/categories'
+import { catColor, categoryById, childCategories, formatRating } from '../lib/categories'
 import { initials } from '../lib/format'
-import { averageRating, latestPerPerson, sortDiary, useDeleteReview, useItem, useItemReviews } from '../lib/queries'
+import { averageRating, latestPerPerson, sortDiary, useChildItems, useDeleteReview, useItem, useItemRedirect, useItemReviews } from '../lib/queries'
 import { DID_VERB, WANT_VERB, useItemWatchers, useToggleWatchlist } from '../lib/diary'
 import { isTmdbMovie } from '../lib/movie'
 import Filme from './Filme'
@@ -22,9 +23,16 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
   const watchers = useItemWatchers(id)
   const want = useToggleWatchlist()
   const iWant = (watchers.data ?? []).some((w) => w.user_id === userId)
+  // Fase 1: item fundido em outro (duplicado) -> abre o certo, sem empilhar o link velho no histórico
+  const missing = item.isSuccess && !item.data
+  const redirect = useItemRedirect(id, missing)
+  useEffect(() => {
+    if (redirect.data) navigate(`/item/${redirect.data}`, { replace: true })
+  }, [redirect.data, navigate])
 
   if (item.error) return <div className="page"><ErrorState error={item.error} onRetry={() => void item.refetch()} /></div>
-  if (item.isSuccess && !item.data)
+  if (missing && (redirect.isLoading || redirect.data)) return <div className="page"><div className="page__body"><LoadingCards count={2} /></div></div>
+  if (missing)
     return (
       <div className="page">
         <EmptyState
@@ -109,6 +117,11 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
         <CategoryTag category={it.category} />
         <h1 style={{ margin: '8px 0 2px', fontSize: 28, fontWeight: 800, letterSpacing: -0.6, lineHeight: 1.1 }}>{it.title}</h1>
         {it.subtitle && <p style={{ margin: 0, fontSize: 15, color: 'var(--text-2)' }}>{it.subtitle}</p>}
+        {it.parent_id && (
+          <Link to={`/item/${it.parent_id}`} className="link-btn tap" style={{ display: 'inline-flex', minHeight: 36, alignItems: 'center', fontSize: 15 }}>
+            no {it.parent_title ?? 'lugar'} ›
+          </Link>
+        )}
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16 }}>
           <span style={{ fontSize: 40, fontWeight: 800, letterSpacing: -1 }}>{rated ? formatRating(avg) : '–'}</span>
@@ -157,6 +170,10 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
         </div>
       </Glass>
 
+      {childCategories(it.category).length > 0 && (
+        <PlaceMenu placeId={it.id} onCompose={() => onCompose({ category: it.category, title: it.title, itemId: it.id })} />
+      )}
+
       <h2 style={{ margin: '24px 20px 10px', fontSize: 22, letterSpacing: -0.4 }}>Reviews</h2>
       <div className="page__body" style={{ paddingTop: 0 }}>
         {reviews.isLoading && <LoadingCards count={1} />}
@@ -190,5 +207,43 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
         )}
       </div>
     </div>
+  )
+}
+
+/** Fase 1 · "O que pedir aqui": o que mora no lugar, do mais avaliado para o menos. */
+function PlaceMenu({ placeId, onCompose }: { placeId: string; onCompose: () => void }) {
+  const menu = useChildItems(placeId)
+  const list = menu.data ?? []
+  return (
+    <section aria-labelledby="o-que-pedir">
+      <h2 id="o-que-pedir" style={{ margin: '24px 20px 10px', fontSize: 22, letterSpacing: -0.4 }}>O que pedir aqui</h2>
+      <div className="page__body" style={{ paddingTop: 0 }}>
+        {menu.isLoading && <LoadingCards count={1} />}
+        {list.length > 0 && (
+          <div className="group">
+            {list.map((c) => (
+              <Link key={c.id} to={`/item/${c.id}`} className="group__row tap place-menu__row">
+                <span aria-hidden="true" style={{ flex: 'none', width: 10, height: 10, borderRadius: 5, background: catColor(c.category) }} />
+                <span style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                  <strong style={{ fontWeight: 600 }}>{c.title}</strong>
+                  <span style={{ fontSize: 12, color: 'var(--text-3)' }}>{categoryById(c.category).label}</span>
+                </span>
+                <span className="place-menu__meta">
+                  <strong>{c.rated ? formatRating(c.avg) : '–'}</strong>
+                  {c.entries === 1 ? '1 registro' : `${c.entries} registros`}
+                </span>
+              </Link>
+            ))}
+          </div>
+        )}
+        {!menu.isLoading && list.length === 0 && (
+          <EmptyState
+            title="Ninguém contou o que pediu aqui"
+            text="Registre sua ida e diga o que pediu: drinks, pratos e o banheiro."
+            action={{ label: 'Registrar o que pedi', onClick: onCompose }}
+          />
+        )}
+      </div>
+    </section>
   )
 }

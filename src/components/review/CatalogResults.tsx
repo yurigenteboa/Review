@@ -12,6 +12,8 @@ export const SOURCE_CREDIT: Record<CategoryId, string> = {
   bar: 'Lugares: © colaboradores do OpenStreetMap',
   banheiro: 'Lugares: © colaboradores do OpenStreetMap',
   cidade: 'Cidades: IBGE e © colaboradores do OpenStreetMap',
+  drink: '',
+  prato: '',
 }
 
 interface Props {

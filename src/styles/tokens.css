@@ -79,6 +79,8 @@
   --cat-bar: #FF9500;      --cat-bar-ink: #B34700;
   --cat-banheiro: #0A84FF; --cat-banheiro-ink: #0058B8;
   --cat-cidade: #30B0C7;   --cat-cidade-ink: #0B6F80;
+  --cat-drink: #FF6482;    --cat-drink-ink: #B8173C;
+  --cat-prato: #C7A000;    --cat-prato-ink: #7A5F00;
 
   /* Classificação indicativa brasileira (cores oficiais do ClassInd) */
   --cls-L: #00A651;  --cls-10: #0090D0;  --cls-12: #F7C600;
@@ -132,6 +134,8 @@
     --cat-bar-ink: #FFB340;
     --cat-banheiro-ink: #64B5FF;
     --cat-cidade-ink: #6FD6E6;
+    --cat-drink-ink: #FF8FA6;
+    --cat-prato-ink: #F2CF4A;
 
     --google-bg: #131314;
     --google-border: #8E918F;

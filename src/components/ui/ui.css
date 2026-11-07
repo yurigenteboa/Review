@@ -1935,3 +1935,144 @@ li.is-done .starter__text strong {
   gap: 8px;
   margin-top: 12px;
 }
+
+/* ---------- Fase 1: "O que você pediu?" (OrderPicker) ---------- */
+.orders {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.orders__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.orders__row {
+  gap: 10px;
+  padding-right: 4px;
+}
+.orders__dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+}
+.orders__name {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+.orders__name strong {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.orders__name span {
+  font-size: 12px;
+  color: var(--text-3);
+}
+.orders__remove {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: none;
+  color: var(--text-3);
+  font-size: 22px;
+  line-height: 1;
+}
+.orders__add {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.orders__field {
+  display: flex;
+  gap: 8px;
+}
+.orders__field .field {
+  flex: 1;
+  min-width: 0;
+}
+.orders__add-btn {
+  flex: none;
+  min-height: 44px;
+  padding: 0 14px;
+  font-size: 15px;
+}
+.orders__add-btn:disabled {
+  opacity: 0.45;
+}
+.orders__avg {
+  color: var(--text-3);
+  font-weight: 500;
+}
+.mini-rating {
+  display: flex;
+  flex: none;
+}
+.mini-rating__star {
+  position: relative;
+  width: 30px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mini-rating__fill {
+  position: absolute;
+  left: 4px;
+  top: 11px;
+  height: 22px;
+  overflow: hidden;
+  pointer-events: none;
+}
+.mini-rating__star > svg {
+  position: absolute;
+  left: 4px;
+  top: 11px;
+}
+
+/* ---------- Fase 1: pedidos dentro do cartão e "O que pedir aqui" ---------- */
+.card-orders {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.card-orders__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--fill);
+  color: var(--text);
+  font-size: 13px;
+  text-decoration: none;
+}
+.card-orders__item b {
+  font-weight: 650;
+}
+.place-menu__row {
+  text-decoration: none;
+  color: inherit;
+}
+.place-menu__meta {
+  margin-left: auto;
+  text-align: right;
+  font-size: 13px;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+.place-menu__meta strong {
+  display: block;
+  font-size: 16px;
+  color: var(--text);
+}

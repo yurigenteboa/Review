@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { catInk, categoryById, formatRating, type CategoryId } from '../../lib/categories'
 import { avatarColor, displayName, initials, timeAgo } from '../../lib/format'
 import { usePhotoUrls } from '../../lib/queries'
-import { VISIBILITY_LABEL, WATCHED_WHERE_LABEL, type Item, type Profile, type Review } from '../../lib/types'
+import { VISIBILITY_LABEL, WATCHED_WHERE_LABEL, type ChildEntry, type Item, type Profile, type Review } from '../../lib/types'
 import { DID_VERB, formatDay } from '../../lib/diary'
 import { Stars } from '../ui/Stars'
 import { CommentIcon, HeartIcon } from '../ui/Icons'
@@ -188,6 +188,7 @@ export function ReviewCard({ review, showItem = true }: { review: Review; showIt
       {!showItem && <EntryLine review={review} big />}
       {review.body && <SpoilerText className="review-card__text" text={review.body} whole={review.spoiler === true} />}
       <PhotoStrip paths={photos} />
+      {review.children && review.children.length > 0 && <CardOrders entries={review.children} />}
       <div className="review-card__foot">
         <Link to={authorLink} className="review-card__author tap" style={{ textDecoration: 'none', minWidth: 0 }}>
           <Avatar profile={author} />
@@ -221,5 +222,19 @@ export function ReviewCard({ review, showItem = true }: { review: Review; showIt
       <CommentsSheet review={review} open={commentsOpen} onClose={() => setCommentsOpen(false)} />
       {menuOpen && <CardMenu review={review} open={menuOpen} onClose={() => setMenuOpen(false)} />}
     </article>
+  )
+}
+
+/** Fase 1: o que foi pedido na noite (entradas filhas), cada um levando à página do item. */
+function CardOrders({ entries }: { entries: ChildEntry[] }) {
+  return (
+    <div className="card-orders" aria-label="O que foi pedido">
+      {entries.map((c) => (
+        <Link key={c.id} to={`/item/${c.item.id}`} className="card-orders__item tap">
+          <span>{c.item.title}</span>
+          {c.rating != null && <b>{formatRating(c.rating)}</b>}
+        </Link>
+      ))}
+    </div>
   )
 }

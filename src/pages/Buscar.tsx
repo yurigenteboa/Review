@@ -82,6 +82,7 @@ export default function Buscar({ onCompose }: { onCompose: (s: ComposeStart) => 
                     <strong style={{ fontWeight: 600, fontSize: 16 }}>{i.title}</strong>
                     <span style={{ fontSize: 13, color: 'var(--text-3)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {categoryById(i.category).label}
+                      {i.parent_title ? ` · no ${i.parent_title}` : ''}
                       {i.subtitle ? ` · ${i.subtitle}` : ''}
                     </span>
                   </div>

@@ -1,4 +1,4 @@
-import { CATEGORIES, type CategoryId } from '../../lib/categories'
+import { TOP_CATEGORIES, type CategoryId } from '../../lib/categories'
 
 type Value = CategoryId | 'all'
 
@@ -13,7 +13,7 @@ interface CategoryChipsProps {
 export function CategoryChips({ value, onChange, withAll = true }: CategoryChipsProps) {
   const options: { id: Value; label: string }[] = [
     ...(withAll ? [{ id: 'all' as const, label: 'Tudo' }] : []),
-    ...CATEGORIES,
+    ...TOP_CATEGORIES,
   ]
   return (
     <div className="chips no-scrollbar" role="group" aria-label="Filtrar por categoria">

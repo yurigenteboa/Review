@@ -4,12 +4,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { CategoryId } from './categories'
 import { compressImage } from './images'
 import { PHOTO_BUCKET, supabase } from './supabase'
-import type { Item, Profile, Review, Visibility, WatchedWhere } from './types'
+import type { ChildEntry, ChildItem, Item, Profile, Review, Visibility, WatchedWhere } from './types'
 
 export const REVIEW_SELECT = `
   id, user_id, rating, body, criteria_scores, visibility, created_at,
-  experienced_at, rewatch, loved, spoiler, watched_where,
-  item:items!inner ( id, category, title, subtitle, image_url, year ),
+  experienced_at, rewatch, loved, spoiler, watched_where, parent_review_id,
+  item:items!inner ( id, category, title, subtitle, image_url, year, parent_id ),
   author:profiles!reviews_user_id_fkey ( id, username, display_name, avatar_url ),
   photos:review_photos ( storage_path, position ),
   companions:entry_companions ( user:profiles ( id, username, display_name, avatar_url ) ),
@@ -44,6 +44,85 @@ export function averageRating(list: Review[]): { avg: number; n: number } {
   return { avg: rated.length ? rated.reduce((s, r) => s + r.rating, 0) / rated.length : 0, n: rated.length }
 }
 
+// ---------- Fase 1: coisas dentro de coisas ----------
+
+/**
+ * Anexa a cada entrada as filhas dela (o que foi pedido na noite), numa consulta só.
+ * Consulta separada de propósito: o banco decide pela RLS quais filhas você vê (as mesmas da mãe).
+ */
+export async function attachChildren(list: Review[]): Promise<Review[]> {
+  const ids = list.filter((r) => !r.parent_review_id).map((r) => r.id)
+  if (!ids.length) return list
+  const { data, error } = await supabase
+    .from('reviews')
+    .select('id, parent_review_id, rating, item:items!inner ( id, title, category )')
+    .in('parent_review_id', ids)
+    .order('created_at', { ascending: true })
+  if (error) throw error
+  const byParent = new Map<string, ChildEntry[]>()
+  for (const c of (data ?? []) as unknown as ChildEntry[]) {
+    const entry = { ...c, rating: c.rating == null ? null : Number(c.rating) }
+    byParent.set(c.parent_review_id, [...(byParent.get(c.parent_review_id) ?? []), entry])
+  }
+  return list.map((r) => (byParent.has(r.id) ? { ...r, children: byParent.get(r.id) } : r))
+}
+
+/** Preenche `parent_title` ("no Bar Brahma") nos itens que moram em outro. */
+export async function attachParentTitles<T extends Item>(items: T[]): Promise<T[]> {
+  const ids = [...new Set(items.map((i) => i.parent_id).filter((x): x is string => Boolean(x)))]
+  if (!ids.length) return items
+  const { data } = await supabase.from('items').select('id, title').in('id', ids)
+  const names = new Map((data ?? []).map((p: { id: string; title: string }) => [p.id, p.title]))
+  return items.map((i) => (i.parent_id ? { ...i, parent_title: names.get(i.parent_id) ?? null } : i))
+}
+
+/** O que mora num lugar, com média (entrada mais recente de cada pessoa) e quantos registraram. */
+export function useChildItems(parentId: string | undefined) {
+  return useQuery({
+    queryKey: ['child-items', parentId],
+    enabled: Boolean(parentId),
+    queryFn: async (): Promise<ChildItem[]> => {
+      const { data, error } = await supabase
+        .from('items')
+        .select('id, title, category, reviews ( user_id, rating, experienced_at, created_at )')
+        .eq('parent_id', parentId!)
+        .limit(200)
+      if (error) throw error
+      type Row = { id: string; title: string; category: Item['category']; reviews: { user_id: string; rating: number | null; experienced_at: string; created_at: string }[] }
+      return ((data ?? []) as unknown as Row[])
+        .map((row) => {
+          const latest = new Map<string, number | null>()
+          const sorted = [...row.reviews].sort((a, b) =>
+            a.experienced_at === b.experienced_at ? b.created_at.localeCompare(a.created_at) : b.experienced_at.localeCompare(a.experienced_at),
+          )
+          for (const r of sorted) if (!latest.has(r.user_id)) latest.set(r.user_id, r.rating == null ? null : Number(r.rating))
+          const rated = [...latest.values()].filter((v): v is number => v != null)
+          return {
+            id: row.id,
+            title: row.title,
+            category: row.category,
+            avg: rated.length ? rated.reduce((s, v) => s + v, 0) / rated.length : 0,
+            rated: rated.length,
+            entries: row.reviews.length,
+          }
+        })
+        .sort((a, b) => b.rated - a.rated || b.avg - a.avg || a.title.localeCompare(b.title, 'pt-BR'))
+    },
+  })
+}
+
+/** Link de item que foi fundido em outro: devolve o id novo (ou null). */
+export function useItemRedirect(id: string | undefined, enabled: boolean) {
+  return useQuery({
+    queryKey: ['item-redirect', id],
+    enabled: Boolean(id) && enabled,
+    queryFn: async () => {
+      const { data } = await supabase.from('item_redirects').select('new_id').eq('old_id', id!).maybeSingle()
+      return (data?.new_id as string | undefined) ?? null
+    },
+  })
+}
+
 // ---------- Leituras ----------
 
 /** Feed: tudo que você pode ver (suas reviews + amigos + públicas), mais recentes primeiro. */
@@ -51,11 +130,16 @@ export function useFeed(category: CategoryId | 'all') {
   return useQuery({
     queryKey: ['feed', category],
     queryFn: async () => {
-      let q = supabase.from('reviews').select(REVIEW_SELECT).order('created_at', { ascending: false }).limit(50)
+      let q = supabase
+        .from('reviews')
+        .select(REVIEW_SELECT)
+        .is('parent_review_id', null)
+        .order('created_at', { ascending: false })
+        .limit(50)
       if (category !== 'all') q = q.eq('item.category', category)
       const { data, error } = await q
       if (error) throw error
-      return normalize(data ?? [])
+      return attachChildren(normalize(data ?? []))
     },
   })
 }
@@ -69,10 +153,11 @@ export function useUserReviews(userId: string | null) {
         .from('reviews')
         .select(REVIEW_SELECT)
         .eq('user_id', userId!)
+        .is('parent_review_id', null)
         .order('experienced_at', { ascending: false })
         .order('created_at', { ascending: false })
       if (error) throw error
-      return normalize(data ?? [])
+      return attachChildren(normalize(data ?? []))
     },
   })
 }
@@ -84,12 +169,14 @@ export function useItem(id: string | undefined) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('items')
-        .select('id, category, title, subtitle, image_url, year, source, external_id, metadata')
+        .select('id, category, title, subtitle, image_url, year, source, external_id, metadata, parent_id')
         .eq('id', id!)
         .maybeSingle()
       if (error) throw error
       // null = item não existe (link antigo, item apagado): a tela mostra "não encontrado", não é erro
-      return (data as Item | null) ?? null
+      if (!data) return null
+      const [withParent] = await attachParentTitles([data as Item])
+      return withParent
     },
   })
 }
@@ -106,7 +193,7 @@ export function useItemReviews(itemId: string | undefined) {
         .order('experienced_at', { ascending: false })
         .order('created_at', { ascending: false })
       if (error) throw error
-      return normalize(data ?? [])
+      return attachChildren(normalize(data ?? []))
     },
   })
 }
@@ -119,14 +206,14 @@ export function useSearchItems(term: string, category: CategoryId | 'all') {
     queryFn: async () => {
       let q = supabase
         .from('items')
-        .select('id, category, title, subtitle, image_url, year, source, external_id')
+        .select('id, category, title, subtitle, image_url, year, source, external_id, parent_id')
         .order('created_at', { ascending: false })
         .limit(30)
       if (t) q = q.ilike('title', `%${t.replace(/[%_]/g, '')}%`)
       if (category !== 'all') q = q.eq('category', category)
       const { data, error } = await q
       if (error) throw error
-      return (data ?? []) as Item[]
+      return attachParentTitles((data ?? []) as Item[])
     },
   })
 }
@@ -284,6 +371,16 @@ export interface NewReview {
   note: string
   /** ids de amigos em "vi com quem" */
   companions: string[]
+  /** Fase 1: o que foi pedido no lugar (vira entradas filhas). Item novo = só o nome. */
+  orders?: OrderInput[]
+}
+
+export interface OrderInput {
+  /** item que já mora no lugar; vazio = cria (ou reaproveita) pelo nome */
+  itemId?: string
+  title: string
+  category: CategoryId
+  rating: number | null
 }
 
 export function useCreateReview() {
@@ -303,6 +400,7 @@ export function useCreateReview() {
           .from('items')
           .select('id')
           .eq('category', input.category)
+          .is('parent_id', null) // não confunde com o "Banheiro" de dentro de algum bar
           .ilike('title', title.replace(/[%_]/g, ''))
           .limit(1)
         itemId = existing?.[0]?.id
@@ -371,6 +469,36 @@ export function useCreateReview() {
         if (phErr) throw phErr
       }
 
+      // 6. Fase 1: o que foi pedido vira entradas filhas desta (o banco copia visibilidade e data)
+      const orders = (input.orders ?? []).filter((o) => o.title.trim())
+      if (orders.length) {
+        const ids: string[] = []
+        for (const o of orders) {
+          if (o.itemId) {
+            ids.push(o.itemId)
+            continue
+          }
+          const { data: childId, error } = await supabase.rpc('ensure_child_item', {
+            p_parent: itemId,
+            p_category: o.category,
+            p_title: o.title.trim(),
+          })
+          if (error) throw error
+          ids.push(childId as string)
+        }
+        const { error } = await supabase.from('reviews').insert(
+          orders.map((o, i) => ({
+            user_id: uid,
+            item_id: ids[i],
+            parent_review_id: reviewId,
+            rating: o.rating,
+            visibility: input.visibility,
+            experienced_at: input.experiencedAt,
+          })),
+        )
+        if (error) throw error
+      }
+
       return { reviewId, itemId, edited: Boolean(input.reviewId) }
     },
     onSuccess: () => {
@@ -380,6 +508,7 @@ export function useCreateReview() {
       qc.invalidateQueries({ queryKey: ['search'] })
       qc.invalidateQueries({ queryKey: ['watchlist'] })
       qc.invalidateQueries({ queryKey: ['entry-note'] })
+      qc.invalidateQueries({ queryKey: ['child-items'] })
     },
   })
 }

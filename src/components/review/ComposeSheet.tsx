@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { categoryById, catColor, type CategoryId } from '../../lib/categories'
+import { categoryById, catColor, childCategories, type CategoryId } from '../../lib/categories'
 import { track } from '../../lib/telemetry'
 import { DID_VERB, localDay, useEntryNote } from '../../lib/diary'
 import { displayName } from '../../lib/format'
 import { useDebounced, useNearMe } from '../../lib/hooks'
-import { useCatalogSearch, useCreateReview, useItem, useItemReviews, useSearchItems, type CatalogResult } from '../../lib/queries'
+import { useCatalogSearch, useCreateReview, useItem, useItemReviews, useSearchItems, type CatalogResult, type OrderInput } from '../../lib/queries'
 import { useAuth } from '../../lib/auth'
 import { useFriends } from '../../lib/social'
 import { WATCHED_WHERE_LABEL, type Review, type Visibility, type WatchedWhere } from '../../lib/types'
@@ -15,6 +15,7 @@ import { CatalogResults, NearMeButton } from './CatalogResults'
 import { Avatar, Cover } from './ReviewCard'
 import { CriterionInput, RatingInput } from './RatingInput'
 import { haptic } from '../../lib/haptics'
+import { OrderPicker } from './OrderPicker'
 
 export interface ComposeStart {
   category?: CategoryId
@@ -51,6 +52,8 @@ const PLACEHOLDER: Record<CategoryId, string> = {
   bar: 'Ex.: Bar do bairro',
   banheiro: 'Ex.: Banheiro da rodoviária',
   cidade: 'Ex.: Paraty',
+  drink: 'Ex.: Negroni',
+  prato: 'Ex.: Coxinha',
 }
 
 const WHERE_OPTIONS = Object.keys(WATCHED_WHERE_LABEL) as WatchedWhere[]
@@ -236,7 +239,12 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
   const unpick = () => {
     setItemId(undefined)
     setExternal(undefined)
+    setOrders([])
   }
+
+  // Fase 1: o que pode morar no item (bar -> drink, prato, banheiro) e o que foi pedido
+  const orderKinds = childCategories(category)
+  const [orders, setOrders] = useState<OrderInput[]>([])
 
   const toggleDetails = () => {
     setDetails((d) => {
@@ -267,6 +275,7 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
         watchedWhere: screen ? where : null,
         note: noteValue,
         companions,
+        orders,
       })
       haptic('success')
       saved.current = true
@@ -277,9 +286,11 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
         detalhes: details,
         nota: rating > 0,
         fotos: photos.length,
+        pedidos: orders.length,
       })
       if (blank) writeDraft(null)
-      onDone(res.edited ? 'Entrada atualizada' : 'Registrado no seu diário')
+      const pedidos = orders.length ? ` com ${orders.length} ${orders.length === 1 ? 'pedido' : 'pedidos'}` : ''
+      onDone(res.edited ? `Entrada atualizada${pedidos}` : `Registrado no seu diário${pedidos}`)
       onClose()
       navigate(`/item/${res.itemId}`)
     } catch {
@@ -406,6 +417,11 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
           <button type="button" className="link-btn" style={{ alignSelf: 'center', marginTop: -10, minHeight: 36, fontSize: 14 }} onClick={() => setRating(0)}>
             Registrar sem nota
           </button>
+        )}
+
+        {/* Fase 1: num lugar, o que foi pedido vira entradas filhas desta (drinks, pratos, banheiro) */}
+        {orderKinds.length > 0 && (chosen || title.trim()) && (
+          <OrderPicker parentId={itemId} kinds={orderKinds} value={orders} onChange={setOrders} />
         )}
 
         <div className="compose-quick">

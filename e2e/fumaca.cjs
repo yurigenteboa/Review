@@ -115,6 +115,18 @@ async function healthy(name, page, errors) {
     await page.waitForTimeout(600)
     if (await page.getByRole('dialog').count()) ok('registro: janela abre')
     else fail('registro', 'janela não abriu')
+    // Fase 1: num bar aparece "O que você pediu?" e o pedido entra na lista
+    await page.getByRole('dialog').getByRole('button', { name: 'Bar', exact: true }).click()
+    await page.getByRole('dialog').getByPlaceholder(/Ex\./).first().fill('Bar de teste')
+    await page.waitForTimeout(300)
+    const orderName = page.locator('.orders__field input')
+    if (await orderName.count()) {
+      await orderName.fill('Negroni')
+      await orderName.press('Enter')
+      const row = await page.locator('.orders__row').count()
+      if (row === 1 && (await page.locator('.orders__row').first().innerText()).includes('Drink')) ok('fase 1: bar mostra "O que você pediu?" e o pedido entra como drink')
+      else fail('fase 1', 'pedido não entrou como drink')
+    } else fail('fase 1', '"O que você pediu?" não apareceu para bar')
     await page.keyboard.press('Escape')
     await page.waitForTimeout(500)
     await healthy('registro: fecha sem erro', page, errors)

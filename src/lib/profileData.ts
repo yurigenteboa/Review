@@ -104,6 +104,8 @@ export const NOW_VERB: Record<CategoryId, string> = {
   bar: 'indo ao',
   banheiro: 'usando',
   cidade: 'em',
+  drink: 'tomando',
+  prato: 'comendo',
 }
 
 

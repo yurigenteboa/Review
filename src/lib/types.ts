@@ -21,6 +21,25 @@ export interface Item {
   external_id?: string | null
   /** dados extras da fonte (ex.: ficha do TMDB em metadata.tmdb, com metadata.fetched_at) */
   metadata?: Record<string, unknown> | null
+  /** Fase 1: lugar onde o item mora (o Negroni mora no bar) */
+  parent_id?: string | null
+  /** nome do lugar, preenchido pelo app quando precisa mostrar "no Bar X" */
+  parent_title?: string | null
+}
+
+/** Fase 1: entrada filha (o drink dentro da noite no bar), já com o item. */
+export interface ChildEntry {
+  id: string
+  parent_review_id: string
+  rating: number | null
+  item: Pick<Item, 'id' | 'title' | 'category'>
+}
+
+/** Fase 1: coisa que mora num lugar, com a média de quem registrou (mais recente de cada pessoa). */
+export interface ChildItem extends Pick<Item, 'id' | 'title' | 'category'> {
+  avg: number
+  rated: number
+  entries: number
 }
 
 export interface ReviewPhoto {
@@ -56,6 +75,10 @@ export interface Review {
   likes?: { user_id: string }[]
   /** contagem de comentários */
   comments?: { count: number }[]
+  /** Fase 1: entrada mãe (vazio = entrada solta ou a própria mãe) */
+  parent_review_id?: string | null
+  /** Fase 1: o que foi pedido nessa noite (drinks, pratos, banheiro), anexado pelo app */
+  children?: ChildEntry[]
 }
 
 export interface FriendRow {
