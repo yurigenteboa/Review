@@ -94,6 +94,19 @@ export function useRemoveFavorite() {
 
 // ---------- Agora ----------
 
+/** Verbo do "agora" por categoria: "ouvindo", "vendo"… */
+export const NOW_VERB: Record<CategoryId, string> = {
+  album: 'ouvindo',
+  filme: 'vendo',
+  serie: 'vendo',
+  jogo: 'jogando',
+  livro: 'lendo',
+  bar: 'indo ao',
+  banheiro: 'usando',
+  cidade: 'em',
+}
+
+
 /** Depois de 60 dias sem mudar, o "agora" some do perfil (o dono vê um lembrete). */
 export const NOW_STALE_DAYS = 60
 export const isStale = (iso: string) => Date.now() - new Date(iso).getTime() > NOW_STALE_DAYS * 86_400_000

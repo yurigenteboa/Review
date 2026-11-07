@@ -1,8 +1,12 @@
 // Diário (lista por mês) e "Quero ver" (grade com filtro de streaming), usados no seu perfil e no de amigos.
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useAuth } from '../../lib/auth'
+import { requestCompose } from '../../lib/composeBus'
 import { useMyServices, useWatchlist } from '../../lib/diary'
+import { useDeleteReview } from '../../lib/queries'
 import type { Review } from '../../lib/types'
+import { SwipeRow } from '../ui/SwipeRow'
 import { Cover, EntryLine } from './ReviewCard'
 
 const monthLabel = (iso: string) => {
@@ -26,22 +30,50 @@ export function DiaryList({ entries, empty }: { entries: Review[]; empty: string
           <ul className="group" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
             {list.map((r) => (
               <li key={r.id}>
-                <Link to={`/item/${r.item.id}`} className="group__row tap diary-row">
-                  <span className="diary-row__day" aria-hidden="true">
-                    {Number(r.experienced_at.slice(8, 10))}
-                  </span>
-                  <Cover item={r.item} size={44} radius={8} />
-                  <span style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0, flex: 1 }}>
-                    <strong className="diary-row__title">{r.item.title}</strong>
-                    <EntryLine review={r} />
-                  </span>
-                </Link>
+                <DiaryRow review={r} />
               </li>
             ))}
           </ul>
         </section>
       ))}
     </div>
+  )
+}
+
+function DiaryRowLink({ review: r }: { review: Review }) {
+  return (
+    <Link to={`/item/${r.item.id}`} className="group__row tap diary-row">
+      <span className="diary-row__day" aria-hidden="true">
+        {Number(r.experienced_at.slice(8, 10))}
+      </span>
+      <Cover item={r.item} size={44} radius={8} />
+      <span style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0, flex: 1 }}>
+        <strong className="diary-row__title">{r.item.title}</strong>
+        <EntryLine review={r} />
+      </span>
+    </Link>
+  )
+}
+
+/** M3: no seu diário, arrastar a linha para a esquerda mostra Editar e Apagar (apagar pede confirmação). */
+function DiaryRow({ review: r }: { review: Review }) {
+  const { userId } = useAuth()
+  const del = useDeleteReview()
+  const [confirm, setConfirm] = useState(false)
+  if (r.user_id !== userId) return <DiaryRowLink review={r} />
+  return (
+    <SwipeRow
+      actions={[
+        { label: 'Editar', onPress: () => requestCompose({ edit: r }) },
+        {
+          label: del.isPending ? 'Apagando…' : confirm ? 'Confirmar' : 'Apagar',
+          tone: 'danger',
+          onPress: () => (confirm ? del.mutate(r) : setConfirm(true)),
+        },
+      ]}
+    >
+      <DiaryRowLink review={r} />
+    </SwipeRow>
   )
 }
 

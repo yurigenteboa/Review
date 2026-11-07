@@ -7,6 +7,7 @@ import { TabBar } from './components/ui/TabBar'
 import { SideBar } from './components/ui/SideBar'
 import { useBreakpoint, useFinePointer } from './lib/breakpoints'
 import { useScrollMemory } from './lib/navigation'
+import { COMPOSE_EVENT } from './lib/composeBus'
 import { PullToRefresh } from './components/ui/PullToRefresh'
 import { Glass } from './components/ui/Glass'
 import { AuthProvider, FROM_APP_PARAM, isStandalone, useAuth } from './lib/auth'
@@ -144,6 +145,13 @@ function Shell() {
   useEffect(() => {
     if (session) prefetchScreens()
   }, [session])
+
+  // Registrar pedido de qualquer canto (menu do card, diário…): ver lib/composeBus.ts
+  useEffect(() => {
+    const onReq = (e: Event) => openCompose((e as CustomEvent<ComposeStart>).detail ?? {})
+    window.addEventListener(COMPOSE_EVENT, onReq)
+    return () => window.removeEventListener(COMPOSE_EVENT, onReq)
+  }, [openCompose])
 
   // Atalho "Nova review" do ícone do app (Android): /?novo=1 abre o registro
   useEffect(() => {

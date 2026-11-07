@@ -19,6 +19,7 @@ import {
   useSetNow,
   type GoalRow,
   type ProfileLink,
+  NOW_VERB,
 } from '../../lib/profileData'
 import { CATEGORY_PLURAL, latestPerItem, type CategoryFilter } from '../../lib/profileStats'
 import type { Item, Review, Visibility } from '../../lib/types'
@@ -54,16 +55,8 @@ export function LinksRow({ links }: { links: ProfileLink[] }) {
 
 // ---------- Agora ----------
 
-const NOW_VERB: Record<CategoryId, string> = {
-  album: 'ouvindo',
-  filme: 'vendo',
-  serie: 'vendo',
-  jogo: 'jogando',
-  livro: 'lendo',
-  bar: 'indo ao',
-  banheiro: 'usando',
-  cidade: 'em',
-}
+// NOW_VERB mora em lib/profileData.ts (o Início também usa, sem baixar esta tela inteira)
+export { NOW_VERB }
 
 export function NowLine({ userId, isMe, entries }: { userId: string; isMe: boolean; entries: Review[] }) {
   const now = useNow(userId)
@@ -108,7 +101,7 @@ export function NowLine({ userId, isMe, entries }: { userId: string; isMe: boole
   )
 }
 
-function NowSheet({ open, onClose, userId, entries, current }: { open: boolean; onClose: () => void; userId: string; entries: Review[]; current: { category: CategoryId; item: Item; set_at: string }[] }) {
+export function NowSheet({ open, onClose, userId, entries, current }: { open: boolean; onClose: () => void; userId: string; entries: Review[]; current: { category: CategoryId; item: Item; set_at: string }[] }) {
   const [pick, setPick] = useState<CategoryId | null>(null)
   const setNow = useSetNow()
   const clearNow = useClearNow()

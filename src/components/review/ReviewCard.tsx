@@ -10,6 +10,9 @@ import { CommentIcon, HeartIcon } from '../ui/Icons'
 import { useAuth } from '../../lib/auth'
 import { useToggleLike } from '../../lib/social'
 import { CommentsSheet } from './CommentsSheet'
+import { CardMenu } from './CardMenu'
+import { useDoubleTap, useLongPress } from '../../lib/gestures'
+import { haptic } from '../../lib/haptics'
 import { SpoilerText } from './SpoilerText'
 
 type CoverItem = Pick<Item, 'title' | 'category' | 'image_url'>
@@ -137,8 +140,40 @@ export function ReviewCard({ review, showItem = true }: { review: Review; showIt
   const commentCount = review.comments?.[0]?.count ?? 0
   const authorLink = author.id === userId ? '/perfil' : `/u/${author.id}`
 
+  // M3: segurar abre o menu rápido; dois toques (fora de links/botões) curtem, com coraçãozinho
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [burst, setBurst] = useState<{ x: number; y: number; k: number } | null>(null)
+  const longPress = useLongPress(() => {
+    haptic()
+    setMenuOpen(true)
+  })
+  const doubleTap = useDoubleTap((pos) => {
+    if (!userId || author.id === userId) return
+    haptic()
+    setBurst({ ...pos, k: Date.now() })
+    if (!liked && !toggleLike.isPending) toggleLike.mutate({ reviewId: review.id, liked: false, uid: userId })
+  })
+
   return (
-    <article className="review-card">
+    <article
+      className="review-card"
+      {...longPress}
+      onPointerUp={(e) => {
+        longPress.onPointerUp()
+        doubleTap.onPointerUp(e)
+      }}
+    >
+      {burst && (
+        <span
+          key={burst.k}
+          className="like-burst"
+          aria-hidden="true"
+          style={{ left: burst.x, top: burst.y }}
+          onAnimationEnd={() => setBurst(null)}
+        >
+          <HeartIcon size={72} filled />
+        </span>
+      )}
       {showItem && (
         <Link to={`/item/${item.id}`} className="review-card__head tap" style={{ textDecoration: 'none', color: 'inherit' }}>
           <Cover item={item} />
@@ -184,6 +219,7 @@ export function ReviewCard({ review, showItem = true }: { review: Review; showIt
         </span>
       )}
       <CommentsSheet review={review} open={commentsOpen} onClose={() => setCommentsOpen(false)} />
+      {menuOpen && <CardMenu review={review} open={menuOpen} onClose={() => setMenuOpen(false)} />}
     </article>
   )
 }

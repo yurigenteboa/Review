@@ -10,6 +10,7 @@ import { useUnreadCount } from '../lib/social'
 import { BellIcon } from '../components/ui/Icons'
 import { EmptyState, ErrorState, LoadingCards } from './states'
 import { HomeAside } from '../components/home/HomeAside'
+import { NowStrip } from '../components/home/NowStrip'
 import { useBreakpoint } from '../lib/breakpoints'
 
 export default function Inicio({ onCompose }: { onCompose: () => void }) {
@@ -53,7 +54,9 @@ export default function Inicio({ onCompose }: { onCompose: () => void }) {
               </span>
             </Link>
           )}
-          {feed.isLoading && <LoadingCards />}
+          {/* M3: fileira "Agora" (você + amigos), só na visão "Tudo" */}
+        {cat === 'all' && <NowStrip />}
+        {feed.isLoading && <LoadingCards />}
           {feed.error && <ErrorState error={feed.error} onRetry={() => feed.refetch()} />}
           {feed.data?.map((r) => <ReviewCard key={r.id} review={r} />)}
           {feed.data?.length === 0 && (
