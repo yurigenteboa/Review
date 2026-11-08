@@ -350,6 +350,53 @@
   background: #C0C0C0;
   box-shadow: inset -1px -1px 0 #000, inset 1px 1px 0 #fff, inset -2px -2px 0 #808080;
 }
+/* Console */
+.ap-style__art--console {
+  border-radius: 10px;
+  background: radial-gradient(120% 80% at 50% 0%, #1B3A8A, #0B1A45 55%, #030714);
+}
+.ap-style__art--console .ap-style__bar {
+  width: 45%;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.25);
+}
+.ap-style__art--console .ap-style__card {
+  border-radius: 8px;
+  background: rgba(22, 34, 77, 0.85);
+  box-shadow: 0 0 0 1.5px #F1F4FA, 0 0 14px rgba(76, 141, 255, 0.6);
+}
+.ap-style__art--console .ap-style__card span {
+  background: #F1F4FA;
+  border-radius: 3px;
+}
+.ap-style__art--console .ap-style__btn {
+  border-radius: 999px;
+  background: #F1F4FA;
+}
+/* Portátil */
+.ap-style__art--portatil {
+  border-radius: 14px;
+  background: #EBEBEB;
+}
+.ap-style__art--portatil .ap-style__bar {
+  border-radius: 999px;
+  background: #FFFFFF;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.12);
+}
+.ap-style__art--portatil .ap-style__card {
+  border-radius: 10px;
+  background: #FFFFFF;
+  box-shadow: 0 0 0 2px #0AB9D6;
+}
+.ap-style__art--portatil .ap-style__card span {
+  border-radius: 3px;
+  background: #2D2D2D;
+}
+.ap-style__art--portatil .ap-style__btn {
+  border-radius: 999px;
+  background: #E8262A;
+  box-shadow: 0 2px 0 #9E1518;
+}
 .ap-style[aria-checked='true'] .ap-style__art {
   box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent-ink);
 }

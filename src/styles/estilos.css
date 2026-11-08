@@ -393,6 +393,209 @@
   outline-offset: -5px;
 }
 
+/* ---------------------------------------------------------
+   CONSOLE — azul-noite em degradê, cartões translúcidos, títulos finos;
+   o item em foco cresce um pouco e brilha. Navegação por controle: src/lib/gamepad.ts.
+   --------------------------------------------------------- */
+:root[data-estilo='console'] {
+  --font: 'Outfit', 'Inter Variable', system-ui, sans-serif;
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 16px;
+  --r-xl: 20px;
+  --bg: #E8EDF5;
+  --surface: #FFFFFF;
+  --text: #0E1630;
+  --text-2: #33405E;
+  --text-3: #4F5B77;
+  --separator: rgba(14, 22, 48, 0.12);
+  --fill: rgba(14, 22, 48, 0.06);
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-bg-strong: rgba(250, 251, 254, 0.92);
+  --glass-bar: rgba(232, 237, 245, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.7);
+  --card-shadow: 0 1px 2px rgba(14, 22, 48, 0.06), 0 10px 30px rgba(14, 22, 48, 0.08);
+  --glow: rgba(76, 141, 255, 0.45);
+  --login-gradient: radial-gradient(120% 70% at 50% 0%, #1B3A8A 0%, #0B1A45 45%, #030714 100%);
+}
+:root[data-estilo='console']:not([data-tema='claro']) {
+  --bg: #06102A;
+  --surface: #16224D;
+  --text: #F1F4FA;
+  --text-2: #CBD3E6;
+  --text-3: #A7B2CE;
+  --separator: rgba(255, 255, 255, 0.14);
+  --fill: rgba(255, 255, 255, 0.08);
+  --star-empty: #3A4670;
+  --glass-bg: rgba(22, 34, 77, 0.62);
+  --glass-bg-strong: rgba(14, 24, 58, 0.9);
+  --glass-bar: rgba(6, 16, 42, 0.62);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-shadow: 0 10px 36px rgba(0, 0, 0, 0.45);
+  --card-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06), 0 12px 30px rgba(0, 0, 0, 0.35);
+  --glow: rgba(76, 141, 255, 0.55);
+}
+:root[data-estilo='console'] body {
+  background: linear-gradient(180deg, #F4F7FB, #DCE4F0) fixed;
+}
+:root[data-estilo='console']:not([data-tema='claro']) body {
+  background: radial-gradient(120% 60% at 50% 0%, #1B3A8A 0%, #0B1A45 45%, #030714 100%) fixed;
+}
+:root[data-estilo='console'][data-tema='preto'] body {
+  background: radial-gradient(120% 60% at 50% 0%, #0B1A45 0%, #000000 60%) fixed;
+}
+/* os cartões deixam ver o degradê por trás */
+:root[data-estilo='console'] .review-card,
+:root[data-estilo='console'] .group,
+:root[data-estilo='console'] .movie-card {
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+}
+:root[data-estilo='console'] .page-header__title {
+  font-weight: 300;
+  letter-spacing: 0.01em;
+}
+:root[data-estilo='console'] .sheet__title,
+:root[data-estilo='console'] .ap-section__title {
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+:root[data-estilo='console'] .btn,
+:root[data-estilo='console'] .chip {
+  font-weight: 600;
+}
+/* foco e mouse: o cartão cresce e brilha (com movimento reduzido, só brilha) */
+:root[data-estilo='console'] .review-card {
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s;
+}
+:root[data-estilo='console'] .review-card:focus-within {
+  transform: scale(1.02);
+  box-shadow: 0 0 0 2px var(--text), 0 18px 40px rgba(0, 0, 0, 0.3), 0 0 40px var(--glow);
+}
+@media (hover: hover) and (pointer: fine) {
+  :root[data-estilo='console'] .review-card:hover {
+    transform: scale(1.015);
+    box-shadow: var(--card-shadow), 0 0 32px var(--glow);
+  }
+}
+:root[data-estilo='console'][data-movimento='reduzido'] .review-card:focus-within,
+:root[data-estilo='console'][data-movimento='reduzido'] .review-card:hover {
+  transform: none;
+}
+:root[data-estilo='console'] :focus-visible,
+:root[data-estilo='console'][data-controle='on'] :focus {
+  outline: 3px solid var(--text);
+  outline-offset: 3px;
+  box-shadow: 0 0 24px var(--glow);
+}
+:root[data-estilo='console'] .tabbar__tab.active,
+:root[data-estilo='console'] .sidebar__item.active {
+  color: var(--text);
+  background: var(--fill);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--text) 85%, transparent);
+}
+
+/* ---------------------------------------------------------
+   PORTÁTIL — claro e arredondado, botões "gordinhos" com sombra embaixo,
+   contorno azul-piscina pulsando no item escolhido.
+   --------------------------------------------------------- */
+:root[data-estilo='portatil'] {
+  --font: 'Nunito', 'Inter Variable', system-ui, sans-serif;
+  --r-sm: 12px;
+  --r-md: 16px;
+  --r-lg: 20px;
+  --r-xl: 24px;
+  --bg: #EBEBEB;
+  --surface: #FFFFFF;
+  --text: #2D2D2D;
+  --text-2: #474747;
+  --text-3: #5E5E5E;
+  --separator: rgba(0, 0, 0, 0.1);
+  --fill: rgba(0, 0, 0, 0.06);
+  --glass-bg: var(--surface);
+  --glass-bg-strong: var(--surface);
+  --glass-bar: var(--bg);
+  --glass-border: transparent;
+  --glass-highlight: inset 0 0 0 0 transparent;
+  --blur: none;
+  --blur-strong: none;
+  --chunk: 0 3px 0 rgba(0, 0, 0, 0.12);
+  --card-shadow: var(--chunk);
+  --glass-shadow: var(--chunk);
+  --pulso: #0083A0;
+}
+:root[data-estilo='portatil']:not([data-tema='claro']) {
+  --bg: #2D2D2D;
+  --surface: #3C3C3C;
+  --text: #FFFFFF;
+  --text-2: #E2E2E2;
+  --text-3: #C2C2C2;
+  --separator: rgba(255, 255, 255, 0.14);
+  --fill: rgba(255, 255, 255, 0.1);
+  --star-empty: #5E5E5E;
+  --chunk: 0 3px 0 rgba(0, 0, 0, 0.45);
+  --pulso: #2BD4F0;
+  /* o cinza do cartão é mais claro que o do tema escuro padrão */
+  --cat-serie-ink: #FF91AD;
+}
+:root[data-estilo='portatil'][data-tema='preto'] {
+  --bg: #000000;
+  --surface: #1E1E1E;
+}
+:root[data-estilo='portatil'] .page-header__title,
+:root[data-estilo='portatil'] .sheet__title {
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+:root[data-estilo='portatil'] .btn,
+:root[data-estilo='portatil'] .chip,
+:root[data-estilo='portatil'] .icon-btn,
+:root[data-estilo='portatil'] .toggle-chip,
+:root[data-estilo='portatil'] .segmented,
+:root[data-estilo='portatil'] .tabbar__tabs,
+:root[data-estilo='portatil'] .tabbar__plus,
+:root[data-estilo='portatil'] .sidebar__compose {
+  font-weight: 800;
+  box-shadow: var(--chunk);
+  border: none;
+}
+:root[data-estilo='portatil'] .btn--plain,
+:root[data-estilo='portatil'] .icon-btn,
+:root[data-estilo='portatil'] .chip {
+  background: var(--surface);
+}
+:root[data-estilo='portatil'] .chip[aria-pressed='true'] {
+  background: var(--text);
+  color: var(--bg);
+}
+:root[data-estilo='portatil'] .btn:active,
+:root[data-estilo='portatil'] .chip:active,
+:root[data-estilo='portatil'] .icon-btn:active,
+:root[data-estilo='portatil'] .tabbar__plus:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
+}
+/* item escolhido / em foco: contorno azul-piscina que pulsa devagar (para com movimento reduzido) */
+:root[data-estilo='portatil'] :focus-visible,
+:root[data-estilo='portatil'] .tabbar__tab.active,
+:root[data-estilo='portatil'] .sidebar__item.active {
+  outline: 3px solid var(--pulso);
+  outline-offset: 2px;
+  animation: pulso-portatil 1.8s ease-in-out infinite;
+}
+:root[data-estilo='portatil'] .tabbar__tab.active,
+:root[data-estilo='portatil'] .sidebar__item.active {
+  color: var(--text);
+  background: transparent;
+  outline-offset: -3px;
+}
+@keyframes pulso-portatil {
+  50% {
+    outline-color: color-mix(in srgb, var(--pulso) 45%, transparent);
+  }
+}
+
 /* Contraste alto vale por cima de qualquer estilo (seletor mais forte que as paletas acima) */
 :root[data-estilo][data-contraste='alto'][data-tema='claro'] {
   --text-2: #111111;

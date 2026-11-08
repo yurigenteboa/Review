@@ -33,7 +33,7 @@
           }
           if (css && css[tema]) for (var k in css[tema]) d.style.setProperty(k, css[tema][k])
           var bg = { claro: '#F2F2F7', medio: '#1E2127', escuro: '#000000', preto: '#000000' }[tema]
-          var est = { acrilico: ['#F3F3F3', '#202020'], anos90: ['#C0C0C0', '#000000'] }[a.estilo]
+          var est = { acrilico: ['#F3F3F3', '#202020'], anos90: ['#C0C0C0', '#000000'], console: ['#E8EDF5', '#06102A'], portatil: ['#EBEBEB', '#2D2D2D'] }[a.estilo]
           if (est) bg = tema === 'claro' ? est[0] : est[1]
           if (bg) document.querySelector('meta[name="theme-color"]').content = bg
         } catch (e) {

@@ -6,7 +6,7 @@ import { useSyncExternalStore } from 'react'
  * As escolhas da pessoa ficam no aparelho (localStorage `mmisc.aparencia`) e viram atributos
  * na tag <html>; o CSS reage a eles (tokens.css). "Automático" segue o aparelho e é resolvido
  * aqui, então o CSS só conhece valores concretos:
- *   data-estilo      vidro | acrilico | anos90 (arquivo src/styles/estilos.css)
+ *   data-estilo      vidro | acrilico | anos90 | console | portatil (src/styles/estilos.css)
  *   data-tema        claro | medio | escuro | preto
  *   data-contraste   normal | alto
  *   data-transp      vidro | solido
@@ -26,7 +26,7 @@ import { useSyncExternalStore } from 'react'
 
 export type ThemeChoice = 'auto' | 'claro' | 'medio' | 'escuro' | 'preto'
 export type Theme = Exclude<ThemeChoice, 'auto'>
-export type StyleId = 'vidro' | 'acrilico' | 'anos90'
+export type StyleId = 'vidro' | 'acrilico' | 'anos90' | 'console' | 'portatil'
 export type AccentId = 'marca' | 'vermelho' | 'roxo' | 'verde' | 'azul' | 'laranja' | 'rosa'
 
 export interface Appearance {
@@ -65,6 +65,8 @@ export const STYLES: { id: StyleId; label: string; hint: string }[] = [
   { id: 'vidro', label: 'Vidro', hint: 'O MMisc de sempre: vidro desfocado, cantos redondos.' },
   { id: 'acrilico', label: 'Acrílico', hint: 'Cantos retos e discretos, superfícies foscas, cara de computador.' },
   { id: 'anos90', label: 'Anos 90', hint: 'Janelas cinza em relevo, barra de título azul, zero arredondado.' },
+  { id: 'console', label: 'Console', hint: 'Azul-noite, cartões que brilham ao focar. Dá para navegar com controle de videogame.' },
+  { id: 'portatil', label: 'Portátil', hint: 'Claro e arredondado, botões gordinhos e contorno azul no item escolhido.' },
 ]
 
 /** Degraus do tamanho do texto (1 = padrão). */
@@ -100,6 +102,8 @@ export const THEME_SWATCHES: Record<Theme, { bg: string; card: string; ink: stri
 const STYLE_GROUND: Partial<Record<StyleId, { light: { bg: string; surface: string }; dark: { bg: string; surface: string } }>> = {
   acrilico: { light: { bg: '#F3F3F3', surface: '#FBFBFB' }, dark: { bg: '#202020', surface: '#2B2B2B' } },
   anos90: { light: { bg: '#C0C0C0', surface: '#D4D0C8' }, dark: { bg: '#000000', surface: '#2B2B2B' } },
+  console: { light: { bg: '#E8EDF5', surface: '#FFFFFF' }, dark: { bg: '#06102A', surface: '#16224D' } },
+  portatil: { light: { bg: '#EBEBEB', surface: '#FFFFFF' }, dark: { bg: '#2D2D2D', surface: '#3C3C3C' } },
 }
 function groundOf(theme: Theme, style: StyleId) {
   const base = THEME_GROUND[theme]
@@ -224,6 +228,7 @@ export function resolve(a: Appearance = current): Resolved {
 }
 
 let resolved: Resolved | null = null
+let gamepadLoaded = false
 
 /** Põe as escolhas na tag <html> (e na cor da barra do navegador). */
 export function applyAppearance(a: Appearance = current) {
@@ -249,6 +254,11 @@ export function applyAppearance(a: Appearance = current) {
   const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
   if (meta) meta.content = groundOf(r.tema, a.estilo).bg
   if (a.estilo === 'anos90') void import('@fontsource/pixelify-sans/latin-700.css')
+  if (a.estilo === 'console') void Promise.all([import('@fontsource/outfit/latin-300.css'), import('@fontsource/outfit/latin-600.css')])
+  if (a.estilo === 'portatil') void Promise.all([import('@fontsource/nunito/latin-600.css'), import('@fontsource/nunito/latin-800.css')])
+  if (a.estilo === 'console') void import('./gamepad').then((m) => m.startGamepad())
+  else if (gamepadLoaded) void import('./gamepad').then((m) => m.stopGamepad())
+  if (a.estilo === 'console') gamepadLoaded = true
   if (a.fonte === 'atkinson') void import('@fontsource/atkinson-hyperlegible/latin-400.css').then(() => import('@fontsource/atkinson-hyperlegible/latin-700.css'))
 }
 

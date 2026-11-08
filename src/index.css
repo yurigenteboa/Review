@@ -104,6 +104,8 @@ button {
 :root[data-movimento='reduzido'] *::after {
   transition-duration: 0.01ms !important;
   animation-duration: 0.01ms !important;
+  /* sem isso, animação infinita com 0,01 ms vira um pisca-pisca */
+  animation-iteration-count: 1 !important;
 }
 
 /* M1: telas entram/saem de lado (transição e arrastar da borda); `clip` corta o que passa

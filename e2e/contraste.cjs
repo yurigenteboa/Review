@@ -7,7 +7,7 @@
 const { chromium } = require('playwright')
 const BASE = process.argv[2] || 'http://localhost:4173'
 
-const ESTILOS = ['vidro', 'acrilico', 'anos90']
+const ESTILOS = ['vidro', 'acrilico', 'anos90', 'console', 'portatil']
 const TEMAS = ['claro', 'medio', 'escuro', 'preto']
 const CONTRASTES = ['normal', 'alto']
 const DESTAQUES = ['marca', 'vermelho', 'roxo', 'verde', 'azul', 'laranja', 'rosa']
