@@ -331,7 +331,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  height: 44px;
+  min-height: 44px;
   padding: 0 12px;
   border-radius: 14px;
   background: var(--fill);
@@ -2180,9 +2180,13 @@ li.is-done .starter__text strong {
   overflow: hidden;
   background: var(--fill);
 }
-.map-canvas {
+/* .map-wrap na frente: o CSS da biblioteca do mapa (carregado depois) põe position: relative
+   em .maplibregl-map e a caixa ficava com altura zero (mapa em branco) */
+.map-wrap > .map-canvas {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
 }
 .map-pin {
   min-width: 36px;

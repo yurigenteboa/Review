@@ -5,6 +5,8 @@ import { registerSW } from 'virtual:pwa-register'
 import '@fontsource-variable/inter/wght.css'
 import './index.css'
 import './components/ui/ui.css'
+// Estilos inteiros (Acrílico, Anos 90…): ~2 KB; vêm junto para não piscar ao abrir
+import './styles/estilos.css'
 import App from './App.tsx'
 import { countVisit, listenInstallPrompt } from './lib/install'
 import { initAppearance } from './lib/appearance'

@@ -1,5 +1,5 @@
 import 'maplibre-gl/dist/maplibre-gl.css'
-import maplibregl, { type Map as MapLibre, type Marker } from 'maplibre-gl'
+import { LngLatBounds, Map as MapLibre, Marker, NavigationControl } from 'maplibre-gl'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -41,7 +41,7 @@ export default function Mapa() {
   // cria o mapa uma vez
   useEffect(() => {
     if (!box.current || map.current) return
-    const m = new maplibregl.Map({
+    const m = new MapLibre({
       container: box.current,
       style: STYLE_URL,
       center: SP,
@@ -50,7 +50,7 @@ export default function Mapa() {
       // gestos de dois dedos no celular; a página não "prende" a rolagem com um dedo
       cooperativeGestures: false,
     })
-    m.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right')
+    m.addControl(new NavigationControl({ showCompass: false }), 'top-right')
     m.on('click', () => setPicked(null))
     map.current = m
     return () => {
@@ -77,14 +77,14 @@ export default function Mapa() {
         setPicked(p)
         m.easeTo({ center: [p.lng, p.lat], duration: 300 })
       })
-      return new maplibregl.Marker({ element: el }).setLngLat([p.lng, p.lat]).addTo(m)
+      return new Marker({ element: el }).setLngLat([p.lng, p.lat]).addTo(m)
     })
     // primeira vez com dados: enquadra todos os lugares
     if (!fitted.current && visible.length) {
       fitted.current = true
       if (visible.length === 1) m.jumpTo({ center: [visible[0].lng, visible[0].lat], zoom: 14 })
       else {
-        const b = new maplibregl.LngLatBounds()
+        const b = new LngLatBounds()
         visible.forEach((p) => b.extend([p.lng, p.lat]))
         m.fitBounds(b, { padding: 60, maxZoom: 15, duration: 0 })
       }

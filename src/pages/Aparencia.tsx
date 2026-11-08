@@ -4,6 +4,7 @@ import { Stars } from '../components/ui/Stars'
 import { CategoryTag } from '../components/review/ReviewCard'
 import {
   ACCENTS,
+  STYLES,
   TEXT_STEPS,
   THEME_SWATCHES,
   resetAppearance,
@@ -125,6 +126,36 @@ export default function Aparencia({ standalone = false }: { standalone?: boolean
       />
       <div className="page__body ap">
         <Preview />
+
+        {/* ---------- Estilo ---------- */}
+        <section className="ap-section" aria-labelledby="ap-estilo">
+          <h2 id="ap-estilo" className="ap-section__title">
+            Estilo
+          </h2>
+          <div className="ap-styles" role="radiogroup" aria-labelledby="ap-estilo">
+            {STYLES.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                role="radio"
+                aria-checked={a.estilo === s.id}
+                className="ap-style tap"
+                onClick={() => setAppearance({ estilo: s.id })}
+              >
+                <span className={`ap-style__art ap-style__art--${s.id}`} aria-hidden="true">
+                  <span className="ap-style__bar" />
+                  <span className="ap-style__card">
+                    <span />
+                    <span />
+                  </span>
+                  <span className="ap-style__btn" />
+                </span>
+                <span className="ap-style__name">{s.label}</span>
+              </button>
+            ))}
+          </div>
+          <span className="field-hint">{STYLES.find((s) => s.id === a.estilo)?.hint}</span>
+        </section>
 
         {/* ---------- Tema ---------- */}
         <section className="ap-section" aria-labelledby="ap-tema">
@@ -333,8 +364,7 @@ export default function Aparencia({ standalone = false }: { standalone?: boolean
           Voltar ao padrão
         </button>
         <p className="field-hint ap-foot">
-          Estilos inteiros (acrílico, console, portátil, anos 90) chegam numa próxima versão. Estas escolhas ficam
-          guardadas neste aparelho.
+          Os estilos Console e Portátil chegam numa próxima versão. Estas escolhas ficam guardadas neste aparelho.
         </p>
       </div>
     </div>

@@ -1,0 +1,406 @@
+/* =========================================================
+   Estilos inteiros (A3 do plano de Aparência) — data-estilo na tag <html>.
+   O padrão ("vidro") é o próprio ui.css; aqui só o que muda em cada estilo.
+   Fundo e superfície de cada estilo também estão em src/lib/appearance.ts
+   (STYLE_GROUND), para a cor de destaque ser calculada com contraste certo.
+   Tema (claro/escuro), contraste alto, texto e movimento continuam valendo por cima.
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   ACRÍLICO — lembra um computador atual: superfícies foscas, cantos de 4–8 px,
+   bordas finas, barra indicadora no item escolhido.
+   --------------------------------------------------------- */
+:root[data-estilo='acrilico'] {
+  --font: 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+  --r-sm: 4px;
+  --r-md: 6px;
+  --r-lg: 8px;
+  --r-xl: 8px;
+  --r-pill: 6px;
+  --bg: #F3F3F3;
+  --surface: #FBFBFB;
+  --text: #1B1B1B;
+  --text-2: #3D3D3D;
+  --text-3: #5C5C5C;
+  --separator: rgba(0, 0, 0, 0.1);
+  --fill: rgba(0, 0, 0, 0.045);
+  --glass-bg: rgba(252, 252, 252, 0.8);
+  --glass-bg-strong: rgba(249, 249, 249, 0.94);
+  --glass-bar: rgba(243, 243, 243, 0.86);
+  --glass-border: rgba(0, 0, 0, 0.07);
+  --glass-highlight: inset 0 0 0 0 transparent;
+  --glass-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+  --blur: blur(30px) saturate(125%);
+  --blur-strong: blur(60px) saturate(125%);
+  --card-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --stroke-bottom: rgba(0, 0, 0, 0.14);
+}
+:root[data-estilo='acrilico']:not([data-tema='claro']) {
+  --bg: #202020;
+  --surface: #2B2B2B;
+  --text: #FFFFFF;
+  --text-2: #D6D6D6;
+  --text-3: #ADADAD;
+  --separator: rgba(255, 255, 255, 0.1);
+  --fill: rgba(255, 255, 255, 0.07);
+  --glass-bg: rgba(44, 44, 44, 0.8);
+  --glass-bg-strong: rgba(39, 39, 39, 0.95);
+  --glass-bar: rgba(32, 32, 32, 0.88);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  --card-shadow: 0 0 0 1px rgba(255, 255, 255, 0.07), 0 2px 4px rgba(0, 0, 0, 0.25);
+  --stroke-bottom: rgba(255, 255, 255, 0.14);
+}
+:root[data-estilo='acrilico'][data-tema='preto'] {
+  --bg: #000000;
+  --surface: #161616;
+  --glass-bar: rgba(0, 0, 0, 0.88);
+}
+/* fundo "mica": um leve tom da cor de destaque no canto, parado ao rolar */
+:root[data-estilo='acrilico'] body {
+  background:
+    radial-gradient(90% 55% at 0% 0%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 70%),
+    radial-gradient(70% 50% at 100% 100%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 70%),
+    var(--bg);
+  background-attachment: fixed;
+}
+:root[data-estilo='acrilico'] .page-header__title {
+  font-weight: 600;
+  letter-spacing: 0;
+}
+:root[data-estilo='acrilico'] .sheet__top .sheet__title,
+:root[data-estilo='acrilico'] .sheet__title {
+  font-weight: 600;
+  letter-spacing: 0;
+}
+:root[data-estilo='acrilico'] .glass--sheet {
+  border-radius: 8px 8px 0 0;
+}
+:root[data-estilo='acrilico'] .tabbar__tabs {
+  border-radius: var(--r-lg);
+}
+:root[data-estilo='acrilico'] .tabbar__plus {
+  border-radius: var(--r-lg);
+  border: none;
+}
+:root[data-estilo='acrilico'] .btn {
+  font-weight: 600;
+}
+:root[data-estilo='acrilico'] .btn--plain,
+:root[data-estilo='acrilico'] .icon-btn,
+:root[data-estilo='acrilico'] .chip {
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--separator), inset 0 -1px 0 var(--stroke-bottom);
+}
+:root[data-estilo='acrilico'] .chip[aria-pressed='true'] {
+  background: var(--text);
+  color: var(--bg);
+  box-shadow: none;
+}
+:root[data-estilo='acrilico'] .field,
+:root[data-estilo='acrilico'] .search-field {
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--separator), inset 0 -1px 0 var(--text-3);
+}
+:root[data-estilo='acrilico'] .field:focus,
+:root[data-estilo='acrilico'] .search-field:focus-within {
+  box-shadow: inset 0 0 0 1px var(--separator), inset 0 -2px 0 var(--accent-ink);
+}
+/* item escolhido: barrinha da cor de destaque (lateral no desktop, embaixo no celular) */
+:root[data-estilo='acrilico'] .sidebar__item.active,
+:root[data-estilo='acrilico'] .tabbar__tab.active {
+  position: relative;
+  color: var(--text);
+  background: var(--fill);
+}
+:root[data-estilo='acrilico'] .sidebar__item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 30%;
+  bottom: 30%;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--accent-ink);
+}
+:root[data-estilo='acrilico'] .tabbar__tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  width: 16px;
+  height: 3px;
+  margin-left: -8px;
+  border-radius: 2px;
+  background: var(--accent-ink);
+}
+:root[data-estilo='acrilico'] .tabbar__tab.active svg {
+  color: var(--accent-ink);
+}
+:root[data-estilo='acrilico'] :focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------
+   ANOS 90 — janelas cinza em relevo, barra de título azul, nada arredondado.
+   Relevo = 4 sombras internas (luz em cima/esquerda, sombra embaixo/direita).
+   --------------------------------------------------------- */
+:root[data-estilo='anos90'] {
+  --font: Tahoma, Verdana, 'Segoe UI', system-ui, sans-serif;
+  --font-titulo: 'Pixelify Sans', 'Courier New', monospace;
+  --r-sm: 0;
+  --r-md: 0;
+  --r-lg: 0;
+  --r-xl: 0;
+  --r-pill: 0;
+  --bg: #C0C0C0;
+  --surface: #D4D0C8;
+  --text: #000000;
+  --text-2: #1A1A1A;
+  --text-3: #333333;
+  --separator: #808080;
+  --fill: rgba(0, 0, 0, 0.08);
+  --field-bg: #FFFFFF;
+  --hi: #FFFFFF;
+  --lo: #808080;
+  --dk: #000000;
+  --face-lite: #E8E6E0;
+  --title-bar: linear-gradient(90deg, #000080, #1084D0);
+  --title-ink: #FFFFFF;
+  --star: #7A5A00;
+  --star-empty: #8C8C8C;
+  --bevel-out: inset -1px -1px 0 var(--dk), inset 1px 1px 0 var(--hi), inset -2px -2px 0 var(--lo), inset 2px 2px 0 var(--face-lite);
+  --bevel-in: inset 1px 1px 0 var(--lo), inset -1px -1px 0 var(--hi), inset 2px 2px 0 var(--dk), inset -2px -2px 0 var(--face-lite);
+  --glass-bg: var(--surface);
+  --glass-bg-strong: var(--surface);
+  --glass-bar: var(--bg);
+  --glass-border: transparent;
+  --glass-highlight: inset 0 0 0 0 transparent;
+  --glass-shadow: var(--bevel-out);
+  --blur: none;
+  --blur-strong: none;
+  --card-shadow: var(--bevel-out);
+  --login-gradient: #008080;
+  /* etiquetas de categoria: tons mais escuros para ler sobre o cinza */
+  --cat-album-ink: #5B1F86;
+  --cat-filme-ink: #8A0010;
+  --cat-serie-ink: #8A0A3A;
+  --cat-jogo-ink: #0F5A26;
+  --cat-livro-ink: #5A3A12;
+  --cat-bar-ink: #6A3800;
+  --cat-banheiro-ink: #003F8A;
+  --cat-cidade-ink: #00505C;
+  --cat-drink-ink: #8A0A3A;
+  --cat-prato-ink: #5A4300;
+  --cat-restaurante-ink: #7A1E00;
+  --cat-cafe-ink: #5A3420;
+}
+:root[data-estilo='anos90']:not([data-tema='claro']) {
+  --bg: #000000;
+  --surface: #2B2B2B;
+  --text: #FFFFFF;
+  --text-2: #E6E6E6;
+  --text-3: #C4C4C4;
+  --separator: #6B6B6B;
+  --fill: rgba(255, 255, 255, 0.1);
+  --field-bg: #000000;
+  --hi: #6B6B6B;
+  --lo: #141414;
+  --dk: #000000;
+  --face-lite: #474747;
+  --star: #FFD54A;
+  --star-empty: #5E5E5E;
+  --login-gradient: #003C3C;
+  --cat-album-ink: #D9A8F7;
+  --cat-filme-ink: #FF9A90;
+  --cat-serie-ink: #FF8FAA;
+  --cat-jogo-ink: #7BDE96;
+  --cat-livro-ink: #DDBE98;
+  --cat-bar-ink: #FFBE55;
+  --cat-banheiro-ink: #7EC0FF;
+  --cat-cidade-ink: #7FDDEA;
+  --cat-drink-ink: #FF9FB3;
+  --cat-prato-ink: #F2D35C;
+  --cat-restaurante-ink: #FF9A86;
+  --cat-cafe-ink: #E0B190;
+}
+/* nada arredondado (inclui o que tem raio escrito fixo nos componentes) */
+:root[data-estilo='anos90'] *,
+:root[data-estilo='anos90'] *::before,
+:root[data-estilo='anos90'] *::after {
+  border-radius: 0 !important;
+}
+:root[data-estilo='anos90'] .page-header__title,
+:root[data-estilo='anos90'] .sheet__title {
+  font-family: var(--font-titulo);
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+/* Cabeçalho da página = janela com barra de título */
+:root[data-estilo='anos90'] .page-header {
+  background: var(--surface);
+  box-shadow: var(--bevel-out);
+  padding-top: calc(var(--safe-top) + 4px);
+  border: none;
+}
+:root[data-estilo='anos90'] .page-header__row {
+  margin: 0 -16px;
+  padding: 4px 6px 4px 10px;
+  background: var(--title-bar);
+  color: var(--title-ink);
+}
+:root[data-estilo='anos90'] .page-header__title {
+  font-size: calc(var(--fs-large-title) * 0.72);
+}
+:root[data-estilo='anos90'] .page-header__subtitle {
+  margin-top: 8px;
+  color: var(--text-2);
+}
+
+/* Janelas (sheets e diálogos) */
+:root[data-estilo='anos90'] .glass--sheet {
+  box-shadow: var(--bevel-out);
+}
+:root[data-estilo='anos90'] .sheet__handle {
+  display: none;
+}
+:root[data-estilo='anos90'] .sheet__grab .sheet__title {
+  margin: 4px -16px 12px;
+  padding: 4px 10px;
+  text-align: left;
+  background: var(--title-bar);
+  color: var(--title-ink);
+}
+:root[data-estilo='anos90'] .sheet__top {
+  background: var(--title-bar);
+  color: var(--title-ink);
+  border-bottom: none;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+/* Painéis em relevo */
+:root[data-estilo='anos90'] .review-card,
+:root[data-estilo='anos90'] .group,
+:root[data-estilo='anos90'] .movie-card,
+:root[data-estilo='anos90'] .toast,
+:root[data-estilo='anos90'] .notice {
+  background: var(--surface);
+  box-shadow: var(--bevel-out);
+}
+
+/* Botões em relevo; apertado/escolhido = afundado */
+:root[data-estilo='anos90'] .btn,
+:root[data-estilo='anos90'] .chip,
+:root[data-estilo='anos90'] .icon-btn,
+:root[data-estilo='anos90'] .toggle-chip,
+:root[data-estilo='anos90'] .details-toggle,
+:root[data-estilo='anos90'] .segmented button,
+:root[data-estilo='anos90'] .segmented__date,
+:root[data-estilo='anos90'] .sidebar__compose,
+:root[data-estilo='anos90'] .tabbar__plus,
+:root[data-estilo='anos90'] .tabbar__tab,
+:root[data-estilo='anos90'] .sidebar__item {
+  border: none;
+  box-shadow: var(--bevel-out);
+}
+:root[data-estilo='anos90'] .btn--plain,
+:root[data-estilo='anos90'] .chip,
+:root[data-estilo='anos90'] .icon-btn,
+:root[data-estilo='anos90'] .toggle-chip,
+:root[data-estilo='anos90'] .details-toggle,
+:root[data-estilo='anos90'] .segmented button,
+:root[data-estilo='anos90'] .segmented__date,
+:root[data-estilo='anos90'] .tabbar__tab,
+:root[data-estilo='anos90'] .sidebar__item {
+  background: var(--surface);
+  color: var(--text);
+}
+:root[data-estilo='anos90'] .btn:active,
+:root[data-estilo='anos90'] .chip:active,
+:root[data-estilo='anos90'] .icon-btn:active,
+:root[data-estilo='anos90'] .segmented button:active,
+:root[data-estilo='anos90'] .tabbar__plus:active,
+:root[data-estilo='anos90'] .chip[aria-pressed='true'],
+:root[data-estilo='anos90'] .toggle-chip[aria-pressed='true'],
+:root[data-estilo='anos90'] .segmented button[aria-checked='true'],
+:root[data-estilo='anos90'] .segmented button[aria-selected='true'],
+:root[data-estilo='anos90'] .segmented__date[data-checked='true'],
+:root[data-estilo='anos90'] .tabbar__tab.active,
+:root[data-estilo='anos90'] .sidebar__item.active {
+  box-shadow: var(--bevel-in);
+  background: var(--bg);
+  color: var(--text);
+  font-weight: 700;
+}
+:root[data-estilo='anos90'] .segmented {
+  gap: 4px;
+  padding: 0;
+  background: transparent;
+}
+
+/* Campos: brancos e afundados */
+:root[data-estilo='anos90'] .field,
+:root[data-estilo='anos90'] .search-field,
+:root[data-estilo='anos90'] textarea {
+  background: var(--field-bg);
+  box-shadow: var(--bevel-in);
+  border: none;
+}
+
+/* Barra de abas do celular = barra de tarefas */
+:root[data-estilo='anos90'] .tabbar {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-width: none;
+  gap: 4px;
+  padding: 4px 4px calc(var(--safe-bottom) + 4px);
+  background: var(--bg);
+  box-shadow: inset 0 1px 0 var(--face-lite), inset 0 2px 0 var(--hi);
+}
+:root[data-estilo='anos90'] .tabbar__tabs {
+  height: 52px;
+  gap: 4px;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  border: none;
+}
+:root[data-estilo='anos90'] .tabbar__tab {
+  margin: 0;
+}
+:root[data-estilo='anos90'] .tabbar__plus {
+  width: 56px;
+  height: 52px;
+}
+
+/* Barra lateral */
+:root[data-estilo='anos90'] .sidebar {
+  background: var(--bg);
+  box-shadow: inset -1px 0 0 var(--lo), inset -2px 0 0 var(--dk);
+  border: none;
+}
+:root[data-estilo='anos90'] .sidebar__list {
+  gap: 4px;
+}
+
+/* Foco: pontilhado, como nos botões da época (mas grosso o bastante para ver) */
+:root[data-estilo='anos90'] :focus-visible {
+  outline: 2px dotted var(--text);
+  outline-offset: -5px;
+}
+
+/* Contraste alto vale por cima de qualquer estilo (seletor mais forte que as paletas acima) */
+:root[data-estilo][data-contraste='alto'][data-tema='claro'] {
+  --text-2: #111111;
+  --text-3: #2E2E2E;
+  --separator: rgba(0, 0, 0, 0.55);
+}
+:root[data-estilo][data-contraste='alto']:not([data-tema='claro']) {
+  --text-2: #F2F2F7;
+  --text-3: #D1D1D6;
+  --separator: rgba(255, 255, 255, 0.6);
+}

@@ -6,6 +6,7 @@ import { useSyncExternalStore } from 'react'
  * As escolhas da pessoa ficam no aparelho (localStorage `mmisc.aparencia`) e viram atributos
  * na tag <html>; o CSS reage a eles (tokens.css). "Automático" segue o aparelho e é resolvido
  * aqui, então o CSS só conhece valores concretos:
+ *   data-estilo      vidro | acrilico | anos90 (arquivo src/styles/estilos.css)
  *   data-tema        claro | medio | escuro | preto
  *   data-contraste   normal | alto
  *   data-transp      vidro | solido
@@ -25,9 +26,11 @@ import { useSyncExternalStore } from 'react'
 
 export type ThemeChoice = 'auto' | 'claro' | 'medio' | 'escuro' | 'preto'
 export type Theme = Exclude<ThemeChoice, 'auto'>
+export type StyleId = 'vidro' | 'acrilico' | 'anos90'
 export type AccentId = 'marca' | 'vermelho' | 'roxo' | 'verde' | 'azul' | 'laranja' | 'rosa'
 
 export interface Appearance {
+  estilo: StyleId
   tema: ThemeChoice
   /** índice em TEXT_STEPS, ou 'auto' (segue o tamanho de texto do aparelho) */
   texto: 'auto' | number
@@ -43,6 +46,7 @@ export interface Appearance {
 }
 
 export const DEFAULT_APPEARANCE: Appearance = {
+  estilo: 'vidro',
   tema: 'auto',
   texto: 'auto',
   contraste: 'auto',
@@ -55,6 +59,13 @@ export const DEFAULT_APPEARANCE: Appearance = {
   categorias: 'coloridas',
   fonte: 'inter',
 }
+
+/** Estilos inteiros (A3). Nomes nossos: sem marcas de terceiros na interface. */
+export const STYLES: { id: StyleId; label: string; hint: string }[] = [
+  { id: 'vidro', label: 'Vidro', hint: 'O MMisc de sempre: vidro desfocado, cantos redondos.' },
+  { id: 'acrilico', label: 'Acrílico', hint: 'Cantos retos e discretos, superfícies foscas, cara de computador.' },
+  { id: 'anos90', label: 'Anos 90', hint: 'Janelas cinza em relevo, barra de título azul, zero arredondado.' },
+]
 
 /** Degraus do tamanho do texto (1 = padrão). */
 export const TEXT_STEPS = [0.85, 1, 1.15, 1.3, 1.45, 1.6] as const
@@ -85,9 +96,21 @@ export const THEME_SWATCHES: Record<Theme, { bg: string; card: string; ink: stri
   preto: { bg: THEME_GROUND.preto.bg, card: THEME_GROUND.preto.surface, ink: '#FFFFFF' },
 }
 
+/** Fundo e superfície que mudam com o estilo (mesmos valores de src/styles/estilos.css). */
+const STYLE_GROUND: Partial<Record<StyleId, { light: { bg: string; surface: string }; dark: { bg: string; surface: string } }>> = {
+  acrilico: { light: { bg: '#F3F3F3', surface: '#FBFBFB' }, dark: { bg: '#202020', surface: '#2B2B2B' } },
+  anos90: { light: { bg: '#C0C0C0', surface: '#D4D0C8' }, dark: { bg: '#000000', surface: '#2B2B2B' } },
+}
+function groundOf(theme: Theme, style: StyleId) {
+  const base = THEME_GROUND[theme]
+  const s = STYLE_GROUND[style]
+  if (!s) return base
+  return { ...(base.dark ? s.dark : s.light), dark: base.dark }
+}
+
 const KEY = 'mmisc.aparencia'
 const CSS_KEY = 'mmisc.aparencia.css'
-const ROOT_ATTRS = ['tema', 'contraste', 'transp', 'movimento', 'densidade', 'categorias', 'fonte', 'nota', 'vibracao'] as const
+const ROOT_ATTRS = ['estilo', 'tema', 'contraste', 'transp', 'movimento', 'densidade', 'categorias', 'fonte', 'nota', 'vibracao'] as const
 
 // ---------- contraste (WCAG) ----------
 type RGB = [number, number, number]
@@ -115,9 +138,9 @@ const mix = (c: RGB, t: RGB, p: number): RGB => c.map((v, i) => v + (t[i] - v) *
  * (creme/branco ou quase preto, o que der mais contraste) e a versão "tinta", escurecida
  * ou clareada até 4,5:1 sobre o fundo e a superfície, para quando o destaque vira texto.
  */
-export function accentVars(id: AccentId, theme: Theme): Record<string, string> {
+export function accentVars(id: AccentId, theme: Theme, style: StyleId = 'vidro'): Record<string, string> {
   const a = ACCENTS.find((x) => x.id === id) ?? ACCENTS[0]
-  const ground = THEME_GROUND[theme]
+  const ground = groundOf(theme, style)
   const light = id === 'marca' ? '#F4E8D0' : '#FFFFFF'
   let base = ground.dark ? a.dark : a.light
   const onAccent = contrast(base, light) >= contrast(base, '#0B0B0B') ? light : '#0B0B0B'
@@ -158,7 +181,7 @@ function persist(a: Appearance) {
     localStorage.setItem(KEY, JSON.stringify(a))
     // pronto para o script do index.html: destaque já calculado em cada tema
     const css: Record<string, Record<string, string>> = {}
-    ;(Object.keys(THEME_GROUND) as Theme[]).forEach((t) => (css[t] = accentVars(a.destaque, t)))
+    ;(Object.keys(THEME_GROUND) as Theme[]).forEach((t) => (css[t] = accentVars(a.destaque, t, a.estilo)))
     localStorage.setItem(CSS_KEY, JSON.stringify(css))
   } catch {
     /* aba anônima ou armazenamento bloqueado: vale só nesta visita */
@@ -209,6 +232,7 @@ export function applyAppearance(a: Appearance = current) {
   resolved = r
   const root = document.documentElement
   const values: Record<(typeof ROOT_ATTRS)[number], string> = {
+    estilo: a.estilo,
     tema: r.tema,
     contraste: r.contraste,
     transp: r.transp,
@@ -221,9 +245,10 @@ export function applyAppearance(a: Appearance = current) {
   }
   ROOT_ATTRS.forEach((k) => root.setAttribute(`data-${k}`, values[k]))
   root.style.setProperty('--escala-texto', String(r.escala))
-  Object.entries(accentVars(a.destaque, r.tema)).forEach(([k, v]) => root.style.setProperty(k, v))
+  Object.entries(accentVars(a.destaque, r.tema, a.estilo)).forEach(([k, v]) => root.style.setProperty(k, v))
   const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
-  if (meta) meta.content = THEME_GROUND[r.tema].bg
+  if (meta) meta.content = groundOf(r.tema, a.estilo).bg
+  if (a.estilo === 'anos90') void import('@fontsource/pixelify-sans/latin-700.css')
   if (a.fonte === 'atkinson') void import('@fontsource/atkinson-hyperlegible/latin-400.css').then(() => import('@fontsource/atkinson-hyperlegible/latin-700.css'))
 }
 

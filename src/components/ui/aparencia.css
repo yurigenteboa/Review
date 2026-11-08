@@ -233,3 +233,126 @@
   font-variant-numeric: tabular-nums;
   font-weight: 600;
 }
+
+/* Estilos: miniaturas (cores de amostra de cada estilo, como dados de exemplo) */
+.ap-styles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(max(88px, 6.5rem), 1fr));
+  gap: 10px;
+  max-width: 34rem;
+}
+.ap-style {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text);
+  font-size: var(--fs-footnote);
+  font-weight: 600;
+}
+.ap-style__art {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8%;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  padding: 10%;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px var(--separator);
+}
+.ap-style__bar {
+  height: 14%;
+}
+.ap-style__card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10%;
+  padding: 0 10%;
+}
+.ap-style__card span {
+  height: 9%;
+  min-height: 4px;
+  background: #1C1C1E;
+  opacity: 0.75;
+}
+.ap-style__card span:last-child {
+  width: 55%;
+  opacity: 0.4;
+}
+.ap-style__btn {
+  align-self: flex-end;
+  width: 38%;
+  height: 16%;
+}
+/* Vidro */
+.ap-style__art--vidro {
+  border-radius: var(--r-md);
+  background: linear-gradient(140deg, #E8E2F4, #F6EDE2);
+}
+.ap-style__art--vidro .ap-style__bar {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+}
+.ap-style__art--vidro .ap-style__card {
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.85);
+}
+.ap-style__art--vidro .ap-style__card span {
+  border-radius: 3px;
+}
+.ap-style__art--vidro .ap-style__btn {
+  border-radius: 999px;
+  background: #1A1714;
+}
+/* Acrílico */
+.ap-style__art--acrilico {
+  border-radius: 6px;
+  background: radial-gradient(90% 70% at 0% 0%, rgba(10, 132, 255, 0.16), transparent 70%), #F3F3F3;
+}
+.ap-style__art--acrilico .ap-style__bar {
+  border-radius: 3px;
+  background: #FBFBFB;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+.ap-style__art--acrilico .ap-style__card {
+  border-radius: 4px;
+  background: #FBFBFB;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+.ap-style__art--acrilico .ap-style__card span {
+  border-radius: 2px;
+}
+.ap-style__art--acrilico .ap-style__btn {
+  border-radius: 3px;
+  background: #0A84FF;
+}
+/* Anos 90 */
+.ap-style__art--anos90 {
+  background: #008080;
+}
+.ap-style__art--anos90 .ap-style__bar {
+  background: linear-gradient(90deg, #000080, #1084D0);
+}
+.ap-style__art--anos90 .ap-style__card {
+  background: #C0C0C0;
+  box-shadow: inset -1px -1px 0 #000, inset 1px 1px 0 #fff, inset -2px -2px 0 #808080;
+}
+.ap-style__art--anos90 .ap-style__card span {
+  background: #000;
+}
+.ap-style__art--anos90 .ap-style__btn {
+  background: #C0C0C0;
+  box-shadow: inset -1px -1px 0 #000, inset 1px 1px 0 #fff, inset -2px -2px 0 #808080;
+}
+.ap-style[aria-checked='true'] .ap-style__art {
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent-ink);
+}
+.ap-style[aria-checked='true'] .ap-style__name {
+  color: var(--accent-ink);
+}

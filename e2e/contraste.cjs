@@ -1,4 +1,4 @@
-// Aparência · teste de contraste: abre o app em cada tema × contraste × cor de destaque e mede
+// Aparência · teste de contraste: abre o app em cada estilo × tema × contraste × cor de destaque e mede
 // os pares de texto/fundo pelos tokens que valem de verdade na página (WCAG: 4,5:1 para texto).
 // Roda como o teste de fumaça (build de produção + `vite preview`, ver e2e/fumaca.cjs):
 //   node e2e/contraste.cjs            (ou: node e2e/contraste.cjs http://localhost:4173)
@@ -7,6 +7,7 @@
 const { chromium } = require('playwright')
 const BASE = process.argv[2] || 'http://localhost:4173'
 
+const ESTILOS = ['vidro', 'acrilico', 'anos90']
 const TEMAS = ['claro', 'medio', 'escuro', 'preto']
 const CONTRASTES = ['normal', 'alto']
 const DESTAQUES = ['marca', 'vermelho', 'roxo', 'verde', 'azul', 'laranja', 'rosa']
@@ -32,10 +33,11 @@ const PARES = [
   await page.waitForTimeout(500)
   const falhas = []
   let total = 0
+  for (const estilo of ESTILOS)
   for (const tema of TEMAS)
     for (const contraste of CONTRASTES)
       for (const destaque of DESTAQUES) {
-        await page.evaluate((a) => localStorage.setItem('mmisc.aparencia', JSON.stringify(a)), { tema, contraste, destaque })
+        await page.evaluate((a) => localStorage.setItem('mmisc.aparencia', JSON.stringify(a)), { estilo, tema, contraste, destaque })
         await page.reload()
         await page.waitForTimeout(150)
         const medidas = await page.evaluate((pares) => {
@@ -65,7 +67,7 @@ const PARES = [
         }, PARES)
         for (const [nome, r, min] of medidas) {
           total++
-          if (r < min) falhas.push(`${tema} · contraste ${contraste} · ${destaque}: ${nome} = ${r.toFixed(2)}:1 (meta ${min})`)
+          if (r < min) falhas.push(`${estilo} · ${tema} · contraste ${contraste} · ${destaque}: ${nome} = ${r.toFixed(2)}:1 (meta ${min})`)
         }
       }
   await browser.close()
@@ -77,5 +79,5 @@ const PARES = [
     for (const f of unicas.filter((f) => !/destaque|botão/.test(f))) console.log('  ' + f)
     process.exit(1)
   }
-  console.log(`Contraste ok (${total} medidas: ${TEMAS.length} temas × ${CONTRASTES.length} contrastes × ${DESTAQUES.length} destaques)`)
+  console.log(`Contraste ok (${total} medidas: ${ESTILOS.length} estilos × ${TEMAS.length} temas × ${CONTRASTES.length} contrastes × ${DESTAQUES.length} destaques)`)
 })()
