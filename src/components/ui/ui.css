@@ -81,7 +81,7 @@
   border-radius: var(--r-pill);
   border: 0.5px solid var(--separator);
   background: var(--glass-bg);
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -240,7 +240,7 @@
   border-radius: 26px;
   color: var(--text-2);
   text-decoration: none;
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 600;
 }
 .tabbar__tab.active {
@@ -348,12 +348,13 @@
 /* ============ Formulários ============ */
 .field {
   width: 100%;
-  height: 48px;
+  /* cresce com o tamanho do texto; nunca abaixo de 16px (o iPhone dá zoom em campo menor) */
+  height: max(48px, 2.8em);
   padding: 0 14px;
   border: none;
   border-radius: 14px;
   background: var(--surface);
-  font-size: 17px;
+  font-size: max(16px, 1.0625rem);
   color: var(--text);
 }
 .field-label {
@@ -366,7 +367,7 @@
 .field-hint {
   display: block;
   margin: 6px 4px 0;
-  font-size: 12px;
+  font-size: 0.75rem;
   color: var(--text-3);
 }
 .btn:disabled {
@@ -387,7 +388,7 @@
   border: none;
   border-radius: 10px;
   background: transparent;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
 }
 .segmented button[aria-checked='true'] {
@@ -421,7 +422,7 @@
   justify-content: center;
   border: 1.5px dashed var(--text-3);
   color: var(--text-3);
-  font-size: 32px;
+  font-size: 2rem;
   cursor: pointer;
 }
 .photo-remove {
@@ -439,7 +440,7 @@
 }
 
 .vis-badge {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-3);
   padding: 4px 10px;
@@ -480,7 +481,7 @@
   -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   color: #fff;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
@@ -536,7 +537,7 @@
   border: 0.5px solid var(--separator);
   border-radius: var(--r-pill);
   background: var(--surface);
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
   color: var(--text);
 }
@@ -555,7 +556,7 @@
   justify-content: center;
   min-height: 36px;
   border-radius: 10px;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
 }
@@ -642,7 +643,7 @@
   flex: none;
   width: 26px;
   text-align: center;
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: 700;
   color: var(--text-2);
 }
@@ -670,7 +671,7 @@
   height: auto !important;
 }
 .watch-card__title {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   line-height: 1.2;
   display: -webkit-box;
@@ -686,7 +687,7 @@
   border-radius: 6px;
   background: var(--accent);
   color: var(--on-accent);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 700;
 }
 
@@ -1730,7 +1731,7 @@ img.cover--img.is-loaded {
 .now-bubble__what {
   max-width: 100%;
   margin-top: -3px;
-  font-size: 10px;
+  font-size: 0.625rem;
   color: var(--text-3);
   overflow: hidden;
   white-space: nowrap;
@@ -1870,7 +1871,7 @@ li.is-done .starter__text strong {
 }
 .starter__go {
   color: var(--text-3);
-  font-size: 22px;
+  font-size: 1.375rem;
   line-height: 1;
 }
 .starter__extra {
@@ -1926,11 +1927,11 @@ li.is-done .starter__text strong {
   padding: 64px 24px;
 }
 .crash__title {
-  font-size: 20px;
+  font-size: 1.25rem;
   color: var(--text);
 }
 .crash__text {
-  font-size: 15px;
+  font-size: 0.9375rem;
   color: var(--text-3);
   max-width: 34ch;
 }
@@ -1976,7 +1977,7 @@ li.is-done .starter__text strong {
   white-space: nowrap;
 }
 .orders__name span {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: var(--text-3);
 }
 .orders__remove {
@@ -2006,7 +2007,7 @@ li.is-done .starter__text strong {
   flex: none;
   min-height: 44px;
   padding: 0 14px;
-  font-size: 15px;
+  font-size: 0.9375rem;
 }
 .orders__add-btn:disabled {
   opacity: 0.45;
@@ -2060,7 +2061,7 @@ li.is-done .starter__text strong {
   border-radius: 999px;
   background: var(--fill);
   color: var(--text);
-  font-size: 13px;
+  font-size: 0.8125rem;
   text-decoration: none;
 }
 .card-orders__item b {
@@ -2073,13 +2074,13 @@ li.is-done .starter__text strong {
 .place-menu__meta {
   margin-left: auto;
   text-align: right;
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--text-3);
   white-space: nowrap;
 }
 .place-menu__meta strong {
   display: block;
-  font-size: 16px;
+  font-size: 1rem;
   color: var(--text);
 }
 
@@ -2092,7 +2093,7 @@ li.is-done .starter__text strong {
   text-align: center;
 }
 .compare__q {
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
   color: var(--text-2);
 }
@@ -2113,11 +2114,11 @@ li.is-done .starter__text strong {
   border-radius: var(--r-md);
   background: var(--surface);
   color: var(--text);
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
 }
 .compare__bucket span {
-  font-size: 24px;
+  font-size: 1.5rem;
   line-height: 1;
 }
 .compare__bucket[aria-pressed='true'] {
@@ -2132,7 +2133,7 @@ li.is-done .starter__text strong {
   width: 100%;
 }
 .compare__other {
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: 750;
   letter-spacing: -0.3px;
 }
@@ -2149,13 +2150,13 @@ li.is-done .starter__text strong {
   gap: 2px;
 }
 .compare__score {
-  font-size: 40px;
+  font-size: 2.5rem;
   font-weight: 800;
   letter-spacing: -1px;
   color: var(--text);
 }
 .compare__place {
-  font-size: 14px;
+  font-size: 0.875rem;
   color: var(--text-2);
 }
 
@@ -2163,7 +2164,7 @@ li.is-done .starter__text strong {
 .best__rank {
   flex: none;
   width: 28px;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 750;
   color: var(--text-3);
   text-align: center;
@@ -2206,7 +2207,7 @@ li.is-done .starter__text strong {
   min-height: 44px;
   padding: 0 16px;
   color: var(--text);
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
 }
 .map-card {
@@ -2220,18 +2221,18 @@ li.is-done .starter__text strong {
   padding: 14px 16px;
 }
 .map-card__cat {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.4px;
 }
 .map-card__title {
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 700;
 }
 .map-card__sub,
 .map-card__meta {
-  font-size: 14px;
+  font-size: 0.875rem;
   color: var(--text-2);
 }
 .map-card__open {
@@ -2242,10 +2243,8 @@ li.is-done .starter__text strong {
   min-height: 44px;
   text-decoration: none;
 }
-@media (prefers-reduced-motion: reduce) {
-  .maplibregl-map * {
-    transition: none !important;
-  }
+:root[data-movimento='reduzido'] .maplibregl-map * {
+  transition: none !important;
 }
 
 /* ---------- Fase 2d: ficha do lugar e sugestões ---------- */
@@ -2260,13 +2259,13 @@ li.is-done .starter__text strong {
 .ficha__label {
   flex: none;
   width: 118px;
-  font-size: 14px;
+  font-size: 0.875rem;
   color: var(--text-2);
 }
 .ficha__value {
   flex: 1;
   min-width: 0;
-  font-size: 15px;
+  font-size: 0.9375rem;
   color: var(--text);
   overflow-wrap: anywhere;
 }
@@ -2282,7 +2281,7 @@ li.is-done .starter__text strong {
 .ficha__btn {
   min-height: 40px;
   padding: 0 12px;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 /* ---------- Fase 2 · Meus lugares em ordem (/ranking) ---------- */
@@ -2389,4 +2388,82 @@ li.is-done .starter__text strong {
   height: 52px;
   width: auto;
   margin: 2px 0 -2px;
+}
+
+/* ============ Aparência (A1/A2) — ver src/lib/appearance.ts ============ */
+/* Formato da nota (Stars.tsx): número no lugar das estrelas, ou os dois */
+.stars-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.stars-num {
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.stars-num__star {
+  color: var(--star);
+}
+
+/* Densidade compacta: mais reviews por tela, mesmos alvos de toque (44 px) */
+:root[data-densidade='compacta'] .page__body {
+  gap: 8px;
+}
+:root[data-densidade='compacta'] .review-card {
+  padding: 10px 12px;
+}
+:root[data-densidade='compacta'] .review-card__text {
+  margin-top: 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+:root[data-densidade='compacta'] .review-card__foot {
+  margin-top: 8px;
+}
+:root[data-densidade='compacta'] .group__row {
+  min-height: 44px;
+  padding-block: 6px;
+}
+
+/* Categorias discretas: etiquetas sem cor (o nome continua escrito) */
+:root[data-categorias='discretas'] .cat-tag {
+  color: var(--text-2) !important;
+  background: var(--fill) !important;
+}
+
+/* Contraste alto: contorno no que antes se separava só por sombra ou cor de fundo */
+:root[data-contraste='alto'] .group,
+:root[data-contraste='alto'] .chip,
+:root[data-contraste='alto'] .btn--plain,
+:root[data-contraste='alto'] .segmented,
+:root[data-contraste='alto'] .field {
+  box-shadow: inset 0 0 0 1.5px var(--separator);
+}
+:root[data-contraste='alto'] :focus-visible {
+  outline-width: 3px;
+}
+
+/* Alto contraste do Windows: o sistema troca as cores; bordas e foco precisam continuar visíveis */
+@media (forced-colors: active) {
+  .review-card,
+  .group,
+  .chip,
+  .btn,
+  .segmented,
+  .field,
+  .sheet,
+  .tabbar,
+  .sidebar {
+    border: 1px solid CanvasText;
+  }
+  :focus-visible {
+    outline: 3px solid Highlight;
+  }
+  .star__fill svg path {
+    fill: Highlight;
+  }
 }

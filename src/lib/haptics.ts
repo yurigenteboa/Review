@@ -1,3 +1,4 @@
+import { prefersReducedMotion, vibrationEnabled } from './appearance'
 /**
  * Vibração leve de confirmação (M2).
  * - Android/Chrome: `navigator.vibrate`.
@@ -28,7 +29,8 @@ const isIOS = typeof navigator !== 'undefined' && /iP(hone|ad|od)/.test(navigato
 
 export function haptic(kind: 'tick' | 'success' = 'tick') {
   if (typeof window === 'undefined') return
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+  // desligada em Aparência, ou movimento reduzido (escolhido ou do aparelho)
+  if (!vibrationEnabled() || prefersReducedMotion()) return
   if (typeof navigator.vibrate === 'function') {
     navigator.vibrate(kind === 'success' ? [12, 40, 18] : 8)
     return

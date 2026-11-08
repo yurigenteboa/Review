@@ -68,8 +68,8 @@ export default function Notificacoes({ onCompose }: { onCompose: (s: ComposeStar
                   <Avatar profile={n.actor} size={40} />
                 </Link>
                 <Link to={linkOf(n)} style={{ flex: 1, minWidth: 0, textDecoration: 'none', color: 'inherit' }}>
-                  <span style={{ display: 'block', fontSize: 15, lineHeight: 1.35 }}>{text(n)}</span>
-                  <span style={{ fontSize: 12, color: 'var(--text-3)' }}>{timeAgo(n.created_at)}</span>
+                  <span style={{ display: 'block', fontSize: '0.9375rem', lineHeight: 1.35 }}>{text(n)}</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>{timeAgo(n.created_at)}</span>
                 </Link>
                 {n.type === 'companion' && n.item && !(mine.data ?? []).some((r) => r.item.id === n.item!.id && r.experienced_at === n.meta?.watched_on) && (
                   <button

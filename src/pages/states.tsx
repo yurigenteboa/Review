@@ -22,8 +22,8 @@ export function EmptyState({
 }) {
   return (
     <div style={{ textAlign: 'center', padding: '48px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-      <strong style={{ fontSize: 20 }}>{title}</strong>
-      {text && <span style={{ fontSize: 15, color: 'var(--text-3)' }}>{text}</span>}
+      <strong style={{ fontSize: '1.25rem' }}>{title}</strong>
+      {text && <span style={{ fontSize: '0.9375rem', color: 'var(--text-3)' }}>{text}</span>}
       {action && (
         <button type="button" className="btn btn--primary tap" style={{ marginTop: 12 }} onClick={action.onClick}>
           {action.label}
@@ -37,7 +37,7 @@ export function ErrorState({ error, onRetry }: { error: unknown; onRetry?: () =>
   return (
     <div role="alert" style={{ textAlign: 'center', padding: '40px 24px', display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center' }}>
       <strong>Não deu para carregar</strong>
-      <span style={{ fontSize: 14, color: 'var(--text-3)' }}>
+      <span style={{ fontSize: '0.875rem', color: 'var(--text-3)' }}>
         {/network|fetch|load failed/i.test((error as Error)?.message ?? '')
           ? 'Parece que a internet caiu. Confira a conexão e tente de novo.'
           : 'Tente de novo em instantes.'}

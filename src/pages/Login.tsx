@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Glass } from '../components/ui/Glass'
+import { useResolvedAppearance } from '../lib/appearance'
 import {
   googleLoginEnabled,
   isStandaloneIOS,
@@ -50,14 +51,12 @@ export default function Login() {
     }
   }
 
+  const darkTheme = useResolvedAppearance().tema !== 'claro'
   const googleButton = showGoogle && step === 'email' && (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
       <button type="button" className="btn btn--google tap" onClick={google} disabled={busy}>
         {/* "G" oficial recortado do kit de marca do Google; fundo igual ao do botão em cada tema */}
-        <picture>
-          <source srcSet="/brand/google-g-dark.png" media="(prefers-color-scheme: dark)" />
-          <img src="/brand/google-g-light.png" alt="" width={20} height={20} />
-        </picture>
+        <img src={darkTheme ? '/brand/google-g-dark.png' : '/brand/google-g-light.png'} alt="" width={20} height={20} />
         Continuar com o Google
       </button>
       {appIOS && (
@@ -123,11 +122,11 @@ export default function Login() {
             style={{ borderRadius: 26, display: 'block' }}
           />
         </h1>
-        <p style={{ margin: 0, fontSize: 15, color: 'var(--text-2)' }}>
+        <p style={{ margin: 0, fontSize: '0.9375rem', color: 'var(--text-2)' }}>
           Nota para tudo: álbuns, filmes, bares, banheiros, cidades.
         </p>
         {inviter && (
-          <p style={{ margin: '16px 0 0', padding: '10px 14px', borderRadius: 14, background: 'color-mix(in srgb, var(--accent) 14%, transparent)', fontSize: 15 }}>
+          <p style={{ margin: '16px 0 0', padding: '10px 14px', borderRadius: 14, background: 'color-mix(in srgb, var(--accent) 14%, transparent)', fontSize: '0.9375rem' }}>
             <strong>{inviter}</strong> te convidou. Entre e vocês já viram amigos.
           </p>
         )}
@@ -167,7 +166,7 @@ export default function Login() {
           </form>
         ) : (
           <form onSubmit={verify} style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <p style={{ margin: 0, fontSize: 15 }}>
+            <p style={{ margin: 0, fontSize: '0.9375rem' }}>
               Enviamos um e-mail para <strong>{email}</strong>. Digite o código ou toque no link do e-mail.
             </p>
             <label>
@@ -182,7 +181,7 @@ export default function Login() {
                 value={code}
                 onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
                 placeholder="123456"
-                style={{ fontSize: 24, letterSpacing: 6, textAlign: 'center' }}
+                style={{ fontSize: '1.5rem', letterSpacing: 6, textAlign: 'center' }}
               />
             </label>
             <button className="btn btn--primary tap" disabled={busy}>
@@ -203,7 +202,7 @@ export default function Login() {
         )}
 
         {error && (
-          <p role="alert" style={{ margin: '12px 0 0', fontSize: 14, color: 'var(--cat-filme-ink)' }}>
+          <p role="alert" style={{ margin: '12px 0 0', fontSize: '0.875rem', color: 'var(--cat-filme-ink)' }}>
             {error}
           </p>
         )}
@@ -212,6 +211,7 @@ export default function Login() {
           <Link to="/sobre">Sobre</Link>
           <Link to="/privacidade">Privacidade</Link>
           <Link to="/termos">Termos</Link>
+          <Link to="/aparencia">Aparência</Link>
         </nav>
       </Glass>
     </div>

@@ -350,11 +350,11 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
             <div className="group__row">
               <Cover item={chosen} size={56} radius={12} />
               <span style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0, flex: 1 }}>
-                <strong style={{ fontWeight: 650, fontSize: 17 }}>{chosen.title}</strong>
-                {chosen.subtitle && <span style={{ fontSize: 13, color: 'var(--text-3)' }}>{chosen.subtitle}</span>}
+                <strong style={{ fontWeight: 650, fontSize: '1.0625rem' }}>{chosen.title}</strong>
+                {chosen.subtitle && <span style={{ fontSize: '0.8125rem', color: 'var(--text-3)' }}>{chosen.subtitle}</span>}
               </span>
               {!edit && !start.itemId && (
-                <button type="button" className="btn btn--plain tap" style={{ minHeight: 44, padding: '0 14px', fontSize: 14 }} onClick={unpick}>
+                <button type="button" className="btn btn--plain tap" style={{ minHeight: 44, padding: '0 14px', fontSize: '0.875rem' }} onClick={unpick}>
                   Trocar
                 </button>
               )}
@@ -385,7 +385,7 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
                     <Cover item={it} size={44} radius={10} />
                     <span style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                       <strong style={{ fontWeight: 600 }}>{it.title}</strong>
-                      <span style={{ fontSize: 13, color: 'var(--text-3)' }}>{it.subtitle ? `${it.subtitle} · ` : ''}já no MMisc</span>
+                      <span style={{ fontSize: '0.8125rem', color: 'var(--text-3)' }}>{it.subtitle ? `${it.subtitle} · ` : ''}já no MMisc</span>
                     </span>
                   </button>
                 ))}
@@ -443,7 +443,7 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
           <button
             type="button"
             className="link-btn"
-            style={{ alignSelf: 'center', marginTop: -10, minHeight: 36, fontSize: 14 }}
+            style={{ alignSelf: 'center', marginTop: -10, minHeight: 36, fontSize: '0.875rem' }}
             onClick={() => {
               setRating(0)
               setCompare(null)
@@ -522,7 +522,7 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
         {/* ---------- mais detalhes (recolhido) ---------- */}
         <button type="button" className="details-toggle tap" aria-expanded={details} aria-controls="compose-details" onClick={toggleDetails}>
           <span>Mais detalhes</span>
-          <span style={{ fontSize: 13, color: 'var(--text-3)', fontWeight: 500 }}>texto, nota privada, com quem, fotos</span>
+          <span style={{ fontSize: '0.8125rem', color: 'var(--text-3)', fontWeight: 500 }}>texto, nota privada, com quem, fotos</span>
           <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.4" style={{ transform: details ? 'rotate(180deg)' : 'none', transition: 'transform .2s' }}>
             <path d="M6 9l6 6 6-6" />
           </svg>
@@ -660,7 +660,7 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
         )}
 
         {create.error && (
-          <p role="alert" style={{ margin: 0, color: 'var(--cat-filme-ink)', fontSize: 14 }}>
+          <p role="alert" style={{ margin: 0, color: 'var(--cat-filme-ink)', fontSize: '0.875rem' }}>
             Não deu para salvar: {(create.error as Error).message}
           </p>
         )}

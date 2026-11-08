@@ -44,17 +44,17 @@ export function CatalogResults({ category, results, loading, missingKey, error, 
       <div className="group">
         {loading && <div className="group__row" style={{ color: 'var(--text-3)' }}>Buscando…</div>}
         {missingKey && (
-          <div className="group__row" style={{ color: 'var(--text-3)', fontSize: 14 }}>
+          <div className="group__row" style={{ color: 'var(--text-3)', fontSize: '0.875rem' }}>
             A busca dessa categoria ainda não foi ligada (falta a chave {missingKey} no Supabase).
           </div>
         )}
         {error && !missingKey && (
-          <div className="group__row" style={{ color: 'var(--text-3)', fontSize: 14 }}>
+          <div className="group__row" style={{ color: 'var(--text-3)', fontSize: '0.875rem' }}>
             A fonte não respondeu agora. Tente de novo em instantes.
           </div>
         )}
         {!loading && !missingKey && !error && results && list.length === 0 && (
-          <div className="group__row" style={{ color: 'var(--text-3)', fontSize: 14 }}>
+          <div className="group__row" style={{ color: 'var(--text-3)', fontSize: '0.875rem' }}>
             Nada encontrado. Você pode criar manualmente.
           </div>
         )}
@@ -68,9 +68,9 @@ export function CatalogResults({ category, results, loading, missingKey, error, 
           >
             <Cover item={{ title: r.title, category: r.category, image_url: r.image_url }} size={44} radius={category === 'album' ? 8 : 10} />
             <span style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
-              <strong style={{ fontWeight: 600, fontSize: 16 }}>{r.title}</strong>
+              <strong style={{ fontWeight: 600, fontSize: '1rem' }}>{r.title}</strong>
               {r.subtitle && (
-                <span style={{ fontSize: 13, color: 'var(--text-3)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <span style={{ fontSize: '0.8125rem', color: 'var(--text-3)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {r.subtitle}
                 </span>
               )}

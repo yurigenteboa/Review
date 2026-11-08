@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useRef } from 'react'
 import { useLocation, useNavigationType, type Location } from 'react-router-dom'
+import { prefersReducedMotion } from './appearance'
 
 /**
  * M1 · Navegação com cara de app.
@@ -83,7 +84,7 @@ export function useTabReselect() {
     (to: string) => {
       if (location.pathname !== to) return false
       if (window.scrollY > 4) {
-        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        const reduce = prefersReducedMotion()
         window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' })
       } else {
         void qc.refetchQueries({ type: 'active' })

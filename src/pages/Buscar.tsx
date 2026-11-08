@@ -86,8 +86,8 @@ export default function Buscar({ onCompose }: { onCompose: (s: ComposeStart) => 
                 <Link key={i.id} to={`/item/${i.id}`} className="group__row tap" style={{ textDecoration: 'none', color: 'inherit' }}>
                   <Cover item={i} size={44} radius={10} />
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
-                    <strong style={{ fontWeight: 600, fontSize: 16 }}>{i.title}</strong>
-                    <span style={{ fontSize: 13, color: 'var(--text-3)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <strong style={{ fontWeight: 600, fontSize: '1rem' }}>{i.title}</strong>
+                    <span style={{ fontSize: '0.8125rem', color: 'var(--text-3)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {categoryById(i.category).label}
                       {i.parent_title ? ` · no ${i.parent_title}` : ''}
                       {i.subtitle ? ` · ${i.subtitle}` : ''}
@@ -115,7 +115,7 @@ export default function Buscar({ onCompose }: { onCompose: (s: ComposeStart) => 
         )}
 
         {cat === 'all' && term.length >= 2 && (
-          <p style={{ margin: '0 4px', fontSize: 14, color: 'var(--text-3)' }}>
+          <p style={{ margin: '0 4px', fontSize: '0.875rem', color: 'var(--text-3)' }}>
             Escolha uma categoria acima para buscar também na internet (filmes, álbuns, jogos, livros, lugares).
           </p>
         )}
@@ -132,7 +132,7 @@ export default function Buscar({ onCompose }: { onCompose: (s: ComposeStart) => 
 
         {open.isPending && <span role="status" className="field-hint">Abrindo…</span>}
         {open.error && (
-          <span role="alert" style={{ color: 'var(--cat-filme-ink)', fontSize: 14 }}>
+          <span role="alert" style={{ color: 'var(--cat-filme-ink)', fontSize: '0.875rem' }}>
             Não deu para abrir: {(open.error as Error).message}
           </span>
         )}

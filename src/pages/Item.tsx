@@ -121,24 +121,24 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
 
       <Glass style={{ margin: '-110px 16px 0', position: 'relative', padding: 20 }}>
         <CategoryTag category={it.category} />
-        <h1 style={{ margin: '8px 0 2px', fontSize: 28, fontWeight: 800, letterSpacing: -0.6, lineHeight: 1.1 }}>{it.title}</h1>
-        {it.subtitle && <p style={{ margin: 0, fontSize: 15, color: 'var(--text-2)' }}>{it.subtitle}</p>}
+        <h1 style={{ margin: '8px 0 2px', fontSize: '1.75rem', fontWeight: 800, letterSpacing: -0.6, lineHeight: 1.1 }}>{it.title}</h1>
+        {it.subtitle && <p style={{ margin: 0, fontSize: '0.9375rem', color: 'var(--text-2)' }}>{it.subtitle}</p>}
         {it.parent_id && (
-          <Link to={`/item/${it.parent_id}`} className="link-btn tap" style={{ display: 'inline-flex', minHeight: 36, alignItems: 'center', fontSize: 15 }}>
+          <Link to={`/item/${it.parent_id}`} className="link-btn tap" style={{ display: 'inline-flex', minHeight: 36, alignItems: 'center', fontSize: '0.9375rem' }}>
             no {it.parent_title ?? 'lugar'} ›
           </Link>
         )}
         {generic.data && (
-          <Link to={`/item/${generic.data}`} className="link-btn tap" style={{ display: 'inline-flex', minHeight: 36, alignItems: 'center', fontSize: 15, marginLeft: it.parent_id ? 12 : 0 }}>
+          <Link to={`/item/${generic.data}`} className="link-btn tap" style={{ display: 'inline-flex', minHeight: 36, alignItems: 'center', fontSize: '0.9375rem', marginLeft: it.parent_id ? 12 : 0 }}>
             Onde mais tem {it.title} ›
           </Link>
         )}
 
         {!isGeneric && <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16 }}>
-          <span style={{ fontSize: 40, fontWeight: 800, letterSpacing: -1 }}>{rated ? formatRating(avg) : '–'}</span>
+          <span style={{ fontSize: '2.5rem', fontWeight: 800, letterSpacing: -1 }}>{rated ? formatRating(avg) : '–'}</span>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <Stars value={avg} size={20} />
-            <span style={{ fontSize: 13, color: 'var(--text-2)' }}>
+            <Stars value={avg} size={20} withNumber />
+            <span style={{ fontSize: '0.8125rem', color: 'var(--text-2)' }}>
               {rated === 0 ? 'Sem notas ainda' : rated === 1 ? '1 nota' : `${rated} notas`}
               {list.length > rated ? ` · ${list.length} ${list.length === 1 ? 'registro' : 'registros'}` : ''}
             </span>
@@ -149,18 +149,18 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 18 }}>
             {crit.map((c) => (
               <div key={c.label} style={{ display: 'grid', gridTemplateColumns: '96px minmax(0, 1fr) 28px', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: 13, color: 'var(--text-2)' }}>{c.label}</span>
+                <span style={{ fontSize: '0.8125rem', color: 'var(--text-2)' }}>{c.label}</span>
                 <div style={{ height: 8, borderRadius: 4, background: 'var(--fill)', overflow: 'hidden' }}>
                   <div style={{ height: '100%', width: `${(c.value / 5) * 100}%`, borderRadius: 4, background: `var(--cat-${it.category})` }} />
                 </div>
-                <span style={{ fontSize: 13, fontWeight: 600, textAlign: 'right' }}>{c.n ? formatRating(c.value) : '–'}</span>
+                <span style={{ fontSize: '0.8125rem', fontWeight: 600, textAlign: 'right' }}>{c.n ? formatRating(c.value) : '–'}</span>
               </div>
             ))}
           </div>
         )}
 
         {isGeneric ? (
-          <p style={{ margin: '16px 0 0', fontSize: 14, color: 'var(--text-2)' }}>
+          <p style={{ margin: '16px 0 0', fontSize: '0.875rem', color: 'var(--text-2)' }}>
             Registre {it.title} dentro de um lugar (bar, restaurante ou café) em “O que você pediu?”.
           </p>
         ) : (
@@ -196,7 +196,7 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
       )}
 
       {!isGeneric && (<>
-      <h2 style={{ margin: '24px 20px 10px', fontSize: 22, letterSpacing: -0.4 }}>Reviews</h2>
+      <h2 style={{ margin: '24px 20px 10px', fontSize: '1.375rem', letterSpacing: -0.4 }}>Reviews</h2>
       <div className="page__body" style={{ paddingTop: 0 }}>
         {reviews.isLoading && <LoadingCards count={1} />}
         {list.map((r) => (
@@ -204,7 +204,7 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
             <ReviewCard review={r} showItem={false} />
             {r.user_id === userId && (
               <span style={{ alignSelf: 'flex-end', display: 'flex', gap: 16 }}>
-                <button type="button" className="link-btn" style={{ fontSize: 14 }} onClick={() => onCompose({ edit: r })}>
+                <button type="button" className="link-btn" style={{ fontSize: '0.875rem' }} onClick={() => onCompose({ edit: r })}>
                   Editar
                 </button>
                 <button
@@ -214,7 +214,7 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
                   onClick={() => {
                     if (window.confirm('Apagar esta entrada do diário? Isso não pode ser desfeito.')) del.mutate(r)
                   }}
-                  style={{ fontSize: 14, color: 'var(--cat-filme-ink)' }}
+                  style={{ fontSize: '0.875rem', color: 'var(--cat-filme-ink)' }}
                 >
                   Apagar
                 </button>
@@ -239,7 +239,7 @@ function PlaceMenu({ placeId, onCompose }: { placeId: string; onCompose: () => v
   const list = menu.data ?? []
   return (
     <section aria-labelledby="o-que-pedir">
-      <h2 id="o-que-pedir" style={{ margin: '24px 20px 10px', fontSize: 22, letterSpacing: -0.4 }}>O que pedir aqui</h2>
+      <h2 id="o-que-pedir" style={{ margin: '24px 20px 10px', fontSize: '1.375rem', letterSpacing: -0.4 }}>O que pedir aqui</h2>
       <div className="page__body" style={{ paddingTop: 0 }}>
         {menu.isLoading && <LoadingCards count={1} />}
         {list.length > 0 && (
@@ -249,7 +249,7 @@ function PlaceMenu({ placeId, onCompose }: { placeId: string; onCompose: () => v
                 <span aria-hidden="true" style={{ flex: 'none', width: 10, height: 10, borderRadius: 5, background: catColor(c.category) }} />
                 <span style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
                   <strong style={{ fontWeight: 600 }}>{c.title}</strong>
-                  <span style={{ fontSize: 12, color: 'var(--text-3)' }}>{categoryById(c.category).label}</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>{categoryById(c.category).label}</span>
                 </span>
                 <span className="place-menu__meta">
                   <strong>{c.rated ? formatRating(c.avg) : '–'}</strong>
@@ -279,7 +279,7 @@ function BestPlaces({ generic, title, drink }: { generic: string; title: string;
   const list = best.data ?? []
   return (
     <section aria-labelledby="onde-tem">
-      <h2 id="onde-tem" style={{ margin: '24px 20px 10px', fontSize: 22, letterSpacing: -0.4 }}>
+      <h2 id="onde-tem" style={{ margin: '24px 20px 10px', fontSize: '1.375rem', letterSpacing: -0.4 }}>
         Onde {drink ? 'tomar' : 'comer'} {title}
       </h2>
       <div className="page__body" style={{ paddingTop: 0 }}>
@@ -295,7 +295,7 @@ function BestPlaces({ generic, title, drink }: { generic: string; title: string;
                 <span className="best__rank">{b.ratings ? `${i + 1}º` : '–'}</span>
                 <span style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
                   <strong style={{ fontWeight: 600 }}>{b.place_title}</strong>
-                  <span style={{ fontSize: 12, color: 'var(--text-3)' }}>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>
                     {categoryById(b.place_category).label}
                     {b.place_area ? ` · ${b.place_area}` : ''}
                   </span>
@@ -314,7 +314,7 @@ function BestPlaces({ generic, title, drink }: { generic: string; title: string;
             text={`Quando alguém pedir ${title} num bar, restaurante ou café, o lugar aparece aqui.`}
           />
         )}
-        <p style={{ margin: '4px 4px 0', fontSize: 12, color: 'var(--text-3)' }}>
+        <p style={{ margin: '4px 4px 0', fontSize: '0.75rem', color: 'var(--text-3)' }}>
           Nota de cada lugar = média das notas que você pode ver (suas, de amigos e públicas). Lugares com poucas notas ficam mais perto do meio.
         </p>
       </div>

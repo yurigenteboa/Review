@@ -98,8 +98,8 @@ export function RatingInput({ value, onChange }: { value: number; onChange: (v: 
           )
         })}
       </div>
-      <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-2)' }}>{ratingWord(value)}</span>
-      <span style={{ fontSize: 12, color: 'var(--text-3)' }}>Toque ou arraste nas estrelas · toque de novo para meia</span>
+      <span style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--text-2)' }}>{ratingWord(value)}</span>
+      <span style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>Toque ou arraste nas estrelas · toque de novo para meia</span>
     </div>
   )
 }

@@ -187,6 +187,26 @@ async function healthy(name, page, errors) {
     await ctx.close()
   }
 
+  // 4. Aparência: abre sem login, troca o tema na hora e aguenta texto a 160% sem rolar para o lado
+  {
+    const { ctx, page, errors } = await newPage(browser, { logged: false, device: 'iPhone 13' })
+    await page.goto(BASE + '/aparencia')
+    await healthy('aparência (sem login)', page, errors)
+    await page.getByRole('radio', { name: /^Médio/ }).click()
+    await page.waitForTimeout(200)
+    if ((await page.evaluate(() => document.documentElement.dataset.tema)) === 'medio') ok('aparência: tema muda na hora')
+    else fail('aparência', 'o tema não mudou')
+    await page.evaluate(() => localStorage.setItem('mmisc.aparencia', JSON.stringify({ texto: 5 })))
+    for (const path of ['/', '/aparencia', '/sobre']) {
+      await page.goto(BASE + path)
+      await page.waitForTimeout(500)
+      const wide = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
+      if (wide <= 1) ok(`texto a 160% sem rolagem lateral: ${path}`)
+      else fail(`texto a 160% em ${path}`, `${wide}px a mais na largura`)
+    }
+    await ctx.close()
+  }
+
   await browser.close()
   for (const [s, n] of results) console.log(`${s === 'ok' ? '✓' : '✗'} ${n}`)
   const failed = results.filter(([s]) => s !== 'ok').length

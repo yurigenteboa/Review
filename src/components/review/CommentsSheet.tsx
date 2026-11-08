@@ -28,7 +28,7 @@ export function CommentsSheet({ review, open, onClose }: { review: Review; open:
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         {comments.isLoading && <span className="field-hint">Carregando…</span>}
         {comments.data?.length === 0 && (
-          <p style={{ margin: 0, textAlign: 'center', color: 'var(--text-3)', fontSize: 15 }}>Ninguém comentou ainda.</p>
+          <p style={{ margin: 0, textAlign: 'center', color: 'var(--text-3)', fontSize: '0.9375rem' }}>Ninguém comentou ainda.</p>
         )}
         {comments.data?.map((c) => (
           <div key={c.id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
@@ -36,10 +36,10 @@ export function CommentsSheet({ review, open, onClose }: { review: Review; open:
               <Avatar profile={c.author} size={32} />
             </Link>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 13, color: 'var(--text-3)' }}>
+              <div style={{ fontSize: '0.8125rem', color: 'var(--text-3)' }}>
                 <strong style={{ color: 'var(--text)', fontWeight: 600 }}>{displayName(c.author)}</strong> · {timeAgo(c.created_at)}
               </div>
-              <p style={{ margin: '2px 0 0', fontSize: 15, lineHeight: 1.4, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{c.body}</p>
+              <p style={{ margin: '2px 0 0', fontSize: '0.9375rem', lineHeight: 1.4, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{c.body}</p>
             </div>
             {(c.user_id === userId || isOwner) && (
               <button
@@ -47,7 +47,7 @@ export function CommentsSheet({ review, open, onClose }: { review: Review; open:
                 aria-label="Apagar comentário"
                 disabled={del.isPending}
                 onClick={() => del.mutate(c)}
-                style={{ border: 'none', background: 'none', color: 'var(--text-3)', fontSize: 13, minHeight: 32 }}
+                style={{ border: 'none', background: 'none', color: 'var(--text-3)', fontSize: '0.8125rem', minHeight: 32 }}
               >
                 Apagar
               </button>
@@ -72,7 +72,7 @@ export function CommentsSheet({ review, open, onClose }: { review: Review; open:
             Enviar
           </button>
         </form>
-        {add.error && <span role="alert" style={{ color: 'var(--cat-filme-ink)', fontSize: 14 }}>Não deu para comentar: {(add.error as Error).message}</span>}
+        {add.error && <span role="alert" style={{ color: 'var(--cat-filme-ink)', fontSize: '0.875rem' }}>Não deu para comentar: {(add.error as Error).message}</span>}
       </div>
     </Sheet>
   )

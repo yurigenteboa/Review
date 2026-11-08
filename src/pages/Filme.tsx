@@ -450,7 +450,7 @@ function RatingsBlock({ reviews, mine, loading }: { reviews: Review[]; mine: Rev
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <span className="score-big__value">{rated.length ? formatRating(avg) : '–'}</span>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <Stars value={avg} size={18} />
+            <Stars value={avg} size={18} withNumber />
             <span style={{ fontSize: 'var(--fs-footnote)', color: 'var(--text-3)' }}>
               {loading ? 'Carregando…' : rated.length === 0 ? 'Ninguém deu nota ainda' : rated.length === 1 ? '1 nota' : `${rated.length} notas`}
             </span>
@@ -475,7 +475,7 @@ function RatingsBlock({ reviews, mine, loading }: { reviews: Review[]; mine: Rev
               <span>5 ★</span>
             </div>
             {mineBin !== null && (
-              <p style={{ margin: '8px 0 0', fontSize: 12, color: 'var(--text-3)' }}>
+              <p style={{ margin: '8px 0 0', fontSize: '0.75rem', color: 'var(--text-3)' }}>
                 <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 3, background: 'var(--accent)', marginRight: 6, verticalAlign: -1 }} />
                 sua nota
               </p>
@@ -572,7 +572,7 @@ function WhereToWatch({ providers }: { providers: MovieDetails['providers'] }) {
             )}
           </span>
           {providers && providers.flatrate.length > 0 && (
-            <button type="button" className="link-btn" style={{ fontSize: 13, minHeight: 36 }} onClick={() => setEditing((e) => !e)}>
+            <button type="button" className="link-btn" style={{ fontSize: '0.8125rem', minHeight: 36 }} onClick={() => setEditing((e) => !e)}>
               {editing ? 'Pronto' : 'Meus streamings'}
             </button>
           )}

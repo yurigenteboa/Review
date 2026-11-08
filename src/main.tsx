@@ -7,6 +7,7 @@ import './index.css'
 import './components/ui/ui.css'
 import App from './App.tsx'
 import { countVisit, listenInstallPrompt } from './lib/install'
+import { initAppearance } from './lib/appearance'
 import { installGlobalErrorHandlers } from './lib/telemetry'
 import { ErrorBoundary } from './components/ui/ErrorBoundary'
 // Layout de desktop das telas ricas: depois do App, para vir por último na cascata
@@ -23,6 +24,10 @@ registerSW({
 
 // Fase 0: erros fora do React (e promessas sem catch) vão para client_errors
 installGlobalErrorHandlers()
+
+// Aparência escolhida pela pessoa (tema, texto, contraste…): o index.html já aplicou antes da
+// pintura; aqui passa a acompanhar o aparelho quando algo está em "automático"
+initAppearance()
 
 // M4: guarda o aviso de "pode instalar" do Android e conta os dias de uso
 listenInstallPrompt()

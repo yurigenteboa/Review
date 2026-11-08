@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { prefersReducedMotion } from '../../lib/appearance'
 import { isStandaloneIOS } from '../../lib/auth'
 import { haptic } from '../../lib/haptics'
 
@@ -20,7 +21,7 @@ export function EdgeSwipeBack() {
 
   useEffect(() => {
     if (!isStandaloneIOS()) return
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const reduce = prefersReducedMotion()
 
     let startX = 0
     let startY = 0

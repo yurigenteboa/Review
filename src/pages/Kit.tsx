@@ -34,7 +34,7 @@ export default function Kit() {
   const [open, setOpen] = useState(false)
   const [rating, setRating] = useState(3.5)
 
-  const h2 = { margin: '8px 4px 0', fontSize: 15, color: 'var(--text-3)' }
+  const h2 = { margin: '8px 4px 0', fontSize: '0.9375rem', color: 'var(--text-3)' }
 
   return (
     <div className="page">
@@ -44,7 +44,7 @@ export default function Kit() {
         <div style={{ borderRadius: 'var(--r-lg)', padding: 24, background: 'linear-gradient(135deg, #4B2380, #FF6B4A 60%, #FFB340)' }}>
           <Glass style={{ padding: 20 }}>
             <strong>Glass variant="card"</strong>
-            <p style={{ margin: '6px 0 0', fontSize: 15 }}>Blur 24 px, saturate 180%, borda hairline.</p>
+            <p style={{ margin: '6px 0 0', fontSize: '0.9375rem' }}>Blur 24 px, saturate 180%, borda hairline.</p>
           </Glass>
         </div>
 
@@ -85,7 +85,7 @@ export default function Kit() {
       </div>
 
       <Sheet open={open} onClose={() => setOpen(false)} title="Sheet de exemplo">
-        <p style={{ fontSize: 15, color: 'var(--text-2)' }}>Arraste o pegador para baixo ou toque fora para fechar.</p>
+        <p style={{ fontSize: '0.9375rem', color: 'var(--text-2)' }}>Arraste o pegador para baixo ou toque fora para fechar.</p>
       </Sheet>
     </div>
   )

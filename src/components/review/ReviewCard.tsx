@@ -106,8 +106,8 @@ export function EntryLine({ review, big = false }: { review: Review; big?: boole
     <span className="entry-meta" style={{ marginTop: big ? 0 : 2 }}>
       {review.rating != null ? (
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--text)' }}>
-          <Stars value={review.rating} size={big ? 16 : 14} />
-          <strong style={{ fontSize: big ? 14 : 13 }}>{formatRating(review.rating)}</strong>
+          <Stars value={review.rating} size={big ? 16 : 14} withNumber />
+          <strong style={{ fontSize: big ? '0.875rem' : '0.8125rem' }}>{formatRating(review.rating)}</strong>
         </span>
       ) : (
         <strong style={{ color: 'var(--text-2)', fontWeight: 600 }}>{verb}, sem nota</strong>

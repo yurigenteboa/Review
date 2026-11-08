@@ -1,9 +1,15 @@
 /* =========================================================
    MMisc — design tokens ("iOS glass")
    Toda cor, raio, blur e fonte do app sai daqui.
+
+   Aparência (src/lib/appearance.ts): a tag <html> recebe data-tema, data-contraste,
+   data-transp, data-movimento… já resolvidos ("automático" vira o valor do aparelho).
+   Aqui só se reage a esses atributos; não use @media (prefers-color-scheme) nos componentes.
    ========================================================= */
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
+  /* tamanho base do texto (1 = padrão); o <html> usa isso e tudo em rem acompanha */
+  --escala-texto: 1;
 
   /* Fundo e texto */
   --bg: #F2F2F7;
@@ -55,12 +61,12 @@
 
   /* Tipografia (tamanhos do iOS) */
   --font: 'Inter Variable', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  --fs-large-title: 34px;
-  --fs-title: 22px;
-  --fs-body: 17px;
-  --fs-callout: 15px;
-  --fs-footnote: 13px;
-  --fs-caption: 11px;
+  --fs-large-title: 2.125rem;
+  --fs-title: 1.375rem;
+  --fs-body: 1.0625rem;
+  --fs-callout: 0.9375rem;
+  --fs-footnote: 0.8125rem;
+  --fs-caption: 0.6875rem;
 
   /* Espaço */
   --gutter: 16px;
@@ -124,56 +130,114 @@
     #050505;
 }
 
-/* Tema escuro automático */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #000000;
-    --surface: #1C1C1E;
-    --text: #FFFFFF;
-    --text-2: #D1D1D6;
-    --text-3: #98989F;
-    --separator: rgba(84, 84, 88, 0.6);
-    --fill: rgba(118, 118, 128, 0.24);
-    --accent: #F4E8D0;
-    --accent-ink: #F4E8D0;
-    --on-accent: #0B0B0B;
-    --accent-shadow: rgba(244, 232, 208, 0.18);
-    --star-empty: #48484A;
+/* Temas escuros (escuro, médio e preto partem daqui) */
+:root[data-tema='escuro'],
+:root[data-tema='medio'],
+:root[data-tema='preto'] {
+  color-scheme: dark;
+  --bg: #000000;
+  --surface: #1C1C1E;
+  --text: #FFFFFF;
+  --text-2: #D1D1D6;
+  --text-3: #98989F;
+  --separator: rgba(84, 84, 88, 0.6);
+  --fill: rgba(118, 118, 128, 0.24);
+  --accent: #F4E8D0;
+  --accent-ink: #F4E8D0;
+  --on-accent: #0B0B0B;
+  --accent-shadow: rgba(244, 232, 208, 0.18);
+  --star-empty: #48484A;
 
-    --glass-bg: rgba(44, 44, 46, 0.55);
-    --glass-bg-strong: rgba(28, 28, 30, 0.82);
-    --glass-bar: rgba(0, 0, 0, 0.6);
-    --glass-border: rgba(255, 255, 255, 0.14);
-    --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.12);
-    --glass-shadow: 0 10px 36px rgba(0, 0, 0, 0.5);
-    --card-shadow: none;
+  --glass-bg: rgba(44, 44, 46, 0.55);
+  --glass-bg-strong: rgba(28, 28, 30, 0.82);
+  --glass-bar: rgba(0, 0, 0, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.14);
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  --glass-shadow: 0 10px 36px rgba(0, 0, 0, 0.5);
+  --card-shadow: none;
 
-    --cat-album-ink: #D29BF5;
-    --cat-filme-ink: #FF8A80;
-    --cat-serie-ink: #FF7A9A;
-    --cat-jogo-ink: #6BD58A;
-    --cat-livro-ink: #D4B48C;
-    --cat-bar-ink: #FFB340;
-    --cat-banheiro-ink: #64B5FF;
-    --cat-cidade-ink: #6FD6E6;
-    --cat-drink-ink: #FF8FA6;
-    --cat-prato-ink: #F2CF4A;
-    --cat-restaurante-ink: #FF8A75;
-    --cat-cafe-ink: #D9A782;
+  --cat-album-ink: #D29BF5;
+  --cat-filme-ink: #FF8A80;
+  --cat-serie-ink: #FF7A9A;
+  --cat-jogo-ink: #6BD58A;
+  --cat-livro-ink: #D4B48C;
+  --cat-bar-ink: #FFB340;
+  --cat-banheiro-ink: #64B5FF;
+  --cat-cidade-ink: #6FD6E6;
+  --cat-drink-ink: #FF8FA6;
+  --cat-prato-ink: #F2CF4A;
+  --cat-restaurante-ink: #FF8A75;
+  --cat-cafe-ink: #D9A782;
 
-    --google-bg: #131314;
-    --google-border: #8E918F;
-    --google-text: #E3E3E3;
-  }
+  --google-bg: #131314;
+  --google-border: #8E918F;
+  --google-text: #E3E3E3;
 }
 
-/* Acessibilidade: quem pede menos transparência recebe superfícies sólidas */
-@media (prefers-reduced-transparency: reduce) {
-  :root {
-    --glass-bg: var(--surface);
-    --glass-bg-strong: var(--surface);
-    --glass-bar: var(--bg);
-    --blur: none;
-    --blur-strong: none;
-  }
+/* Médio: grafite, menos cansativo que o preto (fundo e superfície também em appearance.ts) */
+:root[data-tema='medio'] {
+  --bg: #1E2127;
+  --surface: #2A2E36;
+  --text: #ECEDEF;
+  --text-2: #CDD1D8;
+  --text-3: #A3A9B4;
+  --separator: rgba(255, 255, 255, 0.14);
+  --fill: rgba(255, 255, 255, 0.09);
+  --star-empty: #4A505B;
+  --glass-bg: rgba(42, 46, 54, 0.6);
+  --glass-bg-strong: rgba(36, 39, 46, 0.86);
+  --glass-bar: rgba(30, 33, 39, 0.72);
+  --glass-shadow: 0 10px 36px rgba(0, 0, 0, 0.35);
+}
+
+/* Preto puro: superfícies quase pretas (tela OLED gasta menos), separadas por linhas */
+:root[data-tema='preto'] {
+  --surface: #0D0D0D;
+  --separator: rgba(255, 255, 255, 0.2);
+  --fill: rgba(255, 255, 255, 0.1);
+  --glass-bg: rgba(13, 13, 13, 0.7);
+  --glass-bg-strong: rgba(8, 8, 8, 0.9);
+  --glass-bar: rgba(0, 0, 0, 0.75);
+  --card-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.16);
+}
+
+/* Contraste alto (escolhido ou "aumentar contraste" do aparelho): textos secundários mais
+   fortes, linhas visíveis, sem vidro. Os cartões ganham contorno em ui.css. */
+:root[data-contraste='alto'] {
+  --text-2: #1C1C1E;
+  --text-3: #3A3A3C;
+  --separator: rgba(0, 0, 0, 0.5);
+  --fill: rgba(0, 0, 0, 0.12);
+  --star-empty: #8E8E93;
+  --glass-bg: var(--surface);
+  --glass-bg-strong: var(--surface);
+  --glass-bar: var(--bg);
+  --blur: none;
+  --blur-strong: none;
+  --card-shadow: 0 0 0 1.5px var(--separator);
+}
+:root[data-contraste='alto']:not([data-tema='claro']) {
+  --text-2: #F2F2F7;
+  --text-3: #D1D1D6;
+  --separator: rgba(255, 255, 255, 0.55);
+  --fill: rgba(255, 255, 255, 0.16);
+  --star-empty: #8E8E93;
+}
+
+/* Menos transparência (escolhida ou do aparelho): superfícies sólidas */
+:root[data-transp='solido'] {
+  --glass-bg: var(--surface);
+  --glass-bg-strong: var(--surface);
+  --glass-bar: var(--bg);
+  --blur: none;
+  --blur-strong: none;
+}
+
+/* Fonte: Inter (padrão), a do sistema, ou Atkinson Hyperlegible (feita para baixa visão;
+   carregada sob demanda por appearance.ts) */
+:root[data-fonte='sistema'] {
+  --font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+:root[data-fonte='atkinson'] {
+  --font: 'Atkinson Hyperlegible', 'Inter Variable', system-ui, sans-serif;
 }

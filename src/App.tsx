@@ -1,6 +1,7 @@
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { AnimatePresence, motion, useReducedMotion, type Variants } from 'motion/react'
-import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
+import { AnimatePresence, MotionConfig, motion, type Variants } from 'motion/react'
+import { useResolvedAppearance } from './lib/appearance'
+import { lazy, Suspense, useCallback, useEffect, useState, type ReactNode } from 'react'
 import { BrowserRouter, Route, Routes, useLocation, useNavigate, useNavigationType } from 'react-router-dom'
 import type { ComposeStart } from './components/review/ComposeSheet'
 import { TabBar } from './components/ui/TabBar'
@@ -51,6 +52,7 @@ const ImportLetterboxd = lazy(() => import('./pages/ImportLetterboxd'))
 const Retrospectiva = lazy(() => import('./pages/Retrospectiva'))
 const Ranking = lazy(() => import('./pages/Ranking'))
 const Kit = lazy(() => import('./pages/Kit'))
+const Aparencia = lazy(() => import('./pages/Aparencia'))
 const ComposeSheet = lazy(() => SCREENS.Compose().then((m) => ({ default: m.ComposeSheet })))
 // Só para mouse/trackpad: no celular nem é baixado
 const DesktopEnhancers = lazy(() => import('./components/ui/DesktopEnhancers').then((m) => ({ default: m.DesktopEnhancers })))
@@ -125,7 +127,7 @@ function Shell() {
   // M1: rolagem lembrada ao voltar e por aba; telas novas abrem no topo
   const restoreScroll = useScrollMemory()
   const navType = useNavigationType()
-  const reduceMotion = useReducedMotion()
+  const reduceMotion = useResolvedAppearance().movimento === 'reduzido'
   const pageDir = TAB_ROOTS.includes(location.pathname) && navType !== 'POP' ? 0 : navType === 'POP' ? -1 : 1
   const [compose, setCompose] = useState<{ open: boolean; start: ComposeStart; key: number }>({ open: false, start: {}, key: 0 })
   const [toast, setToast] = useState<string | null>(null)
@@ -217,6 +219,13 @@ function Shell() {
   if (parseHandle(location.pathname)) return <Suspense fallback={loadingPage}><PublicProfile /></Suspense>
 
   if (loading) return <div style={{ minHeight: '100dvh' }} aria-busy="true" />
+  // Aparência também abre sem login (dá para aumentar a letra antes de entrar)
+  if (!session && location.pathname === '/aparencia')
+    return (
+      <Suspense fallback={loadingPage}>
+        <Aparencia standalone />
+      </Suspense>
+    )
   if (!session) return <Login />
 
   return (
@@ -261,6 +270,7 @@ function Shell() {
             <Route path="/importar" element={<ImportLetterboxd />} />
             <Route path="/retrospectiva" element={<Retrospectiva />} />
             <Route path="/ranking" element={<Ranking />} />
+            <Route path="/aparencia" element={<Aparencia />} />
             <Route path="*" element={<Inicio onCompose={() => openCompose()} />} />
           </Routes>
           </Suspense>
@@ -316,12 +326,20 @@ function Shell() {
   )
 }
 
+/** Animações do motion seguem a escolha de Aparência ("automático" já vem resolvido do aparelho). */
+function MotionProvider({ children }: { children: ReactNode }) {
+  const reduced = useResolvedAppearance().movimento === 'reduzido'
+  return <MotionConfig reducedMotion={reduced ? 'always' : 'never'}>{children}</MotionConfig>
+}
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <BrowserRouter>
-          <Shell />
+          <MotionProvider>
+            <Shell />
+          </MotionProvider>
         </BrowserRouter>
       </AuthProvider>
     </QueryClientProvider>

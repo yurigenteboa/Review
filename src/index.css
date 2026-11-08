@@ -12,6 +12,12 @@ body,
   height: 100%;
 }
 
+/* Tamanho do texto escolhido em Aparência (ou o do aparelho): tudo que usa rem acompanha.
+   100% = o tamanho padrão do navegador, então quem aumentou a letra no navegador também ganha. */
+html {
+  font-size: calc(100% * var(--escala-texto, 1));
+}
+
 body {
   margin: 0;
   background: var(--bg);
@@ -92,13 +98,12 @@ button {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
-  }
+/* Movimento reduzido (escolhido em Aparência ou pedido pelo aparelho) */
+:root[data-movimento='reduzido'] *,
+:root[data-movimento='reduzido'] *::before,
+:root[data-movimento='reduzido'] *::after {
+  transition-duration: 0.01ms !important;
+  animation-duration: 0.01ms !important;
 }
 
 /* M1: telas entram/saem de lado (transição e arrastar da borda); `clip` corta o que passa

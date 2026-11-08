@@ -26,7 +26,7 @@ export default function Amigos() {
   const accepted = list.filter((f) => f.status === 'aceita')
   const stateOf = (id: string) => list.find((f) => f.id === id)
 
-  const sectionTitle = { margin: '8px 4px 0', fontSize: 13, fontWeight: 600, color: 'var(--text-2)' } as const
+  const sectionTitle = { margin: '8px 4px 0', fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-2)' } as const
 
   return (
     <div className="page page--with-aside">
@@ -138,7 +138,7 @@ export default function Amigos() {
           )}
 
           {(request.error || respond.error) && (
-            <span role="alert" style={{ color: 'var(--cat-filme-ink)', fontSize: 14 }}>
+            <span role="alert" style={{ color: 'var(--cat-filme-ink)', fontSize: '0.875rem' }}>
               {((request.error || respond.error) as Error).message}
             </span>
           )}

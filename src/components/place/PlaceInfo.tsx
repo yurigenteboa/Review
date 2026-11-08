@@ -44,7 +44,7 @@ export function PlaceInfo({ item }: { item: Item }) {
 
   return (
     <section aria-labelledby="sobre-lugar">
-      <h2 id="sobre-lugar" style={{ margin: '24px 20px 10px', fontSize: 22, letterSpacing: -0.4 }}>Sobre o lugar</h2>
+      <h2 id="sobre-lugar" style={{ margin: '24px 20px 10px', fontSize: '1.375rem', letterSpacing: -0.4 }}>Sobre o lugar</h2>
       <div className="page__body" style={{ paddingTop: 0 }}>
         <div className="group">
           {rows.map((r) => (
@@ -80,7 +80,7 @@ export function PlaceInfo({ item }: { item: Item }) {
                   <strong style={{ fontWeight: 600 }}>
                     {FIELD_LABEL[s.field]}: {showValue(s.field, s.value)}
                   </strong>
-                  <span style={{ fontSize: 12, color: 'var(--text-3)' }}>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>
                     sugerido por {s.user_id === userId ? 'você' : displayName(s.author)}
                     {s.note ? ` · “${s.note}”` : ''}
                   </span>
@@ -95,7 +95,7 @@ export function PlaceInfo({ item }: { item: Item }) {
                     </button>
                   </span>
                 ) : (
-                  <span style={{ fontSize: 12, color: 'var(--text-3)', whiteSpace: 'nowrap' }}>esperando</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-3)', whiteSpace: 'nowrap' }}>esperando</span>
                 )}
               </div>
             ))}

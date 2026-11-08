@@ -219,6 +219,9 @@ export function ProfileView({ userId, isMe }: { userId: string; isMe: boolean })
 
         {isMe && (
           <div className="profile__footer">
+            <Link to="/aparencia" className="btn btn--plain tap public-cta__btn">
+              Aparência e acessibilidade
+            </Link>
             <Link to="/retrospectiva" className="btn btn--plain tap public-cta__btn">
               Retrospectiva de {thisYear}
             </Link>
