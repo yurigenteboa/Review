@@ -1,6 +1,7 @@
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AnimatePresence, MotionConfig, motion, type Variants } from 'motion/react'
 import { useResolvedAppearance } from './lib/appearance'
+import { startAppearanceSync, stopAppearanceSync } from './lib/appearanceSync'
 import { lazy, Suspense, useCallback, useEffect, useState, type ReactNode } from 'react'
 import { BrowserRouter, Route, Routes, useLocation, useNavigate, useNavigationType } from 'react-router-dom'
 import type { ComposeStart } from './components/review/ComposeSheet'
@@ -10,6 +11,8 @@ import { useBreakpoint, useFinePointer } from './lib/breakpoints'
 import { TAB_ROOTS, useScrollMemory } from './lib/navigation'
 import { EdgeSwipeBack } from './components/ui/EdgeSwipeBack'
 import { COMPOSE_EVENT } from './lib/composeBus'
+import { MENU_EVENT } from './lib/menuBus'
+import { AppMenu } from './components/ui/AppMenu'
 import { PullToRefresh } from './components/ui/PullToRefresh'
 import { Glass } from './components/ui/Glass'
 import { AuthProvider, FROM_APP_PARAM, isStandalone, useAuth } from './lib/auth'
@@ -131,6 +134,9 @@ function Shell() {
   const pageDir = TAB_ROOTS.includes(location.pathname) && navType !== 'POP' ? 0 : navType === 'POP' ? -1 : 1
   const [compose, setCompose] = useState<{ open: boolean; start: ComposeStart; key: number }>({ open: false, start: {}, key: 0 })
   const [toast, setToast] = useState<string | null>(null)
+  // Menu lateral: guarda em que tela foi aberto; mudou de tela, ele some sozinho
+  const [menuAt, setMenuAt] = useState<string | null>(null)
+  const menuOpen = menuAt === location.pathname
   const [handoff, setHandoff] = useState(returnParams.handedOffToBrowser)
 
   const openCompose = useCallback((start: ComposeStart = {}) => {
@@ -172,12 +178,27 @@ function Shell() {
   const inviteMatch = location.pathname.match(/^\/convite\/([a-z0-9]+)/i)
   if (inviteMatch) savePendingInvite(inviteMatch[1])
 
+  // A4: aparência na conta (só com "Usar em todos os meus aparelhos" ligado)
+  const sessionUser = session?.user.id ?? null
+  useEffect(() => {
+    if (!sessionUser) return
+    void startAppearanceSync(sessionUser)
+    return () => stopAppearanceSync()
+  }, [sessionUser])
+
   // Com a pessoa logada, baixa as outras telas em segundo plano (e conta "abriu o app" 1x por dia)
   useEffect(() => {
     if (!session) return
     prefetchScreens()
     trackAppOpen()
   }, [session])
+
+  // Menu lateral: abre pela foto no Início ou por "Mais" na barra lateral
+  useEffect(() => {
+    const onMenu = () => setMenuAt(window.location.pathname)
+    window.addEventListener(MENU_EVENT, onMenu)
+    return () => window.removeEventListener(MENU_EVENT, onMenu)
+  }, [])
 
   // Registrar pedido de qualquer canto (menu do card, diário…): ver lib/composeBus.ts
   useEffect(() => {
@@ -289,6 +310,8 @@ function Shell() {
       {!finePointer && <PullToRefresh />}
       {/* App instalado no iPhone: arrastar da borda esquerda volta (M1) */}
       {!finePointer && <EdgeSwipeBack />}
+
+      <AppMenu open={menuOpen} onClose={() => setMenuAt(null)} />
 
       {compose.key > 0 && (
         <Suspense fallback={null}>

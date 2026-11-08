@@ -2471,3 +2471,158 @@ li.is-done .starter__text strong {
     fill: Highlight;
   }
 }
+
+/* ============ Menu lateral (AppMenu.tsx) — como o do Twitter no celular ============ */
+.app-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  border: none;
+  background: rgba(0, 0, 0, 0.35);
+}
+.app-menu {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 61;
+  width: min(84vw, 20rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* sólido: com vidro, o conteúdo de trás aparecia como mancha atrás dos itens */
+  background: var(--surface);
+  border-right: 0.5px solid var(--separator);
+  box-shadow: var(--glass-shadow);
+  outline: none;
+  touch-action: pan-y;
+}
+.app-menu__inner {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: calc(var(--safe-top) + 20px) 20px calc(var(--safe-bottom) + 20px);
+}
+.app-menu__me {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  color: var(--text);
+  text-decoration: none;
+}
+.app-menu__me .avatar {
+  margin-bottom: 10px;
+}
+.app-menu__name {
+  font-size: var(--fs-title);
+  font-weight: 800;
+  line-height: 1.2;
+}
+.app-menu__handle {
+  font-size: var(--fs-callout);
+  color: var(--text-3);
+}
+.app-menu__friends {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  gap: 4px;
+  font-size: var(--fs-callout);
+  color: var(--text-2);
+  text-decoration: none;
+}
+.app-menu__friends strong {
+  color: var(--text);
+}
+.app-menu__nav {
+  display: flex;
+  flex-direction: column;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 0.5px solid var(--separator);
+}
+.app-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-height: 56px;
+  margin: 0 -10px;
+  padding: 0 10px;
+  border-radius: var(--r-md);
+  color: var(--text);
+  text-decoration: none;
+  font-size: 1.25rem;
+  font-weight: 750;
+}
+.app-menu__icon {
+  display: flex;
+  flex: none;
+}
+.app-menu__label {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.app-menu__label small {
+  font-size: var(--fs-footnote);
+  font-weight: 500;
+  color: var(--text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.app-menu__foot {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  margin-top: auto;
+  padding-top: 24px;
+}
+.app-menu__legal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 14px;
+}
+.app-menu__legal a,
+.app-menu__out {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: var(--fs-footnote);
+  color: var(--text-3);
+}
+/* "Sair da conta": pequeno e discreto, de propósito (pede um segundo toque) */
+.app-menu__out {
+  padding: 0;
+  border: none;
+  background: none;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .app-menu__item:hover {
+    background: var(--hover-fill);
+  }
+}
+/* botão da foto no Início (abre o menu) */
+.menu-avatar-btn {
+  display: flex;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+}
+:root[data-estilo='anos90'] .app-menu {
+  background: var(--surface);
+  box-shadow: var(--bevel-out);
+}
+/* "Mais" da barra lateral é um botão com a mesma cara dos links */
+.sidebar__more {
+  width: 100%;
+  border: none;
+  background: none;
+  font-family: inherit;
+  text-align: left;
+}

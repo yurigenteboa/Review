@@ -1,3 +1,4 @@
+import { useOwnerAccentStyle } from '../../lib/appearance'
 import { useState, type CSSProperties } from 'react'
 import { RankingsSection } from './RankingsSection'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
@@ -65,6 +66,8 @@ export function ProfileView({ userId, isMe }: { userId: string; isMe: boolean })
 
   const vsFriends = useRatingVsFriends(cat === 'all' ? null : cat, isMe)
 
+  // A4: perfil de outra pessoa na cor de destaque dela
+  const ownerAccent = useOwnerAccentStyle(profile.data?.cor_destaque)
   if (profile.error) return <div className="page"><ErrorState error={profile.error} /></div>
   if (!profile.data) return <div className="page"><div className="page__body"><LoadingCards count={2} /></div></div>
 
@@ -80,7 +83,7 @@ export function ProfileView({ userId, isMe }: { userId: string; isMe: boolean })
   const withText = list.filter((r) => r.body || r.photos.length)
 
   return (
-    <div className="page profile">
+    <div className="page profile" style={isMe ? undefined : ownerAccent}>
       <ProfileCover images={covers} photo={p.cover_mode === 'foto' ? p.cover_url : null} />
       {!isMe && (
         <button

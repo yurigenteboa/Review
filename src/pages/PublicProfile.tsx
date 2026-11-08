@@ -1,3 +1,4 @@
+import { useOwnerAccentStyle } from '../lib/appearance'
 import { useEffect, type ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { RatingBars, YearHeatmap } from '../components/profile/ProfileCharts'
@@ -60,8 +61,14 @@ export default function PublicProfile() {
   return <PublicView data={d} loggedIn={Boolean(session)} isMe={isMe} />
 }
 
-function Shell({ children }: { children: ReactNode }) {
-  return <div className="page profile public-page">{children}</div>
+function Shell({ children, cor }: { children: ReactNode; cor?: string | null }) {
+  // A4: a página do perfil na cor de destaque do dono (calculada no tema de quem visita)
+  const style = useOwnerAccentStyle(cor)
+  return (
+    <div className="page profile public-page" style={style}>
+      {children}
+    </div>
+  )
 }
 
 function PublicView({ data: d, loggedIn, isMe }: { data: PublicProfileData; loggedIn: boolean; isMe: boolean }) {
@@ -91,7 +98,7 @@ function PublicView({ data: d, loggedIn, isMe }: { data: PublicProfileData; logg
     )
 
   return (
-    <Shell>
+    <Shell cor={p.cor_destaque}>
       <div className="profile__cover" aria-hidden="true">
         {p.cover_mode === 'foto' && p.cover_url ? (
           <img className="profile__cover-photo" src={p.cover_url} alt="" />

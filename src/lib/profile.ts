@@ -17,6 +17,8 @@ export interface ProfileFull extends Profile {
   showcase: CategoryId[]
   /** perfil público em /@usuario (padrão: ligado) */
   is_public: boolean
+  /** cor de destaque escolhida em Aparência (A4); a página de quem visita usa */
+  cor_destaque: string | null
 }
 
 export function useProfileFull(id: string | null | undefined) {
@@ -26,7 +28,7 @@ export function useProfileFull(id: string | null | undefined) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, username, display_name, avatar_url, bio, cover_mode, cover_url, links, showcase, is_public')
+        .select('id, username, display_name, avatar_url, bio, cover_mode, cover_url, links, showcase, is_public, cor_destaque')
         .eq('id', id!)
         .single()
       if (error) throw error

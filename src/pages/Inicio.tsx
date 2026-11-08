@@ -8,6 +8,7 @@ import type { CategoryId } from '../lib/categories'
 import { useFeed, useMyProfile } from '../lib/queries'
 import { useUnreadCount } from '../lib/social'
 import { BellIcon } from '../components/ui/Icons'
+import { openMenu } from '../lib/menuBus'
 import { EmptyState, ErrorState, LoadingCards } from './states'
 import { HomeAside } from '../components/home/HomeAside'
 import { NowStrip } from '../components/home/NowStrip'
@@ -37,9 +38,9 @@ export default function Inicio({ onCompose }: { onCompose: () => void }) {
                 {unread > 0 && <span className="count-badge">{unread > 9 ? '9+' : unread}</span>}
               </Link>
               {me && (
-                <Link to="/perfil" aria-label="Abrir seu perfil" className="tap" style={{ display: 'flex' }}>
+                <button type="button" className="menu-avatar-btn tap" aria-label="Abrir menu" onClick={openMenu}>
                   <Avatar profile={me} size={40} />
-                </Link>
+                </button>
               )}
             </span>
           }

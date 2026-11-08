@@ -187,6 +187,61 @@ async function healthy(name, page, errors) {
     await ctx.close()
   }
 
+  // 3b. Menu lateral: abre pela foto no Início, leva ao Mapa e fecha sozinho
+  {
+    const { ctx, page, errors } = await newPage(browser, { logged: true, device: 'iPhone 13' })
+    await page.route('**/rest/v1/profiles*', (r) =>
+      r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ id: USER_ID, username: 'teste', display_name: 'Teste', avatar_url: null, is_public: true }) }),
+    )
+    await page.goto(BASE + '/')
+    await page.getByRole('button', { name: 'Abrir menu' }).click()
+    await page.waitForTimeout(500)
+    const menu = page.getByRole('dialog', { name: 'Menu' })
+    const links = await menu.getByRole('link').allInnerTexts()
+    const want = ['Mapa', 'Retrospectiva', 'Perfil público', 'Aparência']
+    if (want.every((w) => links.some((l) => l.startsWith(w))) && (await menu.getByRole('button', { name: 'Sair da conta' }).count()))
+      ok('menu lateral: atalhos e "Sair da conta"')
+    else fail('menu lateral', `itens: ${links.join(' | ')}`)
+    await menu.getByRole('link', { name: 'Mapa', exact: true }).click()
+    await page.waitForURL((u) => u.pathname === '/mapa')
+    await page.waitForTimeout(500)
+    if ((await page.getByRole('dialog', { name: 'Menu' }).count()) === 0) ok('menu lateral: leva ao Mapa e fecha')
+    else fail('menu lateral', 'continuou aberto depois de navegar')
+    await healthy('menu lateral sem erros', page, errors)
+    await ctx.close()
+  }
+
+  // 3c. A4: aparência na conta — a mais recente vence; mudança vai para a conta sem o tamanho do texto
+  {
+    const { ctx, page, errors } = await newPage(browser, { logged: true, device: 'iPhone 13' })
+    const writes = []
+    await page.route('**/rest/v1/user_settings*', (r) => {
+      const req = r.request()
+      if (req.method() === 'GET')
+        return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([{ aparencia: { estilo: 'anos90', tema: 'claro', destaque: 'verde', texto: 5 }, atualizado_em: new Date().toISOString() }]) })
+      writes.push(req.postDataJSON())
+      return r.fulfill({ status: 201, contentType: 'application/json', body: '[]' })
+    })
+    await page.addInitScript(() => {
+      // escolha antiga neste aparelho (de ontem) e letra grande só aqui
+      localStorage.setItem('mmisc.aparencia', JSON.stringify({ estilo: 'vidro', texto: 3 }))
+      localStorage.setItem('mmisc.aparencia.quando', new Date(Date.now() - 86400000).toISOString())
+    })
+    await page.goto(BASE + '/aparencia')
+    await page.waitForTimeout(1500)
+    const st = await page.evaluate(() => [document.documentElement.dataset.estilo, getComputedStyle(document.documentElement).getPropertyValue('--escala-texto').trim()])
+    if (st[0] === 'anos90' && st[1] === '1.3') ok('A4: aparência mais recente da conta aplicada (texto continua o do aparelho)')
+    else fail('A4: aplicar da conta', `estilo ${st[0]}, escala ${st[1]}`)
+    await page.getByRole('radio', { name: /^Médio/ }).click()
+    await page.waitForTimeout(1700)
+    const last = writes[writes.length - 1]
+    const body = Array.isArray(last) ? last[0] : last
+    if (body && body.aparencia?.tema === 'medio' && !('texto' in body.aparencia) && !('sincronizar' in body.aparencia)) ok('A4: mudança gravada na conta (sem tamanho do texto)')
+    else fail('A4: gravar na conta', JSON.stringify(writes).slice(0, 200))
+    await healthy('A4 sem erros', page, errors)
+    await ctx.close()
+  }
+
   // 4. Aparência: abre sem login, troca o tema na hora e aguenta texto a 160% sem rolar para o lado
   {
     const { ctx, page, errors } = await newPage(browser, { logged: false, device: 'iPhone 13' })

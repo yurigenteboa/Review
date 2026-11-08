@@ -62,3 +62,30 @@ export const QrIcon = ({ size = 20 }: IconProps) => (
     <path d="M14.5 14.5h2v2h-2zM18.5 18.5h2v2h-2zM14.5 18.5h2M18.5 14.5h2" />
   </svg>
 )
+// Menu lateral
+export const MoreIcon = ({ size = 24 }: IconProps) => (
+  <svg {...base(size)}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M8 12h.01M12 12h.01M16 12h.01" strokeWidth={3} />
+  </svg>
+)
+export const SparkleIcon = ({ size = 24 }: IconProps) => (
+  <svg {...base(size)}>
+    <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" />
+    <path d="M19 16l.7 1.9 1.8.6-1.8.7L19 21l-.7-1.8-1.8-.7 1.8-.6z" />
+  </svg>
+)
+export const PaletteIcon = ({ size = 24 }: IconProps) => (
+  <svg {...base(size)}>
+    <path d="M12 3a9 9 0 1 0 0 18c1.2 0 1.8-.8 1.8-1.7 0-1-.8-1.4-.8-2.4 0-1 .8-1.7 1.9-1.7H17a4 4 0 0 0 4-4C21 6.6 17 3 12 3z" />
+    <circle cx="7.5" cy="11" r="1.2" />
+    <circle cx="10.5" cy="7.2" r="1.2" />
+    <circle cx="15" cy="7.5" r="1.2" />
+  </svg>
+)
+export const GlobeIcon = ({ size = 24 }: IconProps) => (
+  <svg {...base(size)}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z" />
+  </svg>
+)

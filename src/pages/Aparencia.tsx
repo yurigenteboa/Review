@@ -113,7 +113,7 @@ export default function Aparencia({ standalone = false }: { standalone?: boolean
     <div className="page" style={standalone ? { minHeight: '100dvh', background: 'var(--bg)' } : undefined}>
       <PageHeader
         title="Aparência"
-        subtitle="Vale para este aparelho"
+        subtitle={standalone || !a.sincronizar ? 'Vale para este aparelho' : 'Vale para todos os seus aparelhos'}
         trailing={
           <button
             type="button"
@@ -360,11 +360,37 @@ export default function Aparencia({ standalone = false }: { standalone?: boolean
           />
         </section>
 
+        {/* ---------- A4: conta ---------- */}
+        {!standalone && (
+          <section className="ap-section" aria-labelledby="ap-aparelhos">
+            <h2 id="ap-aparelhos" className="ap-section__title">
+              Seus aparelhos
+            </h2>
+            <div className="group">
+              <label className="group__row ap-switch-row">
+                <span>Usar em todos os meus aparelhos</span>
+                <input
+                  type="checkbox"
+                  role="switch"
+                  className="ap-switch"
+                  checked={a.sincronizar}
+                  onChange={(e) => setAppearance({ sincronizar: e.target.checked })}
+                />
+              </label>
+            </div>
+            <span className="field-hint">
+              {a.sincronizar
+                ? 'Celular e computador ficam iguais (vale a última mudança). O tamanho do texto continua sendo de cada aparelho. Sua cor de destaque aparece no seu perfil para quem visita.'
+                : 'As escolhas valem só neste aparelho.'}
+            </span>
+          </section>
+        )}
+
         <button type="button" className="btn btn--plain tap" onClick={() => resetAppearance()}>
           Voltar ao padrão
         </button>
         <p className="field-hint ap-foot">
-          Os estilos Console e Portátil chegam numa próxima versão. Estas escolhas ficam guardadas neste aparelho.
+          “Voltar ao padrão” não mexe no tamanho do texto.
         </p>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from 'react'
+import { useSyncExternalStore, type CSSProperties } from 'react'
 
 /**
  * Aparência (A1/A2 do plano "Aparência e acessibilidade").
@@ -43,6 +43,8 @@ export interface Appearance {
   nota: 'estrelas' | 'numero' | 'ambos'
   categorias: 'coloridas' | 'discretas'
   fonte: 'inter' | 'sistema' | 'atkinson'
+  /** "Usar em todos os meus aparelhos" (A4). Vale só para este aparelho; não vai para a conta. */
+  sincronizar: boolean
 }
 
 export const DEFAULT_APPEARANCE: Appearance = {
@@ -58,6 +60,16 @@ export const DEFAULT_APPEARANCE: Appearance = {
   nota: 'estrelas',
   categorias: 'coloridas',
   fonte: 'inter',
+  sincronizar: true,
+}
+
+/** O que vai para a conta (A4): tudo menos o tamanho do texto e o próprio interruptor. */
+export type SyncedAppearance = Omit<Appearance, 'texto' | 'sincronizar'>
+export function syncable(a: Appearance): SyncedAppearance {
+  const out: Partial<Appearance> = { ...a }
+  delete out.texto
+  delete out.sincronizar
+  return out as SyncedAppearance
 }
 
 /** Estilos inteiros (A3). Nomes nossos: sem marcas de terceiros na interface. */
@@ -114,6 +126,8 @@ function groundOf(theme: Theme, style: StyleId) {
 
 const KEY = 'mmisc.aparencia'
 const CSS_KEY = 'mmisc.aparencia.css'
+/** hora (ISO) da última mudança feita pela pessoa neste aparelho; "vale a mais recente" na A4 */
+const WHEN_KEY = 'mmisc.aparencia.quando'
 const ROOT_ATTRS = ['estilo', 'tema', 'contraste', 'transp', 'movimento', 'densidade', 'categorias', 'fonte', 'nota', 'vibracao'] as const
 
 // ---------- contraste (WCAG) ----------
@@ -263,15 +277,58 @@ export function applyAppearance(a: Appearance = current) {
 }
 
 /** Muda uma ou mais escolhas, aplica na hora e guarda no aparelho. */
+const userChange = new Set<(a: Appearance) => void>()
+
+/** Muda uma ou mais escolhas, aplica na hora e guarda no aparelho. */
 export function setAppearance(patch: Partial<Appearance>) {
   current = { ...current, ...patch }
   persist(current)
+  try {
+    localStorage.setItem(WHEN_KEY, new Date().toISOString())
+  } catch {
+    /* sem armazenamento: só nesta visita */
+  }
+  applyAppearance(current)
+  listeners.forEach((l) => l())
+  userChange.forEach((l) => l(current))
+}
+
+export function resetAppearance() {
+  // o tamanho do texto e o interruptor de sincronizar são do aparelho: "Voltar ao padrão" não mexe
+  setAppearance({ ...DEFAULT_APPEARANCE, texto: current.texto, sincronizar: current.sincronizar })
+}
+
+/** A4: avisa quando a PESSOA muda algo (não quando o aparelho troca claro/escuro). */
+export function onUserChange(l: (a: Appearance) => void) {
+  userChange.add(l)
+  return () => userChange.delete(l)
+}
+
+/** A4: hora da última mudança local (null = nunca mexeu neste aparelho). */
+export function localChangedAt(): string | null {
+  try {
+    return localStorage.getItem(WHEN_KEY)
+  } catch {
+    return null
+  }
+}
+
+/** A4: aplica o que veio da conta (mantém texto e o interruptor deste aparelho). */
+export function applyFromAccount(remote: Partial<SyncedAppearance>, when: string) {
+  const clean = Object.fromEntries(Object.entries(remote).filter(([k]) => k in DEFAULT_APPEARANCE && k !== 'texto' && k !== 'sincronizar'))
+  current = { ...current, ...clean }
+  persist(current)
+  try {
+    localStorage.setItem(WHEN_KEY, when)
+  } catch {
+    /* sem armazenamento */
+  }
   applyAppearance(current)
   listeners.forEach((l) => l())
 }
 
-export function resetAppearance() {
-  setAppearance(DEFAULT_APPEARANCE)
+export function currentAppearance(): Appearance {
+  return current
 }
 
 /** Chamado uma vez no main.tsx: aplica e acompanha o aparelho quando algo está em "automático". */
@@ -326,4 +383,16 @@ export function prefersReducedMotion(): boolean {
 export function vibrationEnabled(): boolean {
   if (typeof document === 'undefined') return true
   return document.documentElement.getAttribute('data-vibracao') !== 'off'
+}
+
+/**
+ * A4 · Perfil de outra pessoa (público ou de amigo) na cor de destaque dela: devolve as
+ * variáveis para pôr no style da página. Calculado no tema e no estilo de quem está vendo,
+ * então o contraste continua conferido.
+ */
+export function useOwnerAccentStyle(cor: string | null | undefined): CSSProperties | undefined {
+  const a = useAppearance()
+  const r = useResolvedAppearance()
+  if (!cor || !ACCENTS.some((x) => x.id === cor)) return undefined
+  return accentVars(cor as AccentId, r.tema, a.estilo) as CSSProperties
 }

@@ -18,6 +18,8 @@ export interface PublicProfileData {
     cover_url: string | null
     links: ProfileLink[]
     showcase: CategoryId[]
+    /** cor de destaque escolhida pelo dono em Aparência (A4) */
+    cor_destaque?: string | null
   }
   favorites: { category: CategoryId; position: number; item: Item }[]
   now: { category: CategoryId; set_at: string; item: Item }[]

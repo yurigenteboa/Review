@@ -6,7 +6,8 @@ import { useTabReselect } from '../../lib/navigation'
 import { Avatar } from '../review/ReviewCard'
 import { Wordmark } from './Brand'
 import { Glass } from './Glass'
-import { BellIcon, HomeIcon, PeopleIcon, PersonIcon, PlusIcon, SearchIcon } from './Icons'
+import { BellIcon, HomeIcon, MoreIcon, PeopleIcon, PersonIcon, PlusIcon, SearchIcon } from './Icons'
+import { openMenu } from '../../lib/menuBus'
 
 interface SideBarProps {
   onCompose: () => void
@@ -75,6 +76,21 @@ export function SideBar({ onCompose, compact }: SideBarProps) {
             </NavLink>
           </li>
         ))}
+        <li>
+          {/* Mapa, Aparência, Retrospectiva, Perfil público, Sair: no menu lateral */}
+          <button
+            type="button"
+            className="sidebar__item sidebar__more tap"
+            onClick={openMenu}
+            aria-label={compact ? 'Mais' : undefined}
+            title={compact ? 'Mais' : undefined}
+          >
+            <span className="sidebar__icon">
+              <MoreIcon />
+            </span>
+            {!compact && <span className="sidebar__label">Mais</span>}
+          </button>
+        </li>
       </ul>
 
       <button
