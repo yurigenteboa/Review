@@ -1,6 +1,6 @@
 // Vercel Routing Middleware (ligado em vercel.json → "proxy"). Roda SÓ em /@usuario.
 //
-// Por quê: o MMISC é uma página única montada no navegador, e o WhatsApp/Instagram/X
+// Por quê: o MMisc é uma página única montada no navegador, e o WhatsApp/Instagram/X
 // não rodam JavaScript para montar a prévia do link. Aqui pegamos o index.html,
 // colocamos título, descrição e imagem do perfil no <head> e devolvemos.
 // Pessoas recebem a mesma página (o app carrega normalmente por cima).
@@ -38,17 +38,17 @@ export function previewTags(d: PublicData, pageUrl: string, origin: string): str
   const rated = d.reviews.map((r) => (r.rating == null ? null : Number(r.rating))).filter((n): n is number => n != null)
   const avg = rated.length ? (rated.reduce((s, n) => s + n, 0) / rated.length).toFixed(1).replace('.', ',') : null
   const numbers = d.reviews.length
-    ? `${d.reviews.length} ${d.reviews.length === 1 ? 'review' : 'reviews'} no MMISC${avg ? ` · nota média ${avg}` : ''}`
-    : 'Perfil no MMISC: nota para tudo.'
+    ? `${d.reviews.length} ${d.reviews.length === 1 ? 'review' : 'reviews'} no MMisc${avg ? ` · nota média ${avg}` : ''}`
+    : 'Perfil no MMisc: nota para tudo.'
   const description = (p.bio ? `${p.bio.slice(0, 160)} · ` : '') + numbers
   const image =
-    (p.cover_mode === 'foto' && p.cover_url) || p.avatar_url || d.favorites.find((f) => f.item.image_url)?.item.image_url || `${origin}/icons/icon-512.png`
-  const title = `${name} (@${p.username}) · MMISC`
+    (p.cover_mode === 'foto' && p.cover_url) || p.avatar_url || d.favorites.find((f) => f.item.image_url)?.item.image_url || `${origin}/brand/og.png`
+  const title = `${name} (@${p.username}) · MMisc`
   const big = Boolean(p.cover_mode === 'foto' && p.cover_url)
   return [
     `<meta name="description" content="${esc(description)}">`,
     `<meta property="og:type" content="profile">`,
-    `<meta property="og:site_name" content="MMISC">`,
+    `<meta property="og:site_name" content="MMisc">`,
     `<meta property="og:title" content="${esc(title)}">`,
     `<meta property="og:description" content="${esc(description)}">`,
     `<meta property="og:url" content="${esc(pageUrl)}">`,
@@ -65,6 +65,7 @@ export function injectTags(html: string, title: string, tags: string): string {
   const withTitle = html
     .replace(/<title>[^<]*<\/title>/, `<title>${esc(title)}</title>`)
     .replace(/\s*<meta name="description"[^>]*>/, '') // a descrição genérica sai; entra a do perfil
+    .replace(/\s*<!-- og:padrao[\s\S]*?<!-- \/og:padrao -->/, '') // a prévia padrão do site também
   return withTitle.replace('</head>', `    ${tags}\n  </head>`)
 }
 
@@ -80,7 +81,7 @@ export default async function proxy(request: Request): Promise<Response> {
     const data = await loadProfile(m[1].toLowerCase())
     if (!data) return new Response(shell, { status: 200, headers })
     const name = data.profile.display_name || `@${data.profile.username}`
-    const html = injectTags(shell, `${name} (@${data.profile.username}) · MMISC`, previewTags(data, url.toString(), url.origin))
+    const html = injectTags(shell, `${name} (@${data.profile.username}) · MMisc`, previewTags(data, url.toString(), url.origin))
     return new Response(html, { status: 200, headers })
   } catch {
     return new Response(shell, { status: 200, headers })

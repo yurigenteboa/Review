@@ -55,7 +55,7 @@ export function reportError(kind: ErrorKind, error: unknown) {
   if (seen.has(sig) || sent >= MAX_ERRORS_PER_LOAD) return
   seen.add(sig)
   sent++
-  if (isDev) console.warn('[MMISC erro]', kind, err)
+  if (isDev) console.warn('[MMisc erro]', kind, err)
   if (!supabaseReady || isDev) return
   void supabase
     .from('client_errors')
@@ -163,7 +163,7 @@ export function track(name: EventName, props: EventProps = {}) {
   if (!metricsEnabled()) return
   queue.push({ name, props, created_at: new Date().toISOString() })
   storeQueue()
-  if (isDev) console.info('[MMISC evento]', name, props)
+  if (isDev) console.info('[MMisc evento]', name, props)
   if (!timer) timer = setTimeout(flush, 10_000)
 }
 

@@ -28,10 +28,10 @@ export function InviteCard() {
   }
 
   const share = async () => {
-    const text = 'Bora dar nota em tudo comigo no MMISC? Entra por aqui:'
+    const text = 'Bora dar nota em tudo comigo no MMisc? Entra por aqui:'
     if (navigator.share) {
       try {
-        await navigator.share({ title: 'MMISC', text, url })
+        await navigator.share({ title: 'MMisc', text, url })
       } catch {
         /* cancelou o compartilhamento */
       }

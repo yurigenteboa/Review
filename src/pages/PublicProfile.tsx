@@ -35,9 +35,9 @@ export default function PublicProfile() {
   const d = query.data
 
   useEffect(() => {
-    if (d) document.title = `${displayName(d.profile)} (@${d.profile.username}) · MMISC`
+    if (d) document.title = `${displayName(d.profile)} (@${d.profile.username}) · MMisc`
     return () => {
-      document.title = 'MMISC'
+      document.title = 'MMisc'
     }
   }, [d])
 
@@ -50,7 +50,7 @@ export default function PublicProfile() {
           <h1>Perfil não encontrado</h1>
           <p>Esse @ não existe ou a pessoa deixou o perfil privado.</p>
           <Link to="/" className="btn btn--primary tap public-cta__btn">
-            {session ? 'Voltar ao MMISC' : 'Conhecer o MMISC'}
+            {session ? 'Voltar ao MMisc' : 'Conhecer o MMisc'}
           </Link>
         </div>
       </Shell>
@@ -161,10 +161,10 @@ function PublicView({ data: d, loggedIn, isMe }: { data: PublicProfileData; logg
         {!loggedIn && (
           <section className="profile-section public-cta">
             <p>
-              <strong>{first}</strong> usa o MMISC para dar nota para tudo: álbuns, filmes, bares, banheiros, cidades.
+              <strong>{first}</strong> usa o MMisc para dar nota para tudo: álbuns, filmes, bares, banheiros, cidades.
             </p>
             <Link to="/" className="btn btn--primary tap public-cta__btn">
-              Entrar no MMISC
+              Entrar no MMisc
             </Link>
             <span className="profile-section__hint">Sem senha: com o Google ou um código por e-mail.</span>
           </section>
@@ -271,7 +271,7 @@ function PublicView({ data: d, loggedIn, isMe }: { data: PublicProfileData; logg
           )}
         </section>
 
-        <nav className="legal__nav" aria-label="Páginas do MMISC" style={{ marginTop: 8 }}>
+        <nav className="legal__nav" aria-label="Páginas do MMisc" style={{ marginTop: 8 }}>
           <Link to="/sobre">Sobre</Link>
           <Link to="/privacidade">Privacidade</Link>
           <Link to="/termos">Termos</Link>

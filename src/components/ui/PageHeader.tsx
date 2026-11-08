@@ -2,7 +2,8 @@ import type { ReactNode } from 'react'
 import { Glass } from './Glass'
 
 interface PageHeaderProps {
-  title: string
+  /** texto, ou o letreiro da marca (<Wordmark>) */
+  title: ReactNode
   subtitle?: string
   /** Botão ou avatar à direita do título */
   trailing?: ReactNode

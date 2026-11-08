@@ -8,7 +8,7 @@ import type { Item } from '../../lib/types'
 
 /**
  * Escolher um item: primeiro o que está no seu diário (da categoria), e uma busca
- * no que já existe no MMISC. Usado por favoritos e "agora".
+ * no que já existe no MMisc. Usado por favoritos e "agora".
  */
 export function ItemPicker({
   open,
@@ -59,7 +59,7 @@ export function ItemPicker({
         )}
         {others.length > 0 && (
           <>
-            <h3 className="picker__heading">No MMISC</h3>
+            <h3 className="picker__heading">No MMisc</h3>
             <div className="group">{others.map(row)}</div>
           </>
         )}

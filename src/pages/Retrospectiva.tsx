@@ -4,6 +4,7 @@ import '../components/profile/profile.css'
 import { Cover } from '../components/review/ReviewCard'
 import { PageHeader } from '../components/ui/PageHeader'
 import { useAuth } from '../lib/auth'
+import { drawWordmark } from '../lib/brand'
 import { catColor, categoryById, formatRating } from '../lib/categories'
 import { displayName } from '../lib/format'
 import { useProfileFull } from '../lib/profile'
@@ -46,7 +47,7 @@ export default function Retrospectiva() {
     try {
       const blob = await drawStory(r, name, labels)
       const file = new File([blob], `mmisc-${year}.png`, { type: 'image/png' })
-      if (navigator.canShare?.({ files: [file] })) await navigator.share({ files: [file], title: `Meu ${year} no MMISC` })
+      if (navigator.canShare?.({ files: [file] })) await navigator.share({ files: [file], title: `Meu ${year} no MMisc` })
       else {
         const a = document.createElement('a')
         a.href = URL.createObjectURL(blob)
@@ -208,10 +209,9 @@ async function drawStory(r: RetroData, name: string, labels: string[]): Promise<
   await document.fonts?.ready
 
   const g = ctx.createLinearGradient(0, 0, W, H)
-  const ink = v('--retro-ink', 'white')
-  g.addColorStop(0, v('--retro-from', 'purple'))
-  g.addColorStop(0.5, v('--accent', 'blue'))
-  g.addColorStop(1, v('--retro-to', 'orange'))
+  const ink = v('--retro-ink', '#F4E8D0')
+  g.addColorStop(0.3, v('--retro-from', '#050505'))
+  g.addColorStop(1, v('--retro-to', '#5C1013'))
   ctx.fillStyle = g
   ctx.fillRect(0, 0, W, H)
   // véu escuro para o texto branco ter contraste em qualquer ponto do degradê
@@ -223,8 +223,7 @@ async function drawStory(r: RetroData, name: string, labels: string[]): Promise<
   const font = (w: number, s: number) => `${w} ${s}px "Inter Variable", "Inter", -apple-system, system-ui, sans-serif`
   ctx.fillStyle = ink
   ctx.textBaseline = 'alphabetic'
-  ctx.font = font(700, 44)
-  ctx.fillText('MMISC', 90, 150)
+  drawWordmark(ctx, 84, 82, 84) // letreiro "MMisc" na cor do texto (--retro-ink)
   ctx.font = font(500, 40)
   ctx.globalAlpha = 0.85
   ctx.fillText(name, 90, 210)

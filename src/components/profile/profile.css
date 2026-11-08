@@ -3,7 +3,7 @@
   position: relative;
 }
 
-/* Capa: mosaico desfocado das capas favoritas sobre o degradê do app */
+/* Capa: mosaico desfocado das capas favoritas sobre o fundo da marca (--login-gradient) */
 .profile__cover {
   position: relative;
   height: calc(210px + var(--safe-top));
@@ -747,7 +747,7 @@
   padding: 0 12px;
   border-radius: var(--r-pill);
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   font-weight: 650;
   text-decoration: none;
 }
@@ -915,7 +915,7 @@
 .retro__hero {
   padding: 24px 20px;
   border-radius: var(--r-lg);
-  background: linear-gradient(150deg, var(--retro-from), var(--accent) 55%, var(--retro-to));
+  background: linear-gradient(150deg, var(--retro-from) 30%, var(--retro-to));
   color: var(--retro-ink);
 }
 .retro__hero p {

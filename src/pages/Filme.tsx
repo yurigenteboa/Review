@@ -228,7 +228,7 @@ function ActionBar({
   async function share() {
     const url = window.location.href
     const title = d?.title ?? item.title
-    const text = mine?.rating != null ? `Dei ${formatRating(mine.rating)} para ${title} no MMISC` : `${title} no MMISC`
+    const text = mine?.rating != null ? `Dei ${formatRating(mine.rating)} para ${title} no MMisc` : `${title} no MMisc`
     try {
       if (navigator.share) {
         await navigator.share({ title, text, url })
@@ -431,7 +431,7 @@ function FriendsBlock({
   )
 }
 
-// ---------- Notas no MMISC + histograma ----------
+// ---------- Notas no MMisc + histograma ----------
 
 const BINS = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]
 
@@ -445,7 +445,7 @@ function RatingsBlock({ reviews, mine, loading }: { reviews: Review[]; mine: Rev
 
   return (
     <section className="movie-section" aria-labelledby="sec-notas">
-      <h2 id="sec-notas">Notas no MMISC</h2>
+      <h2 id="sec-notas">Notas no MMisc</h2>
       <div className="movie-card">
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <span className="score-big__value">{rated.length ? formatRating(avg) : '–'}</span>

@@ -8,7 +8,7 @@ export const supabaseReady = Boolean(url && key)
 
 if (!supabaseReady) {
   console.warn(
-    '[MMISC] Supabase não configurado: crie o arquivo .env.local a partir do .env.example.',
+    '[MMisc] Supabase não configurado: crie o arquivo .env.local a partir do .env.example.',
   )
 }
 

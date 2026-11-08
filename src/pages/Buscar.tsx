@@ -77,9 +77,9 @@ export default function Buscar({ onCompose }: { onCompose: (s: ComposeStart) => 
 
       <div className="page__body search-results">
         {(local.data?.length ?? 0) > 0 && (
-          <section aria-label="Já no MMISC" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <section aria-label="Já no MMisc" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <span className="field-label" style={{ margin: '4px 4px 0' }}>
-              {term ? 'Já no MMISC' : 'Adicionados recentemente'}
+              {term ? 'Já no MMisc' : 'Adicionados recentemente'}
             </span>
             <div className="group">
               {local.data!.slice(0, term ? 10 : 15).map((i) => (

@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { Wordmark } from '../components/ui/Brand'
 import { PageHeader } from '../components/ui/PageHeader'
 import { metricsEnabled, setMetricsEnabled } from '../lib/telemetry'
 
@@ -17,14 +18,14 @@ export { LEGAL_PATHS, type LegalDoc }
 
 const Mail = () => <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
 
-const DOCS: Record<LegalDoc, { title: string; subtitle?: string; body: ReactNode }> = {
+const DOCS: Record<LegalDoc, { title: ReactNode; subtitle?: string; body: ReactNode }> = {
   sobre: {
-    title: 'MMISC',
+    title: <Wordmark className="legal__wordmark" />,
     subtitle: 'Nota para tudo',
     body: (
       <>
         <p>
-          O MMISC é um app para dar nota e escrever reviews de tudo o que você vive: álbuns, filmes, séries, jogos, livros,
+          O MMisc é um app para dar nota e escrever reviews de tudo o que você vive: álbuns, filmes, séries, jogos, livros,
           bares, banheiros públicos e cidades. Você mantém um diário do que viu, ouviu e visitou, guarda o que quer ver
           depois e acompanha o que seus amigos estão achando.
         </p>
@@ -41,7 +42,7 @@ const DOCS: Record<LegalDoc, { title: string; subtitle?: string; body: ReactNode
           você entra sempre na mesma conta.
         </p>
         <p>
-          <Link to="/">Entrar no MMISC</Link>
+          <Link to="/">Entrar no MMisc</Link>
         </p>
       </>
     ),
@@ -53,7 +54,7 @@ const DOCS: Record<LegalDoc, { title: string; subtitle?: string; body: ReactNode
     body: (
       <>
         <p>
-          Esta política explica quais dados o MMISC (www.mmisc.com.br) coleta, para que usa e como você pode pedir acesso,
+          Esta política explica quais dados o MMisc (www.mmisc.com.br) coleta, para que usa e como você pode pedir acesso,
           correção ou exclusão, conforme a Lei Geral de Proteção de Dados (Lei 13.709/2018). Dúvidas: <Mail />.
         </p>
 
@@ -90,7 +91,7 @@ const DOCS: Record<LegalDoc, { title: string; subtitle?: string; body: ReactNode
         <h2>Quem vê o quê</h2>
         <p>
           Cada review tem uma visibilidade: só você, seus amigos ou público. Nome, @ e foto do perfil ficam visíveis para
-          quem tem conta no MMISC.
+          quem tem conta no MMisc.
         </p>
 
         <h2>Perfil público</h2>
@@ -116,14 +117,14 @@ const DOCS: Record<LegalDoc, { title: string; subtitle?: string; body: ReactNode
 
         <h2>Dados do Google</h2>
         <p>
-          O uso que o MMISC faz das informações recebidas das APIs do Google segue a Política de Dados do Usuário dos
+          O uso que o MMisc faz das informações recebidas das APIs do Google segue a Política de Dados do Usuário dos
           Serviços de API do Google, incluindo os requisitos de uso limitado. Usamos nome, e-mail e foto só para criar e
           identificar sua conta.
         </p>
 
         <h2>Erros e métricas de uso</h2>
         <p>
-          Para consertar problemas e saber se o app está funcionando bem, o MMISC registra no próprio banco de dados (no
+          Para consertar problemas e saber se o app está funcionando bem, o MMisc registra no próprio banco de dados (no
           Supabase, em São Paulo, sem nenhuma outra empresa de análise):
         </p>
         <ul>
@@ -163,7 +164,7 @@ const DOCS: Record<LegalDoc, { title: string; subtitle?: string; body: ReactNode
     subtitle: `Atualizados em ${UPDATED}`,
     body: (
       <>
-        <p>Ao usar o MMISC você concorda com estes termos. Se não concordar, não use o app.</p>
+        <p>Ao usar o MMisc você concorda com estes termos. Se não concordar, não use o app.</p>
         <h2>Sua conta</h2>
         <p>
           A conta é pessoal. Você é responsável pelo que publica e por manter o acesso ao seu e-mail ou à sua conta Google.
@@ -177,7 +178,7 @@ const DOCS: Record<LegalDoc, { title: string; subtitle?: string; body: ReactNode
         <p>Podemos remover conteúdo ou suspender contas que desrespeitem estes termos.</p>
         <h2>O serviço</h2>
         <p>
-          O MMISC é um projeto pessoal, oferecido como está, de graça. Ele pode mudar, ficar fora do ar ou ser encerrado;
+          O MMisc é um projeto pessoal, oferecido como está, de graça. Ele pode mudar, ficar fora do ar ou ser encerrado;
           nesse caso, avisaremos com antecedência para você poder pedir uma cópia dos seus dados.
         </p>
         <h2>Contato</h2>
@@ -192,7 +193,7 @@ const DOCS: Record<LegalDoc, { title: string; subtitle?: string; body: ReactNode
     title: 'Excluir seus dados',
     body: (
       <>
-        <h2>Excluir a conta do MMISC</h2>
+        <h2>Excluir a conta do MMisc</h2>
         <p>
           Envie um e-mail para <Mail /> a partir do e-mail da sua conta, com o assunto “Excluir minha conta”. Em até 15
           dias apagamos a conta e tudo o que está ligado a ela: perfil, reviews, fotos, notas privadas, listas, curtidas,
@@ -202,11 +203,11 @@ const DOCS: Record<LegalDoc, { title: string; subtitle?: string; body: ReactNode
 
         <h2>Desconectar o Google</h2>
         <p>
-          Para tirar o acesso do MMISC à sua conta Google, abra{' '}
+          Para tirar o acesso do MMisc à sua conta Google, abra{' '}
           <a href="https://myaccount.google.com/connections" target="_blank" rel="noreferrer">
             myaccount.google.com/connections
           </a>
-          , escolha MMISC e remova o acesso. Isso não apaga sua conta do MMISC: para isso, siga o passo acima.
+          , escolha MMisc e remova o acesso. Isso não apaga sua conta do MMisc: para isso, siga o passo acima.
         </p>
       </>
     ),
@@ -220,7 +221,7 @@ export default function Legal({ doc }: { doc: LegalDoc }) {
       <PageHeader title={d.title} subtitle={d.subtitle} />
       <article className="legal">
         {d.body}
-        <nav className="legal__nav" aria-label="Páginas do MMISC">
+        <nav className="legal__nav" aria-label="Páginas do MMisc">
           <Link to="/">Entrar</Link>
           {doc !== 'sobre' && <Link to="/sobre">Sobre</Link>}
           {doc !== 'privacidade' && <Link to="/privacidade">Privacidade</Link>}

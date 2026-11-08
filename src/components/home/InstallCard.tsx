@@ -9,7 +9,7 @@ const ShareGlyph = () => (
 )
 
 /**
- * M4 · Convite para instalar o MMISC na tela de início (só no celular, a partir da 2ª visita,
+ * M4 · Convite para instalar o MMisc na tela de início (só no celular, a partir da 2ª visita,
  * fora do app instalado; "Agora não" esconde por 14 dias).
  * - Android: botão que abre a instalação nativa.
  * - iPhone no Safari: passo a passo (Compartilhar → Adicionar à Tela de Início).
@@ -34,10 +34,10 @@ export function InstallCard() {
   }
 
   return (
-    <section className="install-card" aria-label="Instalar o MMISC">
+    <section className="install-card" aria-label="Instalar o MMisc">
       <img src="/icons/icon-192.png" alt="" width={48} height={48} />
       <div className="install-card__text">
-        <strong>Tenha o MMISC como app</strong>
+        <strong>Tenha o MMisc como app</strong>
         {platform === 'android' && <span>Abre em tela cheia, direto da tela de início, e fica mais rápido.</span>}
         {platform === 'ios-safari' && (
           <span>

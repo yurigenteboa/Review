@@ -112,9 +112,17 @@ export default function Login() {
         background: 'var(--login-gradient)',
       }}
     >
-      <Glass style={{ width: '100%', maxWidth: 400, padding: 28 }}>
-        <img src="/icons/icon-192.png" alt="" width={64} height={64} style={{ borderRadius: 16, display: 'block' }} />
-        <h1 style={{ margin: '16px 0 4px', fontSize: 34, fontWeight: 800, letterSpacing: -0.8 }}>MMISC</h1>
+      <Glass style={{ width: '100%', maxWidth: 400, padding: 28, background: 'var(--surface)' }}>
+        <h1 style={{ margin: '0 0 12px' }}>
+          <img
+            src="/icons/icon-192.png"
+            srcSet="/icons/icon-192.png 1x, /icons/icon-512.png 2x"
+            alt="MMisc"
+            width={112}
+            height={112}
+            style={{ borderRadius: 26, display: 'block' }}
+          />
+        </h1>
         <p style={{ margin: 0, fontSize: 15, color: 'var(--text-2)' }}>
           Nota para tudo: álbuns, filmes, bares, banheiros, cidades.
         </p>
@@ -200,7 +208,7 @@ export default function Login() {
           </p>
         )}
 
-        <nav className="login-links" aria-label="Sobre o MMISC">
+        <nav className="login-links" aria-label="Sobre o MMisc">
           <Link to="/sobre">Sobre</Link>
           <Link to="/privacidade">Privacidade</Link>
           <Link to="/termos">Termos</Link>

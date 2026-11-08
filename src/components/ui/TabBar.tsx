@@ -38,7 +38,7 @@ export function TabBar({ onCompose }: TabBarProps) {
         ))}
       </Glass>
       <button type="button" className="tabbar__plus tap" aria-label="Nova review" onClick={onCompose}>
-        <span style={{ color: '#fff', display: 'flex' }}>
+        <span style={{ color: 'var(--on-accent)', display: 'flex' }}>
           <PlusIcon size={26} />
         </span>
       </button>

@@ -212,7 +212,7 @@ export function EditProfileSheet({ profile: p, onClose }: { profile: ProfileFull
           <span className="field-hint" style={{ margin: '0 4px' }}>
             {isPublic
               ? 'Qualquer pessoa com o link vê: nome, @, foto, capa, bio, links, e o que estiver como Público (reviews, favoritos, Top 10). Amigos, metas, quero ver, notas privadas e o que é só para amigos ficam de fora.'
-              : 'Ninguém sem conta vê seu perfil. Quem tem conta no MMISC continua vendo seu nome e o que você deixar visível.'}
+              : 'Ninguém sem conta vê seu perfil. Quem tem conta no MMisc continua vendo seu nome e o que você deixar visível.'}
           </span>
           {isPublic && (username ? (
             <span className="field-hint" style={{ margin: '0 4px' }}>
@@ -223,7 +223,7 @@ export function EditProfileSheet({ profile: p, onClose }: { profile: ProfileFull
                 onClick={async () => {
                   const url = publicProfileUrl(username)
                   try {
-                    if (navigator.share) await navigator.share({ title: 'Meu perfil no MMISC', url })
+                    if (navigator.share) await navigator.share({ title: 'Meu perfil no MMisc', url })
                     else {
                       await navigator.clipboard.writeText(url)
                       setCopied(true)

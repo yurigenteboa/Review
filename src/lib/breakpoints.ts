@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react'
 
 /**
- * Tamanhos de tela do MMISC. Os mesmos números estão nos @media do CSS
+ * Tamanhos de tela do MMisc. Os mesmos números estão nos @media do CSS
  * (CSS não aceita variável dentro de @media), então mude nos dois lugares.
  *  - celular: até 699px (o app como sempre foi)
  *  - tablet:  700 a 1099px (barra lateral só com ícones)

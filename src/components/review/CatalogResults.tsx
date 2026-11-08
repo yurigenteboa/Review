@@ -25,7 +25,7 @@ interface Props {
   missingKey?: string
   error?: string | null
   onPick: (r: CatalogResult) => void
-  /** esconde resultados que já existem no catálogo do MMISC */
+  /** esconde resultados que já existem no catálogo do MMisc */
   hide?: Set<string>
   limit?: number
   /** título da lista (padrão "Na internet"); ex.: "Você está em algum destes?" com a localização */

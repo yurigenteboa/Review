@@ -40,8 +40,8 @@ interface Props {
 
 const VIS: { id: Visibility; label: string; hint: string }[] = [
   { id: 'privado', label: 'Privado', hint: 'Só você vê. Bom para o diário pessoal.' },
-  { id: 'amigos', label: 'Amigos', hint: 'Você e seus amigos no MMISC.' },
-  { id: 'publico', label: 'Público', hint: 'Qualquer pessoa com conta no MMISC.' },
+  { id: 'amigos', label: 'Amigos', hint: 'Você e seus amigos no MMisc.' },
+  { id: 'publico', label: 'Público', hint: 'Qualquer pessoa com conta no MMisc.' },
 ]
 
 const PLACEHOLDER: Record<CategoryId, string> = {
@@ -385,7 +385,7 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
                     <Cover item={it} size={44} radius={10} />
                     <span style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                       <strong style={{ fontWeight: 600 }}>{it.title}</strong>
-                      <span style={{ fontSize: 13, color: 'var(--text-3)' }}>{it.subtitle ? `${it.subtitle} · ` : ''}já no MMISC</span>
+                      <span style={{ fontSize: 13, color: 'var(--text-3)' }}>{it.subtitle ? `${it.subtitle} · ` : ''}já no MMisc</span>
                     </span>
                   </button>
                 ))}

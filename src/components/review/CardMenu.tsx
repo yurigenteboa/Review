@@ -29,7 +29,7 @@ export function CardMenu({ review, open, onClose }: { review: Review; open: bool
   const share = async () => {
     const url = `${window.location.origin}/item/${item.id}`
     try {
-      if (navigator.share) await navigator.share({ title: item.title, text: `${item.title} no MMISC`, url })
+      if (navigator.share) await navigator.share({ title: item.title, text: `${item.title} no MMisc`, url })
       else await navigator.clipboard.writeText(url)
     } catch {
       /* a pessoa fechou a folha de compartilhar */

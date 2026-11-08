@@ -4,6 +4,7 @@ import { useMyProfile } from '../../lib/queries'
 import { useFriends, useUnreadCount } from '../../lib/social'
 import { useTabReselect } from '../../lib/navigation'
 import { Avatar } from '../review/ReviewCard'
+import { Wordmark } from './Brand'
 import { Glass } from './Glass'
 import { BellIcon, HomeIcon, PeopleIcon, PersonIcon, PlusIcon, SearchIcon } from './Icons'
 
@@ -43,9 +44,12 @@ export function SideBar({ onCompose, compact }: SideBarProps) {
 
   return (
     <Glass as="nav" variant="bar" className={`sidebar ${compact ? 'sidebar--compact' : ''}`} aria-label="Navegação principal">
-      <NavLink to="/" className="sidebar__brand tap" aria-label="MMISC, ir para o Início">
-        <img src="/favicon.svg" alt="" width={32} height={32} />
-        {!compact && <span>MMISC</span>}
+      <NavLink to="/" className="sidebar__brand tap" aria-label="MMisc, ir para o Início">
+        {compact ? (
+          <img src="/favicon.svg" alt="" width={36} height={36} />
+        ) : (
+          <Wordmark label="" className="sidebar__wordmark" />
+        )}
       </NavLink>
 
       <ul className="sidebar__list">

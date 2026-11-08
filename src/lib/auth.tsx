@@ -78,7 +78,7 @@ export function googleLoginEnabled(): boolean {
 export const FROM_APP_PARAM = 'origem'
 
 /**
- * Vai para o Google e volta para o MMISC já logado.
+ * Vai para o Google e volta para o MMisc já logado.
  * O convite pendente viaja na própria URL de volta: se o login terminar no Safari
  * (outro localStorage), o convite não se perde.
  */
