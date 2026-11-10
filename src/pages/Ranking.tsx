@@ -9,11 +9,12 @@ import { haptic } from '../lib/haptics'
 import { useMyPlaceRanks, useMyRankCounts, useRemoveRank, useSaveRankOrder, type PlaceRank } from '../lib/queries'
 import { ErrorState } from './states'
 
+import { t } from '../lib/i18n'
 type Bucket = 1 | 2 | 3
 const BUCKETS: { id: Bucket; label: string; emoji: string }[] = [
-  { id: 3, label: 'Gostei', emoji: '😍' },
-  { id: 2, label: 'Ok', emoji: '🙂' },
-  { id: 1, label: 'Não gostei', emoji: '😕' },
+  { id: 3, label: t('Gostei'), emoji: '😍' },
+  { id: 2, label: t('Ok'), emoji: '🙂' },
+  { id: 1, label: t('Não gostei'), emoji: '😕' },
 ]
 
 /** pos de cada lugar = tamanho do grupo − índice (o de cima é o maior). */
@@ -65,12 +66,12 @@ export default function Ranking() {
     })
     if (changes.length === 0) return placed
     saved.current = placed
-    setStatus('Salvando…')
+    setStatus(t('Salvando…'))
     save.mutate(
       changes.map(({ item_id, bucket, pos }) => ({ item_id, bucket, pos })),
       {
-        onSuccess: () => setStatus('Ordem salva'),
-        onError: () => setStatus('Não deu para salvar. Tente de novo.'),
+        onSuccess: () => setStatus(t('Ordem salva')),
+        onError: () => setStatus(t('Não deu para salvar. Tente de novo.')),
       },
     )
     return placed
@@ -110,8 +111,8 @@ export default function Ranking() {
 
   return (
     <div className="page">
-      <PageHeader title="Meus lugares em ordem" subtitle={total ? `${total} ${plural}` : undefined}>
-        <div className="chips no-scrollbar" role="group" aria-label="Categoria">
+      <PageHeader title={t('Meus lugares em ordem')} subtitle={total ? `${total} ${plural}` : undefined}>
+        <div className="chips no-scrollbar" role="group" aria-label={t('Categoria')}>
           {RANKED_CATEGORIES.map((c) => (
             <button
               key={c.id}
@@ -133,11 +134,11 @@ export default function Ranking() {
         <div className="rank-list" aria-busy="true" />
       ) : total === 0 ? (
         <p className="empty-note">
-          Você ainda não ranqueou {plural}. Ao registrar um, escolha “Gostei / Ok / Não gostei” e compare com os outros: ele entra aqui.
+          {t('Você ainda não ranqueou {plural}. Ao registrar um, escolha “Gostei / Ok / Não gostei” e compare com os outros: ele entra aqui.', { plural })}
         </p>
       ) : (
         <>
-          <p className="rank-hint">Arraste pela alça ou use ↑ ↓. A nota das entradas que você já registrou não muda.</p>
+          <p className="rank-hint">{t('Arraste pela alça ou use ↑ ↓. A nota das entradas que você já registrou não muda.')}</p>
           {BUCKETS.map((b) => {
             const group = list.filter((r) => r.bucket === b.id)
             return (
@@ -147,7 +148,7 @@ export default function Ranking() {
                   <span className="rank-group__count">{group.length}</span>
                 </h2>
                 {group.length === 0 ? (
-                  <p className="rank-group__empty">Nenhum aqui.</p>
+                  <p className="rank-group__empty">{t('Nenhum aqui.')}</p>
                 ) : (
                   <Reorder.Group axis="y" values={group} onReorder={(g) => reorderGroup(b.id, g)} className="rank-list" as="ol">
                     {group.map((r) => (
@@ -161,7 +162,7 @@ export default function Ranking() {
                         onMove={(d) => move(r.item_id, d)}
                         onRemove={() => {
                           remove.mutate(r.item_id)
-                          setStatus(`${r.title} saiu do ranking`)
+                          setStatus(t('{title} saiu do ranking', { title: r.title }))
                         }}
                       />
                     ))}
@@ -204,7 +205,7 @@ function RankRow({
       <button
         type="button"
         className="rank-row__handle"
-        aria-label={`Arrastar ${rank.title}`}
+        aria-label={t('Arrastar {title}', { title: rank.title })}
         onPointerDown={(e) => {
           e.preventDefault()
           haptic()
@@ -218,20 +219,20 @@ function RankRow({
         {rank.title}
       </Link>
       <div className="rank-row__actions">
-        <button type="button" className="icon-btn tap" aria-label={`Subir ${rank.title}`} disabled={first} onClick={() => onMove(-1)}>
+        <button type="button" className="icon-btn tap" aria-label={t('Subir {title}', { title: rank.title })} disabled={first} onClick={() => onMove(-1)}>
           ↑
         </button>
-        <button type="button" className="icon-btn tap" aria-label={`Descer ${rank.title}`} disabled={last} onClick={() => onMove(1)}>
+        <button type="button" className="icon-btn tap" aria-label={t('Descer {title}', { title: rank.title })} disabled={last} onClick={() => onMove(1)}>
           ↓
         </button>
         <button
           type="button"
           className={`link-btn rank-row__remove${confirm ? ' is-confirm' : ''}`}
-          aria-label={confirm ? `Confirmar: tirar ${rank.title} do ranking` : `Tirar ${rank.title} do ranking`}
+          aria-label={confirm ? t('Confirmar: tirar {title} do ranking', { title: rank.title }) : t('Tirar {title} do ranking', { title: rank.title })}
           onClick={() => (confirm ? onRemove() : setConfirm(true))}
           onBlur={() => setConfirm(false)}
         >
-          {confirm ? 'Tirar?' : '✕'}
+          {confirm ? t('Tirar?') : '✕'}
         </button>
       </div>
     </Reorder.Item>

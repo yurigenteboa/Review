@@ -5,38 +5,39 @@ import type { CategoryId } from './categories'
 import { supabase } from './supabase'
 import type { Profile, Review, UserService, Visibility, WatchlistRow } from './types'
 
+import { locale, t } from './i18n'
 const PROFILE_FIELDS = 'id, username, display_name, avatar_url'
 
-/** Verbo do "quero ..." por categoria. */
-export const WANT_VERB: Record<CategoryId, string> = {
-  album: 'ouvir',
-  filme: 'ver',
-  serie: 'ver',
-  jogo: 'jogar',
-  livro: 'ler',
-  bar: 'ir',
-  banheiro: 'conhecer',
-  cidade: 'conhecer',
-  drink: 'provar',
-  prato: 'provar',
-  restaurante: 'ir',
-  cafe: 'ir',
+/** Botão do "quero ..." por categoria: "Quero ver", "Quero ouvir"… */
+export const WANT_LABEL: Record<CategoryId, string> = {
+  album: t('Quero ouvir'),
+  filme: t('Quero ver'),
+  serie: t('Quero ver'),
+  jogo: t('Quero jogar'),
+  livro: t('Quero ler'),
+  bar: t('Quero ir'),
+  banheiro: t('Quero conhecer'),
+  cidade: t('Quero conhecer'),
+  drink: t('Quero provar'),
+  prato: t('Quero provar'),
+  restaurante: t('Quero ir'),
+  cafe: t('Quero ir'),
 }
 
 /** Verbo do registro por categoria: "Vi", "Ouvi", "Joguei"... */
 export const DID_VERB: Record<CategoryId, string> = {
-  album: 'Ouvi',
-  filme: 'Vi',
-  serie: 'Vi',
-  jogo: 'Joguei',
-  livro: 'Li',
-  bar: 'Fui',
-  banheiro: 'Usei',
-  cidade: 'Fui',
-  drink: 'Provei',
-  prato: 'Provei',
-  restaurante: 'Fui',
-  cafe: 'Fui',
+  album: t('Ouvi'),
+  filme: t('Vi'),
+  serie: t('Vi'),
+  jogo: t('Joguei'),
+  livro: t('Li'),
+  bar: t('Fui'),
+  banheiro: t('Usei'),
+  cidade: t('Fui'),
+  drink: t('Provei'),
+  prato: t('Provei'),
+  restaurante: t('Fui'),
+  cafe: t('Fui'),
 }
 
 // ---------- Quero ver ----------
@@ -83,7 +84,7 @@ export function useToggleWatchlist() {
     mutationFn: async ({ itemId, on, visibility = 'amigos' }: { itemId: string; on: boolean; visibility?: Visibility }) => {
       const { data: auth } = await supabase.auth.getUser()
       const uid = auth.user?.id
-      if (!uid) throw new Error('Sessão expirada. Entre de novo.')
+      if (!uid) throw new Error(t('Sessão expirada. Entre de novo.'))
       if (on) {
         const { error } = await supabase.from('watchlist').upsert({ user_id: uid, item_id: itemId, visibility })
         if (error) throw error
@@ -161,7 +162,7 @@ export function useToggleService() {
     mutationFn: async ({ service, on }: { service: UserService; on: boolean }) => {
       const { data: auth } = await supabase.auth.getUser()
       const uid = auth.user?.id
-      if (!uid) throw new Error('Sessão expirada. Entre de novo.')
+      if (!uid) throw new Error(t('Sessão expirada. Entre de novo.'))
       if (on) {
         const { error } = await supabase
           .from('user_services')
@@ -183,7 +184,7 @@ export function formatDay(iso: string): string {
   const [y, m, d] = iso.slice(0, 10).split('-').map(Number)
   const date = new Date(y, m - 1, d)
   const sameYear = y === new Date().getFullYear()
-  return date.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', ...(sameYear ? {} : { year: 'numeric' }) })
+  return date.toLocaleDateString(locale(), { day: 'numeric', month: 'short', ...(sameYear ? {} : { year: 'numeric' }) })
 }
 
 /** Data local de hoje / ontem no formato do banco (AAAA-MM-DD). */

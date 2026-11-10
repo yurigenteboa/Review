@@ -1,5 +1,6 @@
 // Todas as leituras e escritas no Supabase passam por aqui.
 // As regras de quem vê o quê estão no banco (RLS): o app só pede, o banco filtra.
+import { locale, t } from './i18n'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { PLACE_SEARCH, type CategoryId } from './categories'
 import { compressImage } from './images'
@@ -106,7 +107,7 @@ export function useChildItems(parentId: string | undefined) {
             entries: row.reviews.length,
           }
         })
-        .sort((a, b) => b.rated - a.rated || b.avg - a.avg || a.title.localeCompare(b.title, 'pt-BR'))
+        .sort((a, b) => b.rated - a.rated || b.avg - a.avg || a.title.localeCompare(b.title, locale()))
     },
   })
 }
@@ -462,7 +463,7 @@ export function useOpenCatalogItem() {
   return useMutation({
     mutationFn: async (r: CatalogResult) => {
       const { data: auth } = await supabase.auth.getUser()
-      if (!auth.user) throw new Error('Sessão expirada. Entre de novo.')
+      if (!auth.user) throw new Error(t('Sessão expirada. Entre de novo.'))
       return ensureCatalogItem(r, auth.user.id)
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['search'] }),
@@ -516,7 +517,7 @@ export function useCreateReview() {
     mutationFn: async (input: NewReview) => {
       const { data: auth } = await supabase.auth.getUser()
       const uid = auth.user?.id
-      if (!uid) throw new Error('Sessão expirada. Entre de novo.')
+      if (!uid) throw new Error(t('Sessão expirada. Entre de novo.'))
 
       // 1. Item: usa o escolhido, reaproveita um manual com o mesmo nome ou cria um novo
       let itemId = input.itemId
@@ -677,8 +678,8 @@ export function useUpdateProfile() {
         .update({ display_name: p.display_name.trim() || null, username: p.username.trim().toLowerCase() || null })
         .eq('id', p.id)
       if (error) {
-        if (error.code === '23505') throw new Error('Esse @ já está em uso.')
-        if (error.code === '23514') throw new Error('O @ precisa ter de 3 a 24 letras minúsculas, números, ponto ou _.')
+        if (error.code === '23505') throw new Error(t('Esse @ já está em uso.'))
+        if (error.code === '23514') throw new Error(t('O @ precisa ter de 3 a 24 letras minúsculas, números, ponto ou _.'))
         throw error
       }
     },

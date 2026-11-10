@@ -7,6 +7,7 @@ import type { Review } from '../../lib/types'
 import { Sheet } from '../ui/Sheet'
 import { Avatar } from './ReviewCard'
 
+import { t } from '../../lib/i18n'
 /** Comentários de uma review, numa sheet. Só carrega quando abre. */
 export function CommentsSheet({ review, open, onClose }: { review: Review; open: boolean; onClose: () => void }) {
   const { userId } = useAuth()
@@ -24,11 +25,11 @@ export function CommentsSheet({ review, open, onClose }: { review: Review; open:
   }
 
   return (
-    <Sheet open={open} onClose={onClose} title={`Comentários · ${review.item.title}`} desktop="side">
+    <Sheet open={open} onClose={onClose} title={t('Comentários · {title}', { title: review.item.title })} desktop="side">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-        {comments.isLoading && <span className="field-hint">Carregando…</span>}
+        {comments.isLoading && <span className="field-hint">{t('Carregando…')}</span>}
         {comments.data?.length === 0 && (
-          <p style={{ margin: 0, textAlign: 'center', color: 'var(--text-3)', fontSize: '0.9375rem' }}>Ninguém comentou ainda.</p>
+          <p style={{ margin: 0, textAlign: 'center', color: 'var(--text-3)', fontSize: '0.9375rem' }}>{t('Ninguém comentou ainda.')}</p>
         )}
         {comments.data?.map((c) => (
           <div key={c.id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
@@ -44,12 +45,12 @@ export function CommentsSheet({ review, open, onClose }: { review: Review; open:
             {(c.user_id === userId || isOwner) && (
               <button
                 type="button"
-                aria-label="Apagar comentário"
+                aria-label={t('Apagar comentário')}
                 disabled={del.isPending}
                 onClick={() => del.mutate(c)}
                 style={{ border: 'none', background: 'none', color: 'var(--text-3)', fontSize: '0.8125rem', minHeight: 32 }}
               >
-                Apagar
+                {t('Apagar')}
               </button>
             )}
           </div>
@@ -57,22 +58,22 @@ export function CommentsSheet({ review, open, onClose }: { review: Review; open:
 
         <form onSubmit={send} style={{ display: 'flex', gap: 8, alignItems: 'flex-end', marginTop: 4 }}>
           <label style={{ flex: 1 }}>
-            <span className="visually-hidden">Escrever comentário</span>
+            <span className="visually-hidden">{t('Escrever comentário')}</span>
             <textarea
               className="field"
               rows={2}
               maxLength={1000}
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder="Escreva um comentário…"
+              placeholder={t('Escreva um comentário…')}
               style={{ height: 'auto', padding: '10px 14px', resize: 'none', lineHeight: 1.4 }}
             />
           </label>
           <button className="btn btn--primary tap" disabled={!text.trim() || add.isPending} style={{ minHeight: 44, padding: '0 18px', opacity: text.trim() ? 1 : 0.45 }}>
-            Enviar
+            {t('Enviar')}
           </button>
         </form>
-        {add.error && <span role="alert" style={{ color: 'var(--cat-filme-ink)', fontSize: '0.875rem' }}>Não deu para comentar: {(add.error as Error).message}</span>}
+        {add.error && <span role="alert" style={{ color: 'var(--cat-filme-ink)', fontSize: '0.875rem' }}>{t('Não deu para comentar: {message}', { message: (add.error as Error).message })}</span>}
       </div>
     </Sheet>
   )

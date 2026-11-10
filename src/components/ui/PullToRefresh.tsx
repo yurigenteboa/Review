@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
+import { t } from '../../lib/i18n'
 const THRESHOLD = 72 // px puxados (já com resistência) para soltar e atualizar
 const MAX = 120
 const MIN_SPIN_MS = 600 // a bolinha gira pelo menos isso, para o gesto "ter acontecido"
@@ -103,7 +104,7 @@ export function PullToRefresh() {
       role="status"
       aria-live="polite"
     >
-      <span className="visually-hidden">{refreshing ? 'Atualizando' : progress >= 1 ? 'Solte para atualizar' : ''}</span>
+      <span className="visually-hidden">{refreshing ? t('Atualizando') : progress >= 1 ? t('Solte para atualizar') : ''}</span>
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true" style={{ transform: refreshing ? undefined : `rotate(${progress * 270}deg)` }}>
         <path d="M20 12a8 8 0 1 1-2.34-5.66" />
         <path d="M20 4v4h-4" />

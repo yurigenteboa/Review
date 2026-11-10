@@ -1,5 +1,6 @@
 // Perfil completo (com bio) e edição. A policy "perfis: dono edita" já cobre a bio:
 // nada muda no banco nesta etapa.
+import { t } from './i18n'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from './supabase'
 import type { CategoryId } from './categories'
@@ -52,8 +53,8 @@ export function useSaveProfile() {
         })
         .eq('id', p.id)
       if (error) {
-        if (error.code === '23505') throw new Error('Esse @ já está em uso.')
-        if (error.code === '23514') throw new Error('O @ precisa ter de 3 a 24 letras minúsculas, números, ponto ou _.')
+        if (error.code === '23505') throw new Error(t('Esse @ já está em uso.'))
+        if (error.code === '23514') throw new Error(t('O @ precisa ter de 3 a 24 letras minúsculas, números, ponto ou _.'))
         throw error
       }
     },

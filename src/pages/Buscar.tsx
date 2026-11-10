@@ -12,6 +12,7 @@ import { useFinePointer } from '../lib/breakpoints'
 import { useCatalogSearch, useOpenCatalogItem, useSearchItems } from '../lib/queries'
 import { track } from '../lib/telemetry'
 
+import { t } from '../lib/i18n'
 export default function Buscar({ onCompose }: { onCompose: (s: ComposeStart) => void }) {
   const navigate = useNavigate()
   const [q, setQ] = useState('')
@@ -44,10 +45,10 @@ export default function Buscar({ onCompose }: { onCompose: (s: ComposeStart) => 
   return (
     <div className="page page--wide">
       <PageHeader
-        title="Buscar"
+        title={t('Buscar')}
         trailing={
           <Link to="/mapa" className="btn btn--plain tap" style={{ minHeight: 44, padding: '0 16px', display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
-            Mapa
+            {t('Mapa')}
           </Link>
         }
       >
@@ -55,14 +56,14 @@ export default function Buscar({ onCompose }: { onCompose: (s: ComposeStart) => 
           <span style={{ color: 'var(--text-3)', display: 'flex' }}>
             <SearchIcon size={18} />
           </span>
-          <span className="visually-hidden">Buscar</span>
+          <span className="visually-hidden">{t('Buscar')}</span>
           <input
             id="busca-campo"
             type="search"
             autoFocus={finePointer}
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder={cat === 'all' ? 'Álbuns, filmes, bares, banheiros…' : `Buscar ${categoryById(cat).label.toLowerCase()}…`}
+            placeholder={cat === 'all' ? t('Álbuns, filmes, bares, banheiros…') : t('Buscar {v}…', { v: categoryById(cat).label.toLowerCase() })}
           />
         </label>
         <div style={{ marginTop: 12 }}>
@@ -77,9 +78,9 @@ export default function Buscar({ onCompose }: { onCompose: (s: ComposeStart) => 
 
       <div className="page__body search-results">
         {(local.data?.length ?? 0) > 0 && (
-          <section aria-label="Já no MMisc" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <section aria-label={t('Já no MMisc')} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <span className="field-label" style={{ margin: '4px 4px 0' }}>
-              {term ? 'Já no MMisc' : 'Adicionados recentemente'}
+              {term ? t('Já no MMisc') : t('Adicionados recentemente')}
             </span>
             <div className="group">
               {local.data!.slice(0, term ? 10 : 15).map((i) => (
@@ -116,7 +117,7 @@ export default function Buscar({ onCompose }: { onCompose: (s: ComposeStart) => 
 
         {cat === 'all' && term.length >= 2 && (
           <p style={{ margin: '0 4px', fontSize: '0.875rem', color: 'var(--text-3)' }}>
-            Escolha uma categoria acima para buscar também na internet (filmes, álbuns, jogos, livros, lugares).
+            {t('Escolha uma categoria acima para buscar também na internet (filmes, álbuns, jogos, livros, lugares).')}
           </p>
         )}
 
@@ -126,14 +127,14 @@ export default function Buscar({ onCompose }: { onCompose: (s: ComposeStart) => 
             className="btn btn--plain tap"
             onClick={() => onCompose({ title: term, category: cat === 'all' ? undefined : cat })}
           >
-            Não achou? Criar “{term}” manualmente
+            {t('Não achou? Criar “{term}” manualmente', { term })}
           </button>
         )}
 
-        {open.isPending && <span role="status" className="field-hint">Abrindo…</span>}
+        {open.isPending && <span role="status" className="field-hint">{t('Abrindo…')}</span>}
         {open.error && (
           <span role="alert" style={{ color: 'var(--cat-filme-ink)', fontSize: '0.875rem' }}>
-            Não deu para abrir: {(open.error as Error).message}
+            {t('Não deu para abrir: {message}', { message: (open.error as Error).message })}
           </span>
         )}
       </div>

@@ -10,6 +10,7 @@ import { supabase } from '../../lib/supabase'
 import type { Profile } from '../../lib/types'
 import { Avatar, Cover } from '../review/ReviewCard'
 
+import { t } from '../../lib/i18n'
 // O seletor de "agora" é do perfil: só baixa quando você toca no seu círculo
 const NowSheet = lazy(() => import('../profile/ProfileSections').then((m) => ({ default: m.NowSheet })))
 
@@ -59,10 +60,10 @@ export function NowStrip() {
   if (latest.size === 0 && accepted.length === 0 && !myTop) return null
 
   return (
-    <section className="now-strip" aria-label="Agora: o que você e seus amigos estão curtindo">
+    <section className="now-strip" aria-label={t('Agora: o que você e seus amigos estão curtindo')}>
       <ul className="now-strip__list no-scrollbar">
         <li>
-          <button type="button" className="now-bubble tap" onClick={() => setEditing(true)} aria-label={myTop ? `Você está ${NOW_VERB[myTop.category]} ${myTop.item.title}. Mudar` : 'Marcar o que você está vendo ou ouvindo agora'}>
+          <button type="button" className="now-bubble tap" onClick={() => setEditing(true)} aria-label={myTop ? t('Você está {v} {title}. Mudar', { v: NOW_VERB[myTop.category], title: myTop.item.title }) : t('Marcar o que você está vendo ou ouvindo agora')}>
             <span className={`now-bubble__ring ${myTop ? '' : 'now-bubble__ring--empty'}`}>
               <Avatar profile={me} size={58} />
               {myTop ? (
@@ -75,8 +76,8 @@ export function NowStrip() {
                 </span>
               )}
             </span>
-            <span className="now-bubble__name">Você</span>
-            <span className="now-bubble__what">{myTop ? myTop.item.title : 'Seu agora'}</span>
+            <span className="now-bubble__name">{t('Você')}</span>
+            <span className="now-bubble__what">{myTop ? myTop.item.title : t('Seu agora')}</span>
           </button>
         </li>
         {[...latest.values()].map((r) => {
@@ -84,7 +85,7 @@ export function NowStrip() {
           if (!p) return null
           return (
             <li key={r.user_id}>
-              <Link to={`/item/${r.item.id}`} className="now-bubble tap" aria-label={`${displayName(p)} está ${NOW_VERB[r.category]} ${r.item.title}`}>
+              <Link to={`/item/${r.item.id}`} className="now-bubble tap" aria-label={t('{nome} está {v} {title}', { nome: displayName(p), v: NOW_VERB[r.category], title: r.item.title })}>
                 <span className="now-bubble__ring">
                   <Avatar profile={p} size={58} />
                   <span className="now-bubble__cover">

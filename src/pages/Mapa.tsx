@@ -9,6 +9,7 @@ import { categoryById, formatRating, PLACE_SEARCH, type CategoryId } from '../li
 import { useMapPlaces, type MapPlace } from '../lib/queries'
 import { EmptyState, ErrorState } from './states'
 
+import { t, tp } from '../lib/i18n'
 /** Estilo de mapa gratuito, sem chave, com dados do OpenStreetMap (atribuição aparece no canto). */
 const STYLE_URL = 'https://tiles.openfreemap.org/styles/liberty'
 /** Centro padrão: Praça da Sé, São Paulo */
@@ -105,21 +106,21 @@ export default function Mapa() {
   }
 
   const filters: { id: Filter; label: string }[] = [
-    { id: 'all', label: 'Todos' },
+    { id: 'all', label: t('Todos') },
     ...PLACE_SEARCH.map((id) => ({ id, label: categoryById(id).label })),
   ]
 
   return (
     <div className="page page--wide map-page">
-      <PageHeader title="Mapa" subtitle="Lugares que você e seus amigos registraram">
-        <div className="chips no-scrollbar" role="group" aria-label="Filtrar lugares">
+      <PageHeader title={t('Mapa')} subtitle={t('Lugares que você e seus amigos registraram')}>
+        <div className="chips no-scrollbar" role="group" aria-label={t('Filtrar lugares')}>
           {filters.map((f) => (
             <button key={f.id} type="button" className="chip tap" aria-pressed={filter === f.id} onClick={() => setFilter(f.id)}>
               {f.label}
             </button>
           ))}
           <button type="button" className="chip tap" aria-pressed={onlyMine} onClick={() => setOnlyMine((v) => !v)}>
-            Só os meus
+            {t('Só os meus')}
           </button>
         </div>
       </PageHeader>
@@ -127,9 +128,9 @@ export default function Mapa() {
       <div className="page__body">
         {places.error && <ErrorState error={places.error} onRetry={() => void places.refetch()} />}
         <div className="map-wrap">
-          <div ref={box} className="map-canvas" role="region" aria-label="Mapa de lugares" />
+          <div ref={box} className="map-canvas" role="region" aria-label={t('Mapa de lugares')} />
           <button type="button" className="glass glass--pill tap map-near" onClick={nearMe} disabled={locating}>
-            {locating ? 'Localizando…' : 'Perto de mim'}
+            {locating ? t('Localizando…') : t('Perto de mim')}
           </button>
           {picked && (
             <Glass className="map-card">
@@ -140,23 +141,23 @@ export default function Mapa() {
               {picked.subtitle && <span className="map-card__sub">{picked.subtitle}</span>}
               <span className="map-card__meta">
                 {picked.rated ? `${formatRating(picked.avg)} · ` : ''}
-                {picked.people === 1 ? (picked.mine ? 'só você foi' : '1 pessoa foi') : `${picked.people} pessoas foram`}
+                {picked.people === 1 && picked.mine ? t('só você foi') : tp(picked.people, '{n} pessoa foi', '{n} pessoas foram')}
               </span>
               <Link to={`/item/${picked.id}`} className="btn btn--primary tap map-card__open">
-                Abrir
+                {t('Abrir')}
               </Link>
             </Glass>
           )}
         </div>
         {places.isSuccess && (places.data ?? []).length === 0 && (
           <EmptyState
-            title="Nenhum lugar no mapa ainda"
-            text="Registre um bar, restaurante, café ou banheiro escolhendo da busca (com localização) e ele aparece aqui."
+            title={t('Nenhum lugar no mapa ainda')}
+            text={t('Registre um bar, restaurante, café ou banheiro escolhendo da busca (com localização) e ele aparece aqui.')}
           />
         )}
         {places.isSuccess && (places.data ?? []).length > 0 && (
           <p className="field-hint" style={{ margin: '0 4px' }}>
-            {visible.length} {visible.length === 1 ? 'lugar' : 'lugares'} · fundo colorido = você esteve lá · lugares cadastrados à mão (sem localização) não aparecem
+            {tp(visible.length, '{n} lugar', '{n} lugares')} · {t('fundo colorido = você esteve lá · lugares cadastrados à mão (sem localização) não aparecem')}
           </p>
         )}
       </div>

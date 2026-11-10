@@ -3,7 +3,9 @@ import { CATEGORIES, type CategoryId } from './categories'
 import { latestPerItem } from './profileStats'
 import type { Review } from './types'
 
-export const MONTHS_LONG = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro']
+import { locale } from './i18n'
+/** Nome dos meses no idioma do app ('janeiro'… em português). */
+export const MONTHS_LONG = Array.from({ length: 12 }, (_, m) => new Date(2026, m, 1).toLocaleDateString(locale(), { month: 'long' }))
 
 export interface RetroData {
   year: number

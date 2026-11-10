@@ -6,8 +6,9 @@ import { signOut, useAuth } from '../../lib/auth'
 import { useProfileFull } from '../../lib/profile'
 import { useFriends } from '../../lib/social'
 import { Avatar } from '../review/ReviewCard'
-import { GlobeIcon, MapIcon, PaletteIcon, PersonIcon, SparkleIcon } from './Icons'
+import { GlobeIcon, LanguageIcon, MapIcon, PaletteIcon, PersonIcon, SparkleIcon } from './Icons'
 
+import { LANGS, currentLang, t } from '../../lib/i18n'
 const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
 const spring = { type: 'spring' as const, stiffness: 420, damping: 40 }
 
@@ -68,7 +69,7 @@ export function AppMenu({ open, onClose }: { open: boolean; onClose: () => void 
             key="fundo"
             type="button"
             className="app-menu-backdrop"
-            aria-label="Fechar menu"
+            aria-label={t('Fechar menu')}
             tabIndex={-1}
             onClick={onClose}
             initial={{ opacity: 0 }}
@@ -81,7 +82,7 @@ export function AppMenu({ open, onClose }: { open: boolean; onClose: () => void 
             className="app-menu"
             role="dialog"
             aria-modal="true"
-            aria-label="Menu"
+            aria-label={t('Menu')}
             tabIndex={-1}
             initial={{ x: '-100%' }}
             animate={{ x: 0 }}
@@ -113,25 +114,26 @@ function MenuContent({ onClose }: { onClose: () => void }) {
   const publicPath = me?.is_public && me.username ? `/@${me.username}` : null
 
   const items: { to: string; label: string; icon: ReactNode; hint?: string }[] = [
-    { to: '/perfil', label: 'Perfil', icon: <PersonIcon /> },
-    { to: '/mapa', label: 'Mapa', icon: <MapIcon /> },
-    { to: '/retrospectiva', label: 'Retrospectiva', icon: <SparkleIcon /> },
-    ...(publicPath ? [{ to: publicPath, label: 'Perfil público', icon: <GlobeIcon />, hint: `mmisc.com.br${publicPath}` }] : []),
-    { to: '/aparencia', label: 'Aparência', icon: <PaletteIcon /> },
+    { to: '/perfil', label: t('Perfil'), icon: <PersonIcon /> },
+    { to: '/mapa', label: t('Mapa'), icon: <MapIcon /> },
+    { to: '/retrospectiva', label: t('Retrospectiva'), icon: <SparkleIcon /> },
+    ...(publicPath ? [{ to: publicPath, label: t('Perfil público'), icon: <GlobeIcon />, hint: `mmisc.com.br${publicPath}` }] : []),
+    { to: '/aparencia', label: t('Aparência'), icon: <PaletteIcon /> },
+    { to: '/aparencia#idioma', label: t('Idioma'), icon: <LanguageIcon />, hint: LANGS.find((l) => l.id === currentLang())?.native },
   ]
 
   return (
     <div className="app-menu__inner">
       <Link to="/perfil" className="app-menu__me tap" onClick={onClose}>
         {me && <Avatar profile={me} size={52} />}
-        <span className="app-menu__name">{me?.display_name || me?.username || 'Você'}</span>
+        <span className="app-menu__name">{me?.display_name || me?.username || t('Você')}</span>
         {me?.username && <span className="app-menu__handle">@{me.username}</span>}
       </Link>
       <Link to="/amigos" className="app-menu__friends tap" onClick={onClose}>
         <strong>{friendCount}</strong> {friendCount === 1 ? 'amigo' : 'amigos'}
       </Link>
 
-      <nav aria-label="Atalhos" className="app-menu__nav">
+      <nav aria-label={t('Atalhos')} className="app-menu__nav">
         {items.map((it) => (
           <Link key={it.to} to={it.to} className="app-menu__item tap" onClick={onClose}>
             <span className="app-menu__icon">{it.icon}</span>
@@ -146,13 +148,13 @@ function MenuContent({ onClose }: { onClose: () => void }) {
       <div className="app-menu__foot">
         <span className="app-menu__legal">
           <Link to="/sobre" onClick={onClose}>
-            Sobre
+            {t('Sobre')}
           </Link>
           <Link to="/privacidade" onClick={onClose}>
-            Privacidade
+            {t('Privacidade')}
           </Link>
           <Link to="/termos" onClick={onClose}>
-            Termos
+            {t('Termos')}
           </Link>
         </span>
         <button
@@ -165,7 +167,7 @@ function MenuContent({ onClose }: { onClose: () => void }) {
             void signOut()
           }}
         >
-          {confirmOut ? 'Toque de novo para sair' : 'Sair da conta'}
+          {confirmOut ? t('Toque de novo para sair') : t('Sair da conta')}
         </button>
       </div>
     </div>

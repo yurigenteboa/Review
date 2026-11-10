@@ -5,6 +5,7 @@
 
 import { supabase, supabaseReady } from './supabase'
 
+import { t } from './i18n'
 /** Versão publicada (commit da Vercel ou "local"), definida no vite.config. */
 export const RELEASE: string = import.meta.env.VITE_APP_RELEASE ?? 'local'
 
@@ -49,7 +50,7 @@ let sent = 0
 /** Manda um erro para o banco (uma vez por mensagem a cada carregamento, até 15). Nunca lança. */
 export function reportError(kind: ErrorKind, error: unknown) {
   const err = error instanceof Error ? error : new Error(typeof error === 'string' ? error : safeString(error))
-  const message = cut(err.message || err.name || 'Erro sem mensagem', 500) ?? 'Erro sem mensagem'
+  const message = cut(err.message || err.name || t('Erro sem mensagem'), 500) ?? t('Erro sem mensagem')
   if (ignorable(message)) return
   const sig = `${kind}|${message}|${(err.stack ?? '').split('\n')[1] ?? ''}`
   if (seen.has(sig) || sent >= MAX_ERRORS_PER_LOAD) return

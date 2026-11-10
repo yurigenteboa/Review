@@ -1,6 +1,7 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { reportError } from '../../lib/telemetry'
 
+import { t } from '../../lib/i18n'
 interface Props {
   children: ReactNode
   /** "tela": só a tela quebra (abas continuam); "app": o app inteiro mostra o aviso */
@@ -35,17 +36,17 @@ export class ErrorBoundary extends Component<Props, State> {
     return (
       <div className="page" role="alert">
         <div className="crash">
-          <strong className="crash__title">Algo deu errado {app ? 'no app' : 'nesta tela'}</strong>
+          <strong className="crash__title">{app ? t('Algo deu errado no app') : t('Algo deu errado nesta tela')}</strong>
           <span className="crash__text">
-            O erro já foi avisado. {app ? 'Recarregar costuma resolver.' : 'Você pode tentar de novo ou voltar ao início.'}
+            {app ? t('O erro já foi avisado. Recarregar costuma resolver.') : t('O erro já foi avisado. Você pode tentar de novo ou voltar ao início.')}
           </span>
           <div className="crash__actions">
             <button type="button" className="btn btn--primary tap" onClick={() => location.reload()}>
-              Recarregar
+              {t('Recarregar')}
             </button>
             {!app && (
               <button type="button" className="btn btn--plain tap" onClick={() => location.assign('/')}>
-                Ir para o início
+                {t('Ir para o início')}
               </button>
             )}
           </div>

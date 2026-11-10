@@ -33,10 +33,11 @@ import { AvatarViewer } from './AvatarViewer'
 import { EditProfileSheet } from './EditProfileSheet'
 import { RatingBars, YearHeatmap } from './ProfileCharts'
 import { Achievements, Goals, LinksRow, NowLine, Showcase, TopTen } from './ProfileSections'
+import { t, tp } from '../../lib/i18n'
 import './profile.css'
 
 type Tab = 'diario' | 'reviews' | 'quero'
-const TAB_LABEL: Record<Tab, string> = { diario: 'Diário', reviews: 'Reviews', quero: 'Quero ver' }
+const TAB_LABEL: Record<Tab, string> = { diario: t('Diário'), reviews: t('Reviews'), quero: t('Quero ver') }
 
 const thisYear = String(new Date().getFullYear())
 
@@ -89,7 +90,7 @@ export function ProfileView({ userId, isMe }: { userId: string; isMe: boolean })
         <button
           type="button"
           className="glass glass--pill tap profile__back"
-          aria-label="Voltar"
+          aria-label={t('Voltar')}
           onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/amigos'))}
         >
           <svg width="12" height="20" viewBox="0 0 12 20" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
@@ -103,7 +104,7 @@ export function ProfileView({ userId, isMe }: { userId: string; isMe: boolean })
         <LinksRow links={p.links ?? []} />
         <NowLine userId={userId} isMe={isMe} entries={all} />
         {labels.length > 0 && (
-          <ul className="taste-labels" aria-label="Rótulos de gosto">
+          <ul className="taste-labels" aria-label={t('Rótulos de gosto')}>
             {labels.map((l) => (
               <li key={l}>{l}</li>
             ))}
@@ -111,7 +112,7 @@ export function ProfileView({ userId, isMe }: { userId: string; isMe: boolean })
         )}
         <dl className="profile__stats">
           <div>
-            <dt>em {thisYear}</dt>
+            <dt>{t('em {ano}', { ano: thisYear })}</dt>
             <dd>{stats.entriesThisYear}</dd>
           </div>
           <div>
@@ -119,7 +120,7 @@ export function ProfileView({ userId, isMe }: { userId: string; isMe: boolean })
             <dd>{stats.items}</dd>
           </div>
           <div>
-            <dt>nota média</dt>
+            <dt>{t('nota média')}</dt>
             <dd>{stats.average != null ? formatRating(stats.average) : '–'}</dd>
           </div>
         </dl>
@@ -127,7 +128,7 @@ export function ProfileView({ userId, isMe }: { userId: string; isMe: boolean })
 
       {cats.length > 1 && (
         <div className="profile__cats">
-          <div className="chips no-scrollbar" role="group" aria-label="Ver o perfil por categoria">
+          <div className="chips no-scrollbar" role="group" aria-label={t('Ver o perfil por categoria')}>
             {(['all', ...cats] as CategoryFilter[]).map((c) => (
               <button
                 key={c}
@@ -136,7 +137,7 @@ export function ProfileView({ userId, isMe }: { userId: string; isMe: boolean })
                 aria-pressed={cat === c}
                 onClick={() => setParam('cat', c === 'all' ? null : c)}
               >
-                {c === 'all' ? 'Tudo' : categoryById(c).label}
+                {c === 'all' ? t('Tudo') : categoryById(c).label}
               </button>
             ))}
           </div>
@@ -152,7 +153,7 @@ export function ProfileView({ userId, isMe }: { userId: string; isMe: boolean })
 
         {!hasFavorites && best.length > 0 && (
           <section className="profile-section" aria-labelledby="sec-best">
-            <h2 id="sec-best" className="profile-section__title">Notas mais altas</h2>
+            <h2 id="sec-best" className="profile-section__title">{t('Notas mais altas')}</h2>
             <div className="best-row">
               {best.map((r) => (
                 <Link key={r.id} to={`/item/${r.item.id}`} className="best-row__item tap">
@@ -179,26 +180,26 @@ export function ProfileView({ userId, isMe }: { userId: string; isMe: boolean })
         <Achievements entries={all} isMe={isMe} />
 
         <section className="profile-section" aria-labelledby="sec-activity">
-          <h2 id="sec-activity" className="profile-section__title">Atividade</h2>
+          <h2 id="sec-activity" className="profile-section__title">{t('Atividade')}</h2>
           <YearHeatmap entries={list} color={color} />
         </section>
 
         <section className="profile-section" aria-labelledby="sec-ratings">
-          <h2 id="sec-ratings" className="profile-section__title">Notas</h2>
+          <h2 id="sec-ratings" className="profile-section__title">{t('Notas')}</h2>
           <RatingBars bins={ratingHistogram(list)} color={color} average={stats.average} />
         </section>
 
-        <div className="segmented" role="tablist" aria-label="Listas" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
-          {(Object.keys(TAB_LABEL) as Tab[]).map((t) => (
-            <button key={t} type="button" role="tab" aria-selected={tab === t} onClick={() => setParam('aba', t === (isMe ? 'diario' : 'reviews') ? null : t)}>
-              {t === 'diario' ? `Diário (${list.length})` : TAB_LABEL[t]}
+        <div className="segmented" role="tablist" aria-label={t('Listas')} style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
+          {(Object.keys(TAB_LABEL) as Tab[]).map((k) => (
+            <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setParam('aba', k === (isMe ? 'diario' : 'reviews') ? null : k)}>
+              {k === 'diario' ? t('Diário ({n})', { n: list.length }) : TAB_LABEL[k]}
             </button>
           ))}
         </div>
 
         {reviews.isLoading && <LoadingCards count={2} />}
         {tab === 'diario' && (
-          <DiaryList entries={list} empty={isMe ? 'Seu diário está vazio. Registre o primeiro pelo + da barra.' : 'Nada no diário que você possa ver.'} />
+          <DiaryList entries={list} empty={isMe ? t('Seu diário está vazio. Registre o primeiro pelo + da barra.') : t('Nada no diário que você possa ver.')} />
         )}
         {tab === 'reviews' && (
           <div className="profile__reviews">
@@ -206,7 +207,7 @@ export function ProfileView({ userId, isMe }: { userId: string; isMe: boolean })
               <ReviewCard key={r.id} review={r} />
             ))}
             {!reviews.isLoading && withText.length === 0 && (
-              <p className="empty-note">{isMe ? 'Nenhuma review com texto ou foto ainda.' : 'Nenhuma review com texto que você possa ver.'}</p>
+              <p className="empty-note">{isMe ? t('Nenhuma review com texto ou foto ainda.') : t('Nenhuma review com texto que você possa ver.')}</p>
             )}
           </div>
         )}
@@ -214,7 +215,7 @@ export function ProfileView({ userId, isMe }: { userId: string; isMe: boolean })
           <>
             <WatchlistGrid
               userId={userId}
-              empty={isMe ? 'Nada na lista. Toque no marcador da página de um filme (ou em “Quero …” nos outros itens).' : 'Lista vazia (ou só com itens privados).'}
+              empty={isMe ? t('Nada na lista. Toque no marcador da página de um filme (ou em “Quero …” nos outros itens).') : t('Lista vazia (ou só com itens privados).')}
             />
             {isMe && <MyServicesHint />}
           </>
@@ -223,23 +224,23 @@ export function ProfileView({ userId, isMe }: { userId: string; isMe: boolean })
         {isMe && (
           <div className="profile__footer">
             <Link to="/aparencia" className="btn btn--plain tap public-cta__btn">
-              Aparência e acessibilidade
+              {t('Aparência e acessibilidade')}
             </Link>
             <Link to="/retrospectiva" className="btn btn--plain tap public-cta__btn">
-              Retrospectiva de {thisYear}
+              {t('Retrospectiva de {thisYear}', { thisYear })}
             </Link>
             <Link to="/importar" className="btn btn--plain tap public-cta__btn">
-              Importar do Letterboxd
+              {t('Importar do Letterboxd')}
             </Link>
             {p.is_public && p.username && (
               <Link to={`/@${p.username}`} className="btn btn--plain tap public-cta__btn">
-                Ver meu perfil público
+                {t('Ver meu perfil público')}
               </Link>
             )}
             <button type="button" className="btn btn--plain tap" onClick={() => signOut()}>
-              Sair da conta
+              {t('Sair da conta')}
             </button>
-            <Link to="/kit">Ver componentes do design system</Link>
+            <Link to="/kit">{t('Ver componentes do design system')}</Link>
           </div>
         )}
       </div>
@@ -273,11 +274,11 @@ function ProfileHeader({ profile: p, isMe }: { profile: ProfileFull; isMe: boole
         <AvatarViewer profile={p} size={76} isMe={isMe} />
         <div className="profile__names">
           <h1>{displayName(p)}</h1>
-          <span>{p.username ? `@${p.username}` : isMe ? 'sem @ ainda' : ''}</span>
+          <span>{p.username ? `@${p.username}` : isMe ? t('sem @ ainda') : ''}</span>
         </div>
         {isMe ? (
           <button type="button" className="btn btn--plain tap" style={smallBtn} onClick={() => setEditing(true)}>
-            Editar
+            {t('Editar')}
           </button>
         ) : (
           <FriendAction id={p.id} name={displayName(p)} />
@@ -288,7 +289,7 @@ function ProfileHeader({ profile: p, isMe }: { profile: ProfileFull; isMe: boole
       ) : (
         isMe && (
           <button type="button" className="link-btn" style={{ alignSelf: 'flex-start' }} onClick={() => setEditing(true)}>
-            + Escrever uma bio
+            {t('+ Escrever uma bio')}
           </button>
         )
       )}
@@ -312,27 +313,27 @@ function FriendAction({ id, name }: { id: string; name: string }) {
         style={smallBtn}
         disabled={busy}
         onClick={() => {
-          if (window.confirm(`Desfazer amizade com ${name}? Vocês deixam de ver as reviews "Amigos" um do outro.`)) remove.mutate(id)
+          if (window.confirm(t('Desfazer amizade com {name}? Vocês deixam de ver as reviews "Amigos" um do outro.', { name }))) remove.mutate(id)
         }}
       >
-        Amigos ✓
+        {t('Amigos ✓')}
       </button>
     )
   if (state === 'enviado')
     return (
       <button type="button" className="btn btn--plain tap" style={smallBtn} disabled={busy} onClick={() => remove.mutate(id)}>
-        Cancelar pedido
+        {t('Cancelar pedido')}
       </button>
     )
   if (state === 'recebido')
     return (
       <button type="button" className="btn btn--primary tap" style={smallBtn} disabled={busy} onClick={() => respond.mutate({ other: id, accept: true })}>
-        Aceitar
+        {t('Aceitar')}
       </button>
     )
   return (
     <button type="button" className="btn btn--primary tap" style={smallBtn} disabled={busy} onClick={() => request.mutate(id)}>
-      Adicionar
+      {t('Adicionar')}
     </button>
   )
 }
@@ -346,7 +347,7 @@ function CompatCard({ otherId, name, cat }: { otherId: string; name: string; cat
 
   if (!rows.length) {
     if (state === 'nenhuma')
-      return <p className="profile-section__hint profile__notice">Vocês ainda não são amigos: aqui aparecem só as reviews públicas.</p>
+      return <p className="profile-section__hint profile__notice">{t('Vocês ainda não são amigos: aqui aparecem só as reviews públicas.')}</p>
     return null
   }
 
@@ -360,15 +361,15 @@ function CompatCard({ otherId, name, cat }: { otherId: string; name: string; cat
         </span>
         <div>
           <h2 id="sec-compat" className="profile-section__title" style={{ margin: 0 }}>
-            Compatibilidade
+            {t('Compatibilidade')}
           </h2>
           <p className="profile-section__hint" style={{ margin: '2px 0 0' }}>
-            {score}% de concordância em {rows.length} {rows.length === 1 ? 'item' : 'itens'} que vocês dois avaliaram
+            {tp(rows.length, '{score}% de concordância em {n} item que vocês dois avaliaram', '{score}% de concordância em {n} itens que vocês dois avaliaram', { score })}
           </p>
         </div>
       </div>
-      {bothLove.length > 0 && <CompatRow title="Vocês dois amam" rows={bothLove.slice(0, 4)} first={first} />}
-      {clashes.length > 0 && <CompatRow title="Onde mais discordam" rows={clashes.slice(0, 2)} first={first} />}
+      {bothLove.length > 0 && <CompatRow title={t('Vocês dois amam')} rows={bothLove.slice(0, 4)} first={first} />}
+      {clashes.length > 0 && <CompatRow title={t('Onde mais discordam')} rows={clashes.slice(0, 2)} first={first} />}
     </section>
   )
 }
@@ -383,7 +384,7 @@ function CompatRow({ title, rows, first }: { title: string; rows: TasteRow[]; fi
             <Cover item={{ title: r.title, category: r.category as CategoryId, image_url: r.image_url }} size={36} radius={8} />
             <span className="compat__title">{r.title}</span>
             <span className="compat__notes">
-              você {formatRating(r.my_rating)} · {first} {formatRating(r.their_rating)}
+              {t('você {nota} · {first} {nota2}', { nota: formatRating(r.my_rating), first, nota2: formatRating(r.their_rating) })}
             </span>
           </Link>
         ))}
@@ -395,7 +396,7 @@ function CompatRow({ title, rows, first }: { title: string; rows: TasteRow[]; fi
 function MyServicesHint() {
   const services = useMyServices()
   if (!services.data?.length) return null
-  return <p className="field-hint" style={{ margin: 0 }}>Você assina: {services.data.map((s) => s.name).join(', ')}.</p>
+  return <p className="field-hint" style={{ margin: 0 }}>{t('Você assina: {v}.', { v: services.data.map((s) => s.name).join(', ') })}</p>
 }
 
 /** Aviso de primeira vez: o perfil passou a ter link público (ligado por padrão). */
@@ -421,23 +422,17 @@ function PublicNotice({ profile: p }: { profile: ProfileFull }) {
   return (
     <section className="profile-section public-notice" aria-labelledby="sec-public-notice">
       <h2 id="sec-public-notice" className="profile-section__title" style={{ margin: 0 }}>
-        Seu perfil agora tem um link público
+        {t('Seu perfil agora tem um link público')}
       </h2>
       <p>
-        {p.username ? (
-          <>
-            Quem abrir <strong>{publicProfileUrl(p.username).replace(/^https?:\/\//, '')}</strong> vê
-          </>
-        ) : (
-          <>Quando você escolher um @, quem abrir o seu link vai ver</>
-        )}{' '}
-        nome, foto, bio, links e só o que estiver como Público (reviews, favoritos, Top 10). Amigos, metas, quero ver e o que é só para
-        amigos ficam de fora.
+        {p.username
+          ? t('Quem abrir {link} vê nome, foto, bio, links e só o que estiver como Público (reviews, favoritos, Top 10). Amigos, metas, quero ver e o que é só para amigos ficam de fora.', { link: <strong>{publicProfileUrl(p.username).replace(/^https?:\/\//, '')}</strong> })
+          : t('Quando você escolher um @, quem abrir o seu link vai ver nome, foto, bio, links e só o que estiver como Público (reviews, favoritos, Top 10). Amigos, metas, quero ver e o que é só para amigos ficam de fora.')}
       </p>
       <div className="public-notice__actions">
         {p.username && (
           <Link to={`/@${p.username}`} className="btn btn--primary tap public-cta__btn" onClick={close}>
-            Ver como fica
+            {t('Ver como fica')}
           </Link>
         )}
         <button
@@ -446,10 +441,10 @@ function PublicNotice({ profile: p }: { profile: ProfileFull }) {
           disabled={extras.isPending}
           onClick={() => extras.mutate({ userId: p.id, is_public: false }, { onSuccess: close })}
         >
-          Deixar privado
+          {t('Deixar privado')}
         </button>
         <button type="button" className="btn btn--plain tap" onClick={close}>
-          Ok
+          {t('Ok')}
         </button>
       </div>
     </section>
@@ -464,8 +459,8 @@ function RetroCard() {
   const year = month === 11 ? now.getFullYear() : now.getFullYear() - 1
   return (
     <Link to={`/retrospectiva?ano=${year}`} className="profile-section retro-card tap">
-      <strong>Sua retrospectiva de {year} está pronta</strong>
-      <span className="profile-section__hint">Números do ano, recordes e uma imagem para os Stories.</span>
+      <strong>{t('Sua retrospectiva de {year} está pronta', { year })}</strong>
+      <span className="profile-section__hint">{t('Números do ano, recordes e uma imagem para os Stories.')}</span>
     </Link>
   )
 }

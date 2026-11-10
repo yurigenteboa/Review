@@ -3,6 +3,7 @@ import { RANKED_CATEGORIES } from '../../lib/categories'
 import { CATEGORY_PLURAL } from '../../lib/profileStats'
 import { useMyRankCounts } from '../../lib/queries'
 
+import { t } from '../../lib/i18n'
 /** Seção do perfil (só o dono): atalho para cada ranking que já tem lugares. */
 export function RankingsSection({ userId }: { userId: string }) {
   const counts = useMyRankCounts(userId)
@@ -11,7 +12,7 @@ export function RankingsSection({ userId }: { userId: string }) {
   return (
     <section className="profile-section" aria-labelledby="sec-rankings">
       <div className="profile-section__head">
-        <h2 id="sec-rankings">Seus lugares em ordem</h2>
+        <h2 id="sec-rankings">{t('Seus lugares em ordem')}</h2>
       </div>
       <div className="chips no-scrollbar">
         {cats.map((c) => (

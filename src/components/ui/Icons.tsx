@@ -89,3 +89,9 @@ export const GlobeIcon = ({ size = 24 }: IconProps) => (
     <path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z" />
   </svg>
 )
+export const LanguageIcon = ({ size = 24 }: IconProps) => (
+  <svg {...base(size)}>
+    <path d="M3 5h9M7.5 3v2M5 5c.6 3.2 2.6 5.8 6 7.5M10 5c-.6 3.4-2.8 6.4-6.5 8" />
+    <path d="M12.5 21l4-10 4 10M14 17.5h5" />
+  </svg>
+)

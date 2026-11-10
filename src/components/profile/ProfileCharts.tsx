@@ -3,7 +3,8 @@ import { formatRating } from '../../lib/categories'
 import { heatLevel, heatmapWeeks } from '../../lib/profileStats'
 import type { Review } from '../../lib/types'
 
-const MONTHS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
+import { locale, t, tp } from '../../lib/i18n'
+const MONTHS = Array.from({ length: 12 }, (_, m) => new Date(2026, m, 1).toLocaleDateString(locale(), { month: 'short' }).replace('.', ''))
 
 /** Mapa de calor dos últimos 12 meses (uma célula por dia). Rola para a direita sozinho: hoje fica visível. */
 export function YearHeatmap({ entries, color }: { entries: Review[]; color: string }) {
@@ -22,8 +23,8 @@ export function YearHeatmap({ entries, color }: { entries: Review[]; color: stri
     <figure className="heatmap" style={{ '--heat': color } as CSSProperties}>
       <figcaption className="profile-section__hint">
         {total === 0
-          ? 'Nenhum registro nos últimos 12 meses.'
-          : `${total} ${total === 1 ? 'registro' : 'registros'} em ${active} ${active === 1 ? 'dia' : 'dias'} nos últimos 12 meses`}
+          ? t('Nenhum registro nos últimos 12 meses.')
+          : t('{registros} em {dias} nos últimos 12 meses', { registros: tp(total, '{n} registro', '{n} registros'), dias: tp(active, '{n} dia', '{n} dias') })}
       </figcaption>
       <div className="heatmap__scroll no-scrollbar" ref={scroller}>
         <div className="heatmap__months" aria-hidden="true">
@@ -55,14 +56,14 @@ export function YearHeatmap({ entries, color }: { entries: Review[]; color: stri
 export function RatingBars({ bins, color, average }: { bins: number[]; color: string; average: number | null }) {
   const max = Math.max(1, ...bins)
   const total = bins.reduce((s, n) => s + n, 0)
-  if (!total) return <p className="profile-section__hint">Ainda sem notas aqui.</p>
+  if (!total) return <p className="profile-section__hint">{t('Ainda sem notas aqui.')}</p>
   const label = bins
     .map((n, i) => (n ? `${formatRating((i + 1) / 2)}: ${n}` : null))
     .filter(Boolean)
     .join(', ')
   return (
     <figure className="rating-bars" style={{ '--bar': color } as CSSProperties}>
-      <div className="rating-bars__plot" role="img" aria-label={`Distribuição de ${total} notas. ${label}.`}>
+      <div className="rating-bars__plot" role="img" aria-label={t('Distribuição de {total} notas. {label}.', { total, label })}>
         {bins.map((n, i) => (
           <span key={i} className="rating-bars__col">
             <span className="rating-bars__count" aria-hidden="true">{n || ''}</span>
@@ -76,7 +77,7 @@ export function RatingBars({ bins, color, average }: { bins: number[]; color: st
       </div>
       <figcaption className="profile-section__hint">
         {total} {total === 1 ? 'nota' : 'notas'}
-        {average != null && ` · média ${formatRating(average)}`}
+        {average != null && t(' · média {nota}', { nota: formatRating(average) })}
       </figcaption>
     </figure>
   )

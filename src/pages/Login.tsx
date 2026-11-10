@@ -13,10 +13,11 @@ import {
 import { displayName } from '../lib/format'
 import { inviteOwner, peekPendingInvite } from '../lib/social'
 
+import { LANGS, currentLang, t } from '../lib/i18n'
 /** Traduz os erros mais comuns que voltam do Google/Supabase na URL. */
 function oauthMessage(raw: string): string {
-  if (/access_denied|cancel/i.test(raw)) return 'Login com o Google cancelado.'
-  return `Não deu para entrar com o Google (${raw}). Tente de novo ou use o código por e-mail.`
+  if (/access_denied|cancel/i.test(raw)) return t('Login com o Google cancelado.')
+  return t('Não deu para entrar com o Google ({raw}). Tente de novo ou use o código por e-mail.', { raw })
 }
 
 /**
@@ -57,12 +58,11 @@ export default function Login() {
       <button type="button" className="btn btn--google tap" onClick={google} disabled={busy}>
         {/* "G" oficial recortado do kit de marca do Google; fundo igual ao do botão em cada tema */}
         <img src={darkTheme ? '/brand/google-g-dark.png' : '/brand/google-g-light.png'} alt="" width={20} height={20} />
-        Continuar com o Google
+        {t('Continuar com o Google')}
       </button>
       {appIOS && (
         <span className="field-hint">
-          No app instalado, o Google pode abrir no Safari. Se isso acontecer, volte aqui e use o código por e-mail com o mesmo
-          e-mail do Google: é a mesma conta.
+          {t('No app instalado, o Google pode abrir no Safari. Se isso acontecer, volte aqui e use o código por e-mail com o mesmo e-mail do Google: é a mesma conta.')}
         </span>
       )}
     </div>
@@ -83,7 +83,7 @@ export default function Login() {
     if (error) {
       setError(
         error.status === 429
-          ? 'Muitos e-mails enviados em pouco tempo. Espere alguns minutos e tente de novo.'
+          ? t('Muitos e-mails enviados em pouco tempo. Espere alguns minutos e tente de novo.')
           : error.message,
       )
       return
@@ -97,7 +97,7 @@ export default function Login() {
     setError(null)
     const { error } = await verifyLoginCode(email.trim(), code.trim())
     setBusy(false)
-    if (error) setError('Código inválido ou expirado. Confira o e-mail mais recente.')
+    if (error) setError(t('Código inválido ou expirado. Confira o e-mail mais recente.'))
   }
 
   return (
@@ -116,32 +116,32 @@ export default function Login() {
           <img
             src="/icons/icon-192.png"
             srcSet="/icons/icon-192.png 1x, /icons/icon-512.png 2x"
-            alt="MMisc"
+            alt={t('MMisc')}
             width={112}
             height={112}
             style={{ borderRadius: 26, display: 'block' }}
           />
         </h1>
         <p style={{ margin: 0, fontSize: '0.9375rem', color: 'var(--text-2)' }}>
-          Nota para tudo: álbuns, filmes, bares, banheiros, cidades.
+          {t('Nota para tudo: álbuns, filmes, bares, banheiros, cidades.')}
         </p>
         {inviter && (
           <p style={{ margin: '16px 0 0', padding: '10px 14px', borderRadius: 14, background: 'color-mix(in srgb, var(--accent) 14%, transparent)', fontSize: '0.9375rem' }}>
-            <strong>{inviter}</strong> te convidou. Entre e vocês já viram amigos.
+            {t('{quem} te convidou. Entre e vocês já viram amigos.', { quem: <strong>{inviter}</strong> })}
           </p>
         )}
 
         {!appIOS && googleButton && (
           <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
             {googleButton}
-            <span className="login-divider">ou com seu e-mail</span>
+            <span className="login-divider">{t('ou com seu e-mail')}</span>
           </div>
         )}
 
         {step === 'email' ? (
           <form onSubmit={send} style={{ marginTop: !appIOS && googleButton ? 12 : 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
             <label>
-              <span className="field-label">Seu e-mail</span>
+              <span className="field-label">{t('Seu e-mail')}</span>
               <input
                 className="field"
                 type="email"
@@ -150,16 +150,16 @@ export default function Login() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="voce@email.com"
+                placeholder={t('voce@email.com')}
               />
             </label>
             <button className="btn btn--primary tap" disabled={busy}>
-              {busy ? 'Enviando…' : 'Receber código'}
+              {busy ? t('Enviando…') : t('Receber código')}
             </button>
-            <span className="field-hint">Sem senha: mandamos um código de acesso para o seu e-mail.</span>
+            <span className="field-hint">{t('Sem senha: mandamos um código de acesso para o seu e-mail.')}</span>
             {appIOS && googleButton && (
               <>
-                <span className="login-divider">ou</span>
+                <span className="login-divider">{t('ou')}</span>
                 {googleButton}
               </>
             )}
@@ -167,10 +167,10 @@ export default function Login() {
         ) : (
           <form onSubmit={verify} style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
             <p style={{ margin: 0, fontSize: '0.9375rem' }}>
-              Enviamos um e-mail para <strong>{email}</strong>. Digite o código ou toque no link do e-mail.
+              {t('Enviamos um e-mail para {email}. Digite o código ou toque no link do e-mail.', { email: <strong>{email}</strong> })}
             </p>
             <label>
-              <span className="field-label">Código</span>
+              <span className="field-label">{t('Código')}</span>
               <input
                 className="field"
                 inputMode="numeric"
@@ -185,7 +185,7 @@ export default function Login() {
               />
             </label>
             <button className="btn btn--primary tap" disabled={busy}>
-              {busy ? 'Entrando…' : 'Entrar'}
+              {busy ? t('Entrando…') : t('Entrar')}
             </button>
             <button
               type="button"
@@ -196,7 +196,7 @@ export default function Login() {
                 setError(null)
               }}
             >
-              Usar outro e-mail
+              {t('Usar outro e-mail')}
             </button>
           </form>
         )}
@@ -207,11 +207,15 @@ export default function Login() {
           </p>
         )}
 
-        <nav className="login-links" aria-label="Sobre o MMisc">
-          <Link to="/sobre">Sobre</Link>
-          <Link to="/privacidade">Privacidade</Link>
-          <Link to="/termos">Termos</Link>
-          <Link to="/aparencia">Aparência</Link>
+        <nav className="login-links" aria-label={t('Sobre o MMisc')}>
+          <Link to="/sobre">{t('Sobre')}</Link>
+          <Link to="/privacidade">{t('Privacidade')}</Link>
+          <Link to="/termos">{t('Termos')}</Link>
+          <Link to="/aparencia">{t('Aparência')}</Link>
+          {/* no próprio idioma ("English", "Suomi"): quem não lê o idioma atual acha o seu */}
+          <Link to="/aparencia#idioma" aria-label={t('Idioma: {idioma}', { idioma: LANGS.find((l) => l.id === currentLang())?.native ?? '' })}>
+            🌐 {LANGS.find((l) => l.id === currentLang())?.native}
+          </Link>
         </nav>
       </Glass>
     </div>

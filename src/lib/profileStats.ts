@@ -3,19 +3,20 @@
 import { CATEGORIES, type CategoryId } from './categories'
 import type { Review, TasteRow } from './types'
 
+import { t } from './i18n'
 export const CATEGORY_PLURAL: Record<CategoryId, string> = {
-  album: 'álbuns',
-  filme: 'filmes',
-  serie: 'séries',
-  jogo: 'jogos',
-  livro: 'livros',
-  bar: 'bares',
-  banheiro: 'banheiros',
-  cidade: 'cidades',
-  drink: 'drinks',
-  prato: 'pratos',
-  restaurante: 'restaurantes',
-  cafe: 'cafés',
+  album: t('álbuns'),
+  filme: t('filmes'),
+  serie: t('séries'),
+  jogo: t('jogos'),
+  livro: t('livros'),
+  bar: t('bares'),
+  banheiro: t('banheiros'),
+  cidade: t('cidades'),
+  drink: t('drinks'),
+  prato: t('pratos'),
+  restaurante: t('restaurantes'),
+  cafe: t('cafés'),
 }
 
 export type CategoryFilter = CategoryId | 'all'
@@ -148,8 +149,8 @@ export function tasteLabels(list: Review[], now = new Date()): string[] {
     const notes = withRating.filter((r) => r.item.category === c.id).map((r) => r.rating)
     if (notes.length < 5) continue
     const a = mean(notes) ?? 0
-    if (a <= 3 && (!strict || overall - a > strict.weight)) strict = { text: `Exigente com ${CATEGORY_PLURAL[c.id]}`, weight: overall - a + 1 }
-    if (a >= 4.2 && (!kind || a - 4 > kind.weight)) kind = { text: `Generoso com ${CATEGORY_PLURAL[c.id]}`, weight: a - 4 + 1 }
+    if (a <= 3 && (!strict || overall - a > strict.weight)) strict = { text: t('Exigente com {v}', { v: CATEGORY_PLURAL[c.id] }), weight: overall - a + 1 }
+    if (a >= 4.2 && (!kind || a - 4 > kind.weight)) kind = { text: t('Generoso com {v}', { v: CATEGORY_PLURAL[c.id] }), weight: a - 4 + 1 }
   }
   if (strict) out.push(strict)
   if (kind) out.push(kind)
@@ -159,7 +160,7 @@ export function tasteLabels(list: Review[], now = new Date()): string[] {
     const counts = new Map<CategoryId, number>()
     for (const r of list) counts.set(r.item.category, (counts.get(r.item.category) ?? 0) + 1)
     const [top, n] = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]
-    if (n / list.length >= 0.5 && counts.size > 1) out.push({ text: `Movido a ${CATEGORY_PLURAL[top]}`, weight: 0.9 })
+    if (n / list.length >= 0.5 && counts.size > 1) out.push({ text: t('Movido a {v}', { v: CATEGORY_PLURAL[top] }), weight: 0.9 })
   }
 
   // Década preferida (mínimo 8 itens com ano; 35% numa década que não seja a atual)
@@ -169,13 +170,13 @@ export function tasteLabels(list: Review[], now = new Date()): string[] {
     for (const y of years) dec.set(Math.floor(y / 10) * 10, (dec.get(Math.floor(y / 10) * 10) ?? 0) + 1)
     const [d, n] = [...dec.entries()].sort((a, b) => b[1] - a[1])[0]
     const current = Math.floor(now.getFullYear() / 10) * 10
-    if (d < current && n / years.length >= 0.35) out.push({ text: `Fã dos ${decadeLabel(d)}`, weight: 0.8 })
+    if (d < current && n / years.length >= 0.35) out.push({ text: t('Fã dos {v}', { v: decadeLabel(d) }), weight: 0.8 })
   }
 
   // Hábitos
-  if (list.filter((r) => r.rewatch).length >= 5) out.push({ text: 'Revê sem culpa', weight: 0.5 })
-  if (latest.length >= 10 && latest.filter((r) => r.loved).length / latest.length >= 0.3) out.push({ text: 'Coração mole', weight: 0.4 })
-  if (list.filter((r) => (r.body?.length ?? 0) >= 200).length >= 5) out.push({ text: 'Escreve textão', weight: 0.6 })
+  if (list.filter((r) => r.rewatch).length >= 5) out.push({ text: t('Revê sem culpa'), weight: 0.5 })
+  if (latest.length >= 10 && latest.filter((r) => r.loved).length / latest.length >= 0.3) out.push({ text: t('Coração mole'), weight: 0.4 })
+  if (list.filter((r) => (r.body?.length ?? 0) >= 200).length >= 5) out.push({ text: t('Escreve textão'), weight: 0.6 })
 
   return out.sort((a, b) => b.weight - a.weight).slice(0, 3).map((l) => l.text)
 }

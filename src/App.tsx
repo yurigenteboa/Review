@@ -25,6 +25,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { ErrorBoundary } from './components/ui/ErrorBoundary'
 import { reportError, track, trackAppOpen } from './lib/telemetry'
 
+import { t } from './lib/i18n'
 // M0 (velocidade no celular): só Início e Login vêm no primeiro download.
 // As outras telas viram arquivos separados e são baixadas em segundo plano logo
 // depois que o app abre (prefetchScreens), então a navegação continua instantânea.
@@ -224,11 +225,11 @@ function Shell() {
     acceptInvite(code)
       .then((ownerId) => {
         qc.invalidateQueries()
-        setToast('Convite aceito: agora vocês são amigos')
+        setToast(t('Convite aceito: agora vocês são amigos'))
         navigate(`/u/${ownerId}`, { replace: true })
       })
       .catch((e: Error) => {
-        setToast(e.message.includes('inválido') ? 'Esse link de convite não vale mais' : 'Não deu para aceitar o convite')
+        setToast(e.message.includes('inválido') ? t('Esse link de convite não vale mais') : t('Não deu para aceitar o convite'))
         navigate('/', { replace: true })
       })
   }, [session]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -253,7 +254,7 @@ function Shell() {
     <div className={`shell shell--${bp}`}>
       {/* Teclado: pula a navegação e vai direto ao conteúdo (aparece só ao receber foco) */}
       <a href="#conteudo" className="skip-link">
-        Pular para o conteúdo
+        {t('Pular para o conteúdo')}
       </a>
       {/* Celular: abas embaixo. Tablet/desktop: barra lateral (D1 do plano desktop). */}
       {bp === 'mobile' ? (
@@ -321,13 +322,12 @@ function Shell() {
 
       {handoff && (
         <Glass className="notice" role="status">
-          <strong>Você entrou pelo navegador</strong>
+          <strong>{t('Você entrou pelo navegador')}</strong>
           <span>
-            O iPhone abriu o Google fora do app instalado, então o login ficou aqui. Pode continuar por aqui ou, no app
-            da tela de início, entrar com o código por e-mail usando o mesmo e-mail do Google: é a mesma conta.
+            {t('O iPhone abriu o Google fora do app instalado, então o login ficou aqui. Pode continuar por aqui ou, no app da tela de início, entrar com o código por e-mail usando o mesmo e-mail do Google: é a mesma conta.')}
           </span>
           <button type="button" className="btn btn--plain tap" onClick={() => setHandoff(false)}>
-            Entendi
+            {t('Entendi')}
           </button>
         </Glass>
       )}

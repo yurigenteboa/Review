@@ -1,17 +1,19 @@
 import { useRef } from 'react'
 import { haptic } from '../../lib/haptics'
 
+import { t } from '../../lib/i18n'
+import { formatRating } from '../../lib/categories'
 const STAR = 'M12 2.5l2.9 6.2 6.6.7-4.9 4.5 1.4 6.6L12 17.2l-6 3.3 1.4-6.6-4.9-4.5 6.6-.7z'
 
 export function ratingWord(r: number): string {
-  if (!r) return 'Toque ou arraste para dar nota'
-  const n = r.toFixed(1).replace('.', ',')
-  if (r <= 1) return `${n} · Péssimo`
-  if (r <= 2) return `${n} · Ruim`
-  if (r <= 3) return `${n} · Ok`
-  if (r <= 4) return `${n} · Muito bom`
-  if (r < 5) return `${n} · Excelente`
-  return '5,0 · Obra-prima'
+  if (!r) return t('Toque ou arraste para dar nota')
+  const n = formatRating(r)
+  if (r <= 1) return t('{n} · Péssimo', { n })
+  if (r <= 2) return t('{n} · Ruim', { n })
+  if (r <= 3) return t('{n} · Ok', { n })
+  if (r <= 4) return t('{n} · Muito bom', { n })
+  if (r < 5) return t('{n} · Excelente', { n })
+  return t('{n} · Obra-prima', { n })
 }
 
 /**
@@ -48,11 +50,11 @@ export function RatingInput({ value, onChange }: { value: number; onChange: (v: 
         ref={row}
         role="slider"
         tabIndex={0}
-        aria-label="Nota"
+        aria-label={t('Nota')}
         aria-valuemin={0}
         aria-valuemax={5}
         aria-valuenow={value}
-        aria-valuetext={value ? ratingWord(value) : 'Sem nota'}
+        aria-valuetext={value ? ratingWord(value) : t('Sem nota')}
         className="rating-input"
         onPointerDown={(e) => {
           if (e.button !== 0) return
@@ -99,7 +101,7 @@ export function RatingInput({ value, onChange }: { value: number; onChange: (v: 
         })}
       </div>
       <span style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--text-2)' }}>{ratingWord(value)}</span>
-      <span style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>Toque ou arraste nas estrelas · toque de novo para meia</span>
+      <span style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>{t('Toque ou arraste nas estrelas · toque de novo para meia')}</span>
     </div>
   )
 }

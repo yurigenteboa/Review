@@ -13,6 +13,7 @@ import {
 } from '../../lib/profileData'
 import { publicProfileUrl } from '../../lib/publicProfile'
 
+import { t } from '../../lib/i18n'
 /** Editar perfil: nome, @, bio, foto, capa, links e as categorias da vitrine. */
 export function EditProfileSheet({ profile: p, onClose }: { profile: ProfileFull; onClose: () => void }) {
   const save = useSaveProfile()
@@ -44,7 +45,7 @@ export function EditProfileSheet({ profile: p, onClose }: { profile: ProfileFull
       if (!l.url.trim() && !l.label.trim()) continue
       const url = normalizeUrl(l.url)
       if (!url) {
-        setLinkError(`"${l.url}" não parece um link.`)
+        setLinkError(t('"{url}" não parece um link.', { url: l.url }))
         return
       }
       clean.push({ label: l.label.trim().slice(0, 40), url })
@@ -67,18 +68,18 @@ export function EditProfileSheet({ profile: p, onClose }: { profile: ProfileFull
   }
 
   return (
-    <Sheet open onClose={onClose} title="Editar perfil">
+    <Sheet open onClose={onClose} title={t('Editar perfil')}>
       <form className="profile__edit" onSubmit={submit}>
         <fieldset className="edit-block">
-          <legend className="field-label">Foto</legend>
+          <legend className="field-label">{t('Foto')}</legend>
           <div className="edit-photo">
             <Avatar profile={p} size={64} />
             <button type="button" className="btn btn--plain tap edit-small" disabled={imgBusy} onClick={() => avatarInput.current?.click()}>
-              {upload.isPending && upload.variables?.kind === 'avatar' ? 'Enviando…' : 'Trocar foto'}
+              {upload.isPending && upload.variables?.kind === 'avatar' ? t('Enviando…') : t('Trocar foto')}
             </button>
             {p.avatar_url && (
               <button type="button" className="link-btn" disabled={imgBusy} onClick={() => removeImg.mutate({ userId: p.id, kind: 'avatar' })}>
-                Tirar
+                {t('Tirar')}
               </button>
             )}
             <input ref={avatarInput} type="file" accept="image/*" hidden onChange={pickFile('avatar')} />
@@ -86,10 +87,10 @@ export function EditProfileSheet({ profile: p, onClose }: { profile: ProfileFull
         </fieldset>
 
         <fieldset className="edit-block">
-          <legend className="field-label">Capa</legend>
+          <legend className="field-label">{t('Capa')}</legend>
           <div className="segmented" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
             <button type="button" aria-pressed={coverMode === 'auto'} aria-selected={coverMode === 'auto'} onClick={() => setCoverMode('auto')}>
-              Automática
+              {t('Automática')}
             </button>
             <button
               type="button"
@@ -97,19 +98,19 @@ export function EditProfileSheet({ profile: p, onClose }: { profile: ProfileFull
               aria-selected={coverMode === 'foto'}
               onClick={() => (p.cover_url ? setCoverMode('foto') : coverInput.current?.click())}
             >
-              Foto
+              {t('Foto')}
             </button>
           </div>
           <span className="field-hint">
-            {coverMode === 'auto' ? 'Mosaico das capas que você mais curte.' : 'Sua foto no topo do perfil.'}{' '}
+            {coverMode === 'auto' ? t('Mosaico das capas que você mais curte.') : t('Sua foto no topo do perfil.')}{' '}
             <button type="button" className="link-btn" disabled={imgBusy} onClick={() => coverInput.current?.click()}>
-              {upload.isPending && upload.variables?.kind === 'cover' ? 'Enviando…' : p.cover_url ? 'Trocar foto da capa' : 'Escolher foto'}
+              {upload.isPending && upload.variables?.kind === 'cover' ? t('Enviando…') : p.cover_url ? t('Trocar foto da capa') : t('Escolher foto')}
             </button>
             {p.cover_url && (
               <>
                 {' · '}
                 <button type="button" className="link-btn" disabled={imgBusy} onClick={() => removeImg.mutate({ userId: p.id, kind: 'cover' }, { onSuccess: () => setCoverMode('auto') })}>
-                  Apagar
+                  {t('Apagar')}
                 </button>
               </>
             )}
@@ -118,11 +119,11 @@ export function EditProfileSheet({ profile: p, onClose }: { profile: ProfileFull
         </fieldset>
 
         <label>
-          <span className="field-label">Nome</span>
+          <span className="field-label">{t('Nome')}</span>
           <input className="field" value={name} maxLength={60} onChange={(e) => setName(e.target.value)} />
         </label>
         <label>
-          <span className="field-label">@ de usuário</span>
+          <span className="field-label">{t('@ de usuário')}</span>
           <input
             className="field"
             value={username}
@@ -133,14 +134,14 @@ export function EditProfileSheet({ profile: p, onClose }: { profile: ProfileFull
           />
         </label>
         <label>
-          <span className="field-label">Bio</span>
+          <span className="field-label">{t('Bio')}</span>
           <textarea
             className="field profile__bio-input"
             value={bio}
             maxLength={BIO_MAX}
             rows={3}
             onChange={(e) => setBio(e.target.value)}
-            placeholder="O que você gosta, o que está procurando, onde mais te achar…"
+            placeholder={t('O que você gosta, o que está procurando, onde mais te achar…')}
           />
           <span className="field-hint" style={{ textAlign: 'right' }}>
             {bio.length}/{BIO_MAX}
@@ -148,15 +149,15 @@ export function EditProfileSheet({ profile: p, onClose }: { profile: ProfileFull
         </label>
 
         <fieldset className="edit-block">
-          <legend className="field-label">Links (até 5)</legend>
+          <legend className="field-label">{t('Links (até 5)')}</legend>
           {links.map((l, i) => (
             <div key={i} className="edit-link">
               <input
                 className="field"
                 value={l.label}
                 maxLength={40}
-                placeholder={l.url ? linkDomain(normalizeUrl(l.url) ?? l.url) : 'Nome'}
-                aria-label={`Nome do link ${i + 1}`}
+                placeholder={l.url ? linkDomain(normalizeUrl(l.url) ?? l.url) : t('Nome')}
+                aria-label={t('Nome do link {v}', { v: i + 1 })}
                 onChange={(e) => setLinks(links.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)))}
               />
               <input
@@ -165,26 +166,26 @@ export function EditProfileSheet({ profile: p, onClose }: { profile: ProfileFull
                 inputMode="url"
                 autoCapitalize="none"
                 placeholder="letterboxd.com/voce"
-                aria-label={`Endereço do link ${i + 1}`}
+                aria-label={t('Endereço do link {v}', { v: i + 1 })}
                 onChange={(e) => setLinks(links.map((x, j) => (j === i ? { ...x, url: e.target.value } : x)))}
               />
-              <button type="button" className="fav-row__btn" aria-label={`Tirar link ${i + 1}`} onClick={() => setLinks(links.filter((_, j) => j !== i))}>
+              <button type="button" className="fav-row__btn" aria-label={t('Tirar link {v}', { v: i + 1 })} onClick={() => setLinks(links.filter((_, j) => j !== i))}>
                 ×
               </button>
             </div>
           ))}
           {links.length < 5 && (
             <button type="button" className="link-btn" onClick={() => setLinks([...links, { label: '', url: '' }])}>
-              + Adicionar link
+              {t('+ Adicionar link')}
             </button>
           )}
           {linkError && <span role="alert" className="form-error">{linkError}</span>}
         </fieldset>
 
         <fieldset className="edit-block">
-          <legend className="field-label">Vitrine de favoritos</legend>
+          <legend className="field-label">{t('Vitrine de favoritos')}</legend>
           <span className="field-hint" style={{ margin: '0 4px 8px' }}>
-            Quais categorias aparecem em "Tudo", na ordem em que você tocar.
+            {t('Quais categorias aparecem em "Tudo", na ordem em que você tocar.')}
           </span>
           <div className="chips-wrap">
             {CATEGORIES.map((c) => {
@@ -200,30 +201,30 @@ export function EditProfileSheet({ profile: p, onClose }: { profile: ProfileFull
         </fieldset>
 
         <fieldset className="edit-block">
-          <legend className="field-label">Perfil público</legend>
+          <legend className="field-label">{t('Perfil público')}</legend>
           <div className="segmented" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
             <button type="button" aria-pressed={isPublic} aria-selected={isPublic} onClick={() => setIsPublic(true)}>
-              Público
+              {t('Público')}
             </button>
             <button type="button" aria-pressed={!isPublic} aria-selected={!isPublic} onClick={() => setIsPublic(false)}>
-              Privado
+              {t('Privado')}
             </button>
           </div>
           <span className="field-hint" style={{ margin: '0 4px' }}>
             {isPublic
-              ? 'Qualquer pessoa com o link vê: nome, @, foto, capa, bio, links, e o que estiver como Público (reviews, favoritos, Top 10). Amigos, metas, quero ver, notas privadas e o que é só para amigos ficam de fora.'
-              : 'Ninguém sem conta vê seu perfil. Quem tem conta no MMisc continua vendo seu nome e o que você deixar visível.'}
+              ? t('Qualquer pessoa com o link vê: nome, @, foto, capa, bio, links, e o que estiver como Público (reviews, favoritos, Top 10). Amigos, metas, quero ver, notas privadas e o que é só para amigos ficam de fora.')
+              : t('Ninguém sem conta vê seu perfil. Quem tem conta no MMisc continua vendo seu nome e o que você deixar visível.')}
           </span>
           {isPublic && (username ? (
             <span className="field-hint" style={{ margin: '0 4px' }}>
-              Seu link: <strong>{publicProfileUrl(username).replace(/^https?:\/\//, '')}</strong>{' '}
+              {t('Seu link:')} <strong>{publicProfileUrl(username).replace(/^https?:\/\//, '')}</strong>{' '}
               <button
                 type="button"
                 className="link-btn"
                 onClick={async () => {
                   const url = publicProfileUrl(username)
                   try {
-                    if (navigator.share) await navigator.share({ title: 'Meu perfil no MMisc', url })
+                    if (navigator.share) await navigator.share({ title: t('Meu perfil no MMisc'), url })
                     else {
                       await navigator.clipboard.writeText(url)
                       setCopied(true)
@@ -233,21 +234,21 @@ export function EditProfileSheet({ profile: p, onClose }: { profile: ProfileFull
                   }
                 }}
               >
-                {copied ? 'Copiado ✓' : 'Compartilhar'}
+                {copied ? t('Copiado ✓') : t('Compartilhar')}
               </button>
             </span>
           ) : (
-            <span className="field-hint" style={{ margin: '0 4px' }}>Escolha um @ acima para ter seu link.</span>
+            <span className="field-hint" style={{ margin: '0 4px' }}>{t('Escolha um @ acima para ter seu link.')}</span>
           ))}
         </fieldset>
 
         {error && <span role="alert" className="form-error">{error.message}</span>}
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn btn--primary tap" disabled={busy} style={{ flex: 1 }}>
-            {busy ? 'Salvando…' : 'Salvar'}
+            {busy ? t('Salvando…') : t('Salvar')}
           </button>
           <button type="button" className="btn btn--plain tap" onClick={onClose}>
-            Cancelar
+            {t('Cancelar')}
           </button>
         </div>
       </form>

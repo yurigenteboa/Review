@@ -27,6 +27,7 @@ import { VISIBILITY_LABEL } from '../../lib/types'
 import { computeAchievements } from '../../lib/achievements'
 import { ItemPicker } from './ItemPicker'
 
+import { t, tp } from '../../lib/i18n'
 const thisYear = new Date().getFullYear()
 
 /** Itens do diário da pessoa numa categoria (um por item, mais recente primeiro). */
@@ -38,7 +39,7 @@ const diaryItems = (entries: Review[], cat: CategoryId): Item[] =>
 export function LinksRow({ links }: { links: ProfileLink[] }) {
   if (!links.length) return null
   return (
-    <ul className="profile-links" aria-label="Links">
+    <ul className="profile-links" aria-label={t('Links')}>
       {links.map((l) => (
         <li key={l.url}>
           <a href={l.url} target="_blank" rel="noopener noreferrer nofollow" className="tap">
@@ -80,19 +81,19 @@ export function NowLine({ userId, isMe, entries }: { userId: string; isMe: boole
             ))}
           </p>
         ) : (
-          isMe && <p className="profile-section__hint">O que você está vendo, ouvindo ou jogando agora?</p>
+          isMe && <p className="profile-section__hint">{t('O que você está vendo, ouvindo ou jogando agora?')}</p>
         )}
         {isMe && (
           <button type="button" className="link-btn" onClick={() => setOpen(true)}>
-            {fresh.length ? 'Mudar' : '+ Agora'}
+            {fresh.length ? t('Mudar') : t('+ Agora')}
           </button>
         )}
       </div>
       {isMe && stale.length > 0 && (
         <p className="profile-section__hint">
-          Ainda está {stale.map((r) => `${NOW_VERB[r.category]} ${r.item.title}`).join(', ')}? Isso saiu do seu perfil depois de 60 dias.{' '}
+          {t('Ainda está {v}? Isso saiu do seu perfil depois de 60 dias.', { v: stale.map((r) => `${NOW_VERB[r.category]} ${r.item.title}`).join(', ') })}{' '}
           <button type="button" className="link-btn" onClick={() => setOpen(true)}>
-            Atualizar
+            {t('Atualizar')}
           </button>
         </p>
       )}
@@ -108,9 +109,9 @@ export function NowSheet({ open, onClose, userId, entries, current }: { open: bo
   const cats: CategoryId[] = ['filme', 'serie', 'album', 'jogo', 'livro']
   return (
     <>
-      <Sheet open={open && !pick} onClose={onClose} title="Agora">
+      <Sheet open={open && !pick} onClose={onClose} title={t('Agora')}>
         <p className="profile-section__hint" style={{ marginBottom: 12 }}>
-          Aparece no topo do seu perfil para os amigos. Some sozinho depois de 60 dias sem mudar.
+          {t('Aparece no topo do seu perfil para os amigos. Some sozinho depois de 60 dias sem mudar.')}
         </p>
         <div className="group">
           {cats.map((c) => {
@@ -123,11 +124,11 @@ export function NowSheet({ open, onClose, userId, entries, current }: { open: bo
                 </span>
                 {cur && (
                   <button type="button" className="link-btn" disabled={clearNow.isPending} onClick={() => clearNow.mutate({ userId, category: c })}>
-                    Tirar
+                    {t('Tirar')}
                   </button>
                 )}
                 <button type="button" className="link-btn" onClick={() => setPick(c)}>
-                  {cur ? 'Trocar' : 'Escolher'}
+                  {cur ? t('Trocar') : t('Escolher')}
                 </button>
               </div>
             )
@@ -168,16 +169,16 @@ export function Showcase({ userId, isMe, showcase, cat, entries }: { userId: str
   return (
     <section className="profile-section" aria-labelledby="sec-favs">
       <div className="profile-section__head">
-        <h2 id="sec-favs" className="profile-section__title">Favoritos</h2>
+        <h2 id="sec-favs" className="profile-section__title">{t('Favoritos')}</h2>
         {isMe && cats.length > 0 && (
           <button type="button" className="link-btn" onClick={() => setEditing((e) => !e)}>
-            {editing ? 'Pronto' : 'Editar'}
+            {editing ? t('Pronto') : t('Editar')}
           </button>
         )}
       </div>
       {!cats.length && (
         <p className="profile-section__hint">
-          Escolha até 4 favoritos por categoria: toque em Editar perfil → Vitrine, ou filtre uma categoria aqui em cima.
+          {t('Escolha até 4 favoritos por categoria: toque em Editar perfil → Vitrine, ou filtre uma categoria aqui em cima.')}
         </p>
       )}
       {cats.map((c) => {
@@ -200,13 +201,13 @@ export function Showcase({ userId, isMe, showcase, cat, entries }: { userId: str
                       </Link>
                       {isMe && editing && (
                         <span className="fav-row__actions">
-                          <button type="button" className="fav-row__btn" aria-label={`Trocar ${f.item.title}`} onClick={() => setSlot({ category: c, position: pos })}>
+                          <button type="button" className="fav-row__btn" aria-label={t('Trocar {title}', { title: f.item.title })} onClick={() => setSlot({ category: c, position: pos })}>
                             ↻
                           </button>
                           <button
                             type="button"
                             className="fav-row__btn"
-                            aria-label={`Tirar ${f.item.title}`}
+                            aria-label={t('Tirar {title}', { title: f.item.title })}
                             disabled={removeFav.isPending}
                             onClick={() => removeFav.mutate({ userId, category: c, position: pos })}
                           >
@@ -217,7 +218,7 @@ export function Showcase({ userId, isMe, showcase, cat, entries }: { userId: str
                     </div>
                   )
                 return isMe ? (
-                  <button key={pos} type="button" className="fav-row__empty tap" aria-label={`Escolher favorito ${pos} de ${categoryById(c).label}`} onClick={() => setSlot({ category: c, position: pos })}>
+                  <button key={pos} type="button" className="fav-row__empty tap" aria-label={t('Escolher favorito {pos} de {label}', { pos, label: categoryById(c).label })} onClick={() => setSlot({ category: c, position: pos })}>
                     +
                   </button>
                 ) : (
@@ -232,7 +233,7 @@ export function Showcase({ userId, isMe, showcase, cat, entries }: { userId: str
         <ItemPicker
           open
           onClose={() => setSlot(null)}
-          title={`Favorito em ${CATEGORY_PLURAL[slot.category]}`}
+          title={t('Favorito em {v}', { v: CATEGORY_PLURAL[slot.category] })}
           category={slot.category}
           diary={diaryItems(entries, slot.category)}
           busy={setFav.isPending}
@@ -257,36 +258,36 @@ export function Goals({ userId, isMe, entries }: { userId: string; isMe: boolean
   return (
     <section className="profile-section" aria-labelledby="sec-goals">
       <div className="profile-section__head">
-        <h2 id="sec-goals" className="profile-section__title">Metas de {thisYear}</h2>
+        <h2 id="sec-goals" className="profile-section__title">{t('Metas de {thisYear}', { thisYear })}</h2>
         {isMe && (
           <button type="button" className="link-btn" onClick={() => setEditing('new')}>
-            + Meta
+            {t('+ Meta')}
           </button>
         )}
       </div>
-      {!rows.length && <p className="profile-section__hint">Quantos filmes, álbuns ou bares em {thisYear}? A barra anda sozinha com o diário.</p>}
+      {!rows.length && <p className="profile-section__hint">{t('Quantos filmes, álbuns ou bares em {thisYear}? A barra anda sozinha com o diário.', { thisYear })}</p>}
       <div className="goals">
         {rows
           .sort((a, b) => (a.category ?? '').localeCompare(b.category ?? ''))
           .map((g) => {
             const done = progress(g)
             const pct = Math.min(100, Math.round((done / g.target) * 100))
-            const label = g.category ? CATEGORY_PLURAL[g.category] : 'registros no total'
+            const label = g.category ? CATEGORY_PLURAL[g.category] : t('registros no total')
             return (
               <div key={g.id} className="goal">
                 <div className="goal__text">
                   <span>
-                    <strong>{done}</strong> de {g.target} {label}
+                    {t('{feito} de {meta} {o_que}', { feito: <strong>{done}</strong>, meta: g.target, o_que: label })}
                   </span>
                   {isMe ? (
                     <button type="button" className="link-btn" onClick={() => setEditing(g)}>
-                      {pct >= 100 ? 'Concluída ✓' : `${pct}%`}
+                      {pct >= 100 ? t('Concluída ✓') : `${pct}%`}
                     </button>
                   ) : (
-                    <span className="profile-section__hint">{pct >= 100 ? 'Concluída ✓' : `${pct}%`}</span>
+                    <span className="profile-section__hint">{pct >= 100 ? t('Concluída ✓') : `${pct}%`}</span>
                   )}
                 </div>
-                <div className="goal__bar" role="progressbar" aria-valuemin={0} aria-valuemax={g.target} aria-valuenow={Math.min(done, g.target)} aria-label={`Meta de ${label}`}>
+                <div className="goal__bar" role="progressbar" aria-valuemin={0} aria-valuemax={g.target} aria-valuenow={Math.min(done, g.target)} aria-label={t('Meta de {label}', { label })}>
                   <span style={{ width: `${pct}%` }} />
                 </div>
               </div>
@@ -308,7 +309,7 @@ function GoalSheet({ goal, taken, onClose }: { goal: GoalRow | null; taken: Goal
   const used = new Set(taken.filter((g) => g.id !== goal?.id).map((g) => g.category ?? ''))
 
   return (
-    <Sheet open onClose={onClose} title={goal ? 'Editar meta' : `Nova meta de ${thisYear}`}>
+    <Sheet open onClose={onClose} title={goal ? t('Editar meta') : t('Nova meta de {thisYear}', { thisYear })}>
       <form
         className="profile__edit"
         onSubmit={(e) => {
@@ -317,9 +318,9 @@ function GoalSheet({ goal, taken, onClose }: { goal: GoalRow | null; taken: Goal
         }}
       >
         <label>
-          <span className="field-label">O quê</span>
+          <span className="field-label">{t('O quê')}</span>
           <select className="field" value={category} onChange={(e) => setCategory(e.target.value as CategoryId | '')}>
-            <option value="" disabled={used.has('')}>Tudo (qualquer categoria)</option>
+            <option value="" disabled={used.has('')}>{t('Tudo (qualquer categoria)')}</option>
             {CATEGORIES.map((c) => (
               <option key={c.id} value={c.id} disabled={used.has(c.id)}>
                 {c.label}
@@ -328,17 +329,17 @@ function GoalSheet({ goal, taken, onClose }: { goal: GoalRow | null; taken: Goal
           </select>
         </label>
         <label>
-          <span className="field-label">Quantos em {thisYear}</span>
+          <span className="field-label">{t('Quantos em {thisYear}', { thisYear })}</span>
           <input className="field" type="number" inputMode="numeric" min={1} max={1000} value={target} onChange={(e) => setTarget(e.target.value)} />
         </label>
         <VisibilityPicker value={visibility} onChange={setVisibility} />
         {save.error && <span role="alert" className="form-error">{(save.error as Error).message}</span>}
         <button className="btn btn--primary tap" disabled={save.isPending || !(n >= 1 && n <= 1000)}>
-          Salvar
+          {t('Salvar')}
         </button>
         {goal && (
           <button type="button" className="btn btn--plain tap" disabled={del.isPending} onClick={() => del.mutate(goal.id, { onSuccess: onClose })}>
-            Apagar meta
+            {t('Apagar meta')}
           </button>
         )}
       </form>
@@ -349,7 +350,7 @@ function GoalSheet({ goal, taken, onClose }: { goal: GoalRow | null; taken: Goal
 export function VisibilityPicker({ value, onChange }: { value: Visibility; onChange: (v: Visibility) => void }) {
   return (
     <fieldset className="visibility-picker">
-      <legend className="field-label">Quem vê</legend>
+      <legend className="field-label">{t('Quem vê')}</legend>
       <div className="segmented" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
         {(['publico', 'amigos', 'privado'] as Visibility[]).map((v) => (
           <button key={v} type="button" aria-pressed={value === v} aria-selected={value === v} onClick={() => onChange(v)}>
@@ -376,7 +377,7 @@ export function TopTen({ userId, isMe, cat, entries }: { userId: string; isMe: b
   return (
     <section className="profile-section" aria-labelledby="sec-top">
       <div className="profile-section__head">
-        <h2 id="sec-top" className="profile-section__title">Top 10 de {year}</h2>
+        <h2 id="sec-top" className="profile-section__title">{t('Top 10 de {year}', { year })}</h2>
         <span className="top-years">
           {[thisYear, thisYear - 1].map((y) => (
             <button key={y} type="button" className="chip tap" aria-pressed={year === y} onClick={() => setYear(y)}>
@@ -391,7 +392,7 @@ export function TopTen({ userId, isMe, cat, entries }: { userId: string; isMe: b
             <h3 className="fav-group__title">{categoryById(c).label}</h3>
             {isMe && (
               <button type="button" className="link-btn" onClick={() => setBuilding(c)}>
-                Refazer
+                {t('Refazer')}
               </button>
             )}
           </div>
@@ -411,19 +412,19 @@ export function TopTen({ userId, isMe, cat, entries }: { userId: string; isMe: b
         </div>
       ))}
       {isMe && !rows.length && (
-        <p className="profile-section__hint">Monte seu Top 10 de {year} comparando dois itens por vez. Leva poucos toques.</p>
+        <p className="profile-section__hint">{t('Monte seu Top 10 de {year} comparando dois itens por vez. Leva poucos toques.', { year })}</p>
       )}
       {isMe && toBuild.length > 0 && (
         <div className="top-build">
           {toBuild.map((c) => (
             <button key={c} type="button" className="chip tap" onClick={() => setBuilding(c)}>
-              + Top 10 de {CATEGORY_PLURAL[c]}
+              {t('+ Top 10 de {v}', { v: CATEGORY_PLURAL[c] })}
             </button>
           ))}
         </div>
       )}
       {isMe && !rows.length && !toBuild.length && (
-        <p className="profile-section__hint">Precisa de pelo menos 2 itens registrados em {year} numa categoria.</p>
+        <p className="profile-section__hint">{t('Precisa de pelo menos 2 itens registrados em {year} numa categoria.', { year })}</p>
       )}
       {building && <RankingBuilder year={year} category={building} entries={entries} onClose={() => setBuilding(null)} />}
     </section>
@@ -489,10 +490,10 @@ function RankingBuilder({ year, category, entries, onClose }: { year: number; ca
   const left = candidates.length - next + (step.kind === 'compare' ? 1 : 0)
 
   return (
-    <Sheet open onClose={onClose} title={`Top 10 de ${CATEGORY_PLURAL[category]} · ${year}`}>
+    <Sheet open onClose={onClose} title={t('Top 10 de {v} · {year}', { v: CATEGORY_PLURAL[category], year })}>
       {step.kind === 'compare' && rival ? (
         <div className="duel">
-          <p className="duel__q">Qual foi melhor?</p>
+          <p className="duel__q">{t('Qual foi melhor?')}</p>
           <div className="duel__options">
             {[
               { item: step.candidate, wins: true },
@@ -507,25 +508,25 @@ function RankingBuilder({ year, category, entries, onClose }: { year: number; ca
             ))}
           </div>
           <p className="profile-section__hint" style={{ textAlign: 'center' }}>
-            {comparisons} {comparisons === 1 ? 'comparação' : 'comparações'} · faltam {left} {left === 1 ? 'item' : 'itens'}
+            {tp(comparisons, '{n} comparação', '{n} comparações')} · {tp(left, 'falta {n} item', 'faltam {n} itens')}
           </p>
           <button type="button" className="link-btn" style={{ alignSelf: 'center' }} onClick={() => advance(ranked, candidates.length)}>
-            Parar aqui e ajustar na mão
+            {t('Parar aqui e ajustar na mão')}
           </button>
         </div>
       ) : (
         <div className="profile__edit">
-          <p className="profile-section__hint">Ajuste a ordem se quiser e salve.</p>
+          <p className="profile-section__hint">{t('Ajuste a ordem se quiser e salve.')}</p>
           <ol className="top-list">
             {ranked.map((it, i) => (
               <li key={it.id} className="group__row top-list__row">
                 <span className="top-list__pos">{i + 1}</span>
                 <Cover item={it} size={40} radius={8} />
                 <span className="top-list__title">{it.title}</span>
-                <button type="button" className="fav-row__btn" aria-label={`Subir ${it.title}`} disabled={i === 0} onClick={() => move(i, -1)}>
+                <button type="button" className="fav-row__btn" aria-label={t('Subir {title}', { title: it.title })} disabled={i === 0} onClick={() => move(i, -1)}>
                   ↑
                 </button>
-                <button type="button" className="fav-row__btn" aria-label={`Descer ${it.title}`} disabled={i === ranked.length - 1} onClick={() => move(i, 1)}>
+                <button type="button" className="fav-row__btn" aria-label={t('Descer {title}', { title: it.title })} disabled={i === ranked.length - 1} onClick={() => move(i, 1)}>
                   ↓
                 </button>
               </li>
@@ -539,7 +540,7 @@ function RankingBuilder({ year, category, entries, onClose }: { year: number; ca
             disabled={save.isPending || !ranked.length}
             onClick={() => save.mutate({ year, category, itemIds: ranked.map((i) => i.id), visibility }, { onSuccess: onClose })}
           >
-            Salvar Top {ranked.length}
+            {t('Salvar Top {length}', { length: ranked.length })}
           </button>
         </div>
       )}
@@ -563,15 +564,15 @@ export function Achievements({ entries, isMe }: { entries: Review[]; isMe: boole
     <section className="profile-section" aria-labelledby="sec-badges">
       <div className="profile-section__head">
         <h2 id="sec-badges" className="profile-section__title">
-          Conquistas {done.length > 0 && <span className="profile-section__hint">· {done.length} de {list.length}</span>}
+          {t('Conquistas')} {done.length > 0 && <span className="profile-section__hint">· {t('{feitas} de {total}', { feitas: done.length, total: list.length })}</span>}
         </h2>
         {isMe && (
           <button type="button" className="link-btn" onClick={() => setOpen((o) => !o)}>
-            {open ? 'Só as minhas' : 'Ver todas'}
+            {open ? t('Só as minhas') : t('Ver todas')}
           </button>
         )}
       </div>
-      {!shown.length && <p className="profile-section__hint">Nenhuma ainda. Toque em “Ver todas” para ver o que falta.</p>}
+      {!shown.length && <p className="profile-section__hint">{t('Nenhuma ainda. Toque em “Ver todas” para ver o que falta.')}</p>}
       <ul className="badges">
         {shown.map((a) => (
           <li key={a.id} className={`badge${a.unlocked ? '' : ' is-locked'}`} style={{ '--badge': a.color } as CSSProperties}>

@@ -18,6 +18,7 @@ import {
 import type { Item } from '../../lib/types'
 import { Sheet } from '../ui/Sheet'
 
+import { t } from '../../lib/i18n'
 /**
  * Fase 2d · "Sobre o lugar": ficha (endereço, horário, preço, características, link),
  * "Sugerir edição" e as sugestões pendentes. Quem pode decidir (criou o lugar, tem 3+ registros
@@ -44,7 +45,7 @@ export function PlaceInfo({ item }: { item: Item }) {
 
   return (
     <section aria-labelledby="sobre-lugar">
-      <h2 id="sobre-lugar" style={{ margin: '24px 20px 10px', fontSize: '1.375rem', letterSpacing: -0.4 }}>Sobre o lugar</h2>
+      <h2 id="sobre-lugar" style={{ margin: '24px 20px 10px', fontSize: '1.375rem', letterSpacing: -0.4 }}>{t('Sobre o lugar')}</h2>
       <div className="page__body" style={{ paddingTop: 0 }}>
         <div className="group">
           {rows.map((r) => (
@@ -59,7 +60,7 @@ export function PlaceInfo({ item }: { item: Item }) {
                   <span className="ficha__value">{r.value}</span>
                 )
               ) : (
-                <span className="ficha__value ficha__value--empty">Adicionar</span>
+                <span className="ficha__value ficha__value--empty">{t('Adicionar')}</span>
               )}
               <span className="ficha__edit" aria-hidden="true">›</span>
             </button>
@@ -67,13 +68,13 @@ export function PlaceInfo({ item }: { item: Item }) {
         </div>
         <p className="field-hint" style={{ margin: '0 4px' }}>
           {canCurate.data
-            ? 'Você pode editar direto: suas mudanças entram na hora.'
-            : 'Toque para sugerir uma mudança. Quem tem 3+ registros aqui aprova.'}
+            ? t('Você pode editar direto: suas mudanças entram na hora.')
+            : t('Toque para sugerir uma mudança. Quem tem 3+ registros aqui aprova.')}
         </p>
         {toast && <p role="status" className="field-hint" style={{ margin: '0 4px', color: 'var(--text)' }}>{toast}</p>}
 
         {list.length > 0 && (
-          <div className="group" aria-label="Sugestões esperando aprovação">
+          <div className="group" aria-label={t('Sugestões esperando aprovação')}>
             {list.map((s) => (
               <div key={s.id} className="group__row ficha__sug">
                 <span style={{ display: 'flex', flexDirection: 'column', minWidth: 0, flex: 1 }}>
@@ -81,21 +82,21 @@ export function PlaceInfo({ item }: { item: Item }) {
                     {FIELD_LABEL[s.field]}: {showValue(s.field, s.value)}
                   </strong>
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>
-                    sugerido por {s.user_id === userId ? 'você' : displayName(s.author)}
+                    {s.user_id === userId ? t('sugerido por você') : t('sugerido por {nome}', { nome: displayName(s.author) })}
                     {s.note ? ` · “${s.note}”` : ''}
                   </span>
                 </span>
                 {canCurate.data && s.user_id !== userId ? (
                   <span style={{ display: 'flex', gap: 6 }}>
                     <button type="button" className="btn btn--primary tap ficha__btn" disabled={decide.isPending} onClick={() => decide.mutate({ id: s.id, itemId: item.id, approve: true })}>
-                      Aprovar
+                      {t('Aprovar')}
                     </button>
                     <button type="button" className="btn btn--plain tap ficha__btn" disabled={decide.isPending} onClick={() => decide.mutate({ id: s.id, itemId: item.id, approve: false })}>
-                      Recusar
+                      {t('Recusar')}
                     </button>
                   </span>
                 ) : (
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-3)', whiteSpace: 'nowrap' }}>esperando</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-3)', whiteSpace: 'nowrap' }}>{t('esperando')}</span>
                 )}
               </div>
             ))}
@@ -112,7 +113,7 @@ export function PlaceInfo({ item }: { item: Item }) {
           onClose={() => setEditing(null)}
           onDone={(applied) => {
             setEditing(null)
-            setToast(applied ? 'Ficha atualizada.' : 'Sugestão enviada. Quem tem 3+ registros aqui vai aprovar.')
+            setToast(applied ? t('Ficha atualizada.') : t('Sugestão enviada. Quem tem 3+ registros aqui vai aprovar.'))
           }}
         />
       )}
@@ -161,7 +162,7 @@ function SuggestSheet({
   }
 
   return (
-    <Sheet open onClose={onClose} title={direct ? `Editar: ${FIELD_LABEL[field].toLowerCase()}` : `Sugerir: ${FIELD_LABEL[field].toLowerCase()}`}>
+    <Sheet open onClose={onClose} title={direct ? t('Editar: {v}', { v: FIELD_LABEL[field].toLowerCase() }) : t('Sugerir: {v}', { v: FIELD_LABEL[field].toLowerCase() })}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         {(field === 'area' || field === 'endereco' || field === 'link') && (
           <label>
@@ -170,28 +171,28 @@ function SuggestSheet({
               className="field"
               value={text}
               inputMode={field === 'link' ? 'url' : undefined}
-              placeholder={field === 'area' ? 'Ex.: Pinheiros, São Paulo' : field === 'endereco' ? 'Ex.: Av. São João, 677' : 'https://instagram.com/…'}
+              placeholder={field === 'area' ? t('Ex.: Pinheiros, São Paulo') : field === 'endereco' ? t('Ex.: Av. São João, 677') : 'https://instagram.com/…'}
               onChange={(e) => setText(e.target.value)}
             />
           </label>
         )}
         {field === 'horario' && (
           <label>
-            <span className="field-label">Horário</span>
-            <textarea className="field" rows={3} value={text} placeholder="Ex.: Ter a sáb, 17h–1h · Dom, 12h–18h" onChange={(e) => setText(e.target.value)} />
+            <span className="field-label">{t('Horário')}</span>
+            <textarea className="field" rows={3} value={text} placeholder={t('Ex.: Ter a sáb, 17h–1h · Dom, 12h–18h')} onChange={(e) => setText(e.target.value)} />
           </label>
         )}
         {field === 'faixa_preco' && (
-          <div className="segmented" role="radiogroup" aria-label="Faixa de preço" style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}>
+          <div className="segmented" role="radiogroup" aria-label={t('Faixa de preço')} style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}>
             {[1, 2, 3, 4].map((n) => (
-              <button key={n} type="button" role="radio" aria-checked={price === n} aria-label={['Barato', 'Médio', 'Caro', 'Muito caro'][n - 1]} onClick={() => setPrice(n)}>
+              <button key={n} type="button" role="radio" aria-checked={price === n} aria-label={[t('Barato'), t('Médio'), t('Caro'), t('Muito caro')][n - 1]} onClick={() => setPrice(n)}>
                 {priceLabel(n)}
               </button>
             ))}
           </div>
         )}
         {field === 'atributos' && (
-          <div className="chips" style={{ flexWrap: 'wrap' }} role="group" aria-label="Características">
+          <div className="chips" style={{ flexWrap: 'wrap' }} role="group" aria-label={t('Características')}>
             {ATTRIBUTES.map((a) => (
               <button
                 key={a.id}
@@ -207,17 +208,17 @@ function SuggestSheet({
         )}
         {!direct && (
           <label>
-            <span className="field-label">Comentário (opcional)</span>
-            <input className="field" value={note} maxLength={280} placeholder="Ex.: mudou de endereço em outubro" onChange={(e) => setNote(e.target.value)} />
+            <span className="field-label">{t('Comentário (opcional)')}</span>
+            <input className="field" value={note} maxLength={280} placeholder={t('Ex.: mudou de endereço em outubro')} onChange={(e) => setNote(e.target.value)} />
           </label>
         )}
         {suggest.error && (
           <p role="alert" className="field-hint" style={{ color: 'var(--cat-filme-ink)' }}>
-            Não deu para enviar: {(suggest.error as Error).message}
+            {t('Não deu para enviar: {message}', { message: (suggest.error as Error).message })}
           </p>
         )}
         <button type="button" className="btn btn--primary tap" disabled={invalid || suggest.isPending} onClick={submit}>
-          {suggest.isPending ? 'Enviando…' : direct ? 'Salvar' : 'Enviar sugestão'}
+          {suggest.isPending ? t('Enviando…') : direct ? t('Salvar') : t('Enviar sugestão')}
         </button>
       </div>
     </Sheet>

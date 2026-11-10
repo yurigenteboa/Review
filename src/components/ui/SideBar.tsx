@@ -9,6 +9,7 @@ import { Glass } from './Glass'
 import { BellIcon, HomeIcon, MoreIcon, PeopleIcon, PersonIcon, PlusIcon, SearchIcon } from './Icons'
 import { openMenu } from '../../lib/menuBus'
 
+import { t, tp } from '../../lib/i18n'
 interface SideBarProps {
   onCompose: () => void
   /** tablet: só ícones (72 px) · desktop: ícones + nomes (240 px) */
@@ -29,13 +30,13 @@ export function SideBar({ onCompose, compact }: SideBarProps) {
   const pending = (friends ?? []).filter((f) => f.status === 'pendente' && !f.requested_by_me).length
 
   const items = [
-    { to: '/', label: 'Início', icon: <HomeIcon />, end: true, badge: 0, badgeLabel: '' },
-    { to: '/buscar', label: 'Buscar', icon: <SearchIcon />, end: false, badge: 0, badgeLabel: '' },
-    { to: '/amigos', label: 'Amigos', icon: <PeopleIcon />, end: false, badge: pending, badgeLabel: `${pending} pedidos de amizade` },
-    { to: '/notificacoes', label: 'Notificações', icon: <BellIcon />, end: false, badge: unread, badgeLabel: `${unread} notificações novas` },
+    { to: '/', label: t('Início'), icon: <HomeIcon />, end: true, badge: 0, badgeLabel: '' },
+    { to: '/buscar', label: t('Buscar'), icon: <SearchIcon />, end: false, badge: 0, badgeLabel: '' },
+    { to: '/amigos', label: t('Amigos'), icon: <PeopleIcon />, end: false, badge: pending, badgeLabel: tp(pending, '{n} pedido de amizade', '{n} pedidos de amizade') },
+    { to: '/notificacoes', label: t('Notificações'), icon: <BellIcon />, end: false, badge: unread, badgeLabel: tp(unread, '{n} notificação nova', '{n} notificações novas') },
     {
       to: '/perfil',
-      label: 'Perfil',
+      label: t('Perfil'),
       icon: me ? <Avatar profile={me} size={26} /> : <PersonIcon />,
       end: false,
       badge: 0,
@@ -44,8 +45,8 @@ export function SideBar({ onCompose, compact }: SideBarProps) {
   ]
 
   return (
-    <Glass as="nav" variant="bar" className={`sidebar ${compact ? 'sidebar--compact' : ''}`} aria-label="Navegação principal">
-      <NavLink to="/" className="sidebar__brand tap" aria-label="MMisc, ir para o Início">
+    <Glass as="nav" variant="bar" className={`sidebar ${compact ? 'sidebar--compact' : ''}`} aria-label={t('Navegação principal')}>
+      <NavLink to="/" className="sidebar__brand tap" aria-label={t('MMisc, ir para o Início')}>
         {compact ? (
           <img src="/favicon.svg" alt="" width={36} height={36} />
         ) : (
@@ -82,13 +83,13 @@ export function SideBar({ onCompose, compact }: SideBarProps) {
             type="button"
             className="sidebar__item sidebar__more tap"
             onClick={openMenu}
-            aria-label={compact ? 'Mais' : undefined}
-            title={compact ? 'Mais' : undefined}
+            aria-label={compact ? t('Mais') : undefined}
+            title={compact ? t('Mais') : undefined}
           >
             <span className="sidebar__icon">
               <MoreIcon />
             </span>
-            {!compact && <span className="sidebar__label">Mais</span>}
+            {!compact && <span className="sidebar__label">{t('Mais')}</span>}
           </button>
         </li>
       </ul>
@@ -97,11 +98,11 @@ export function SideBar({ onCompose, compact }: SideBarProps) {
         type="button"
         className="sidebar__compose tap"
         onClick={onCompose}
-        aria-label={compact ? 'Nova review' : undefined}
-        title="Nova review (atalho: N)"
+        aria-label={compact ? t('Nova review') : undefined}
+        title={t('Nova review (atalho: N)')}
       >
         <PlusIcon size={compact ? 26 : 22} />
-        {!compact && <span>Nova review</span>}
+        {!compact && <span>{t('Nova review')}</span>}
       </button>
     </Glass>
   )

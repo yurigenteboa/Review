@@ -403,3 +403,41 @@
 .ap-style[aria-checked='true'] .ap-style__name {
   color: var(--accent-ink);
 }
+
+/* ---------- Idioma ---------- */
+.ap-lang {
+  width: 100%;
+  justify-content: space-between;
+  border-left: 0;
+  border-right: 0;
+  border-top: 0;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.ap-lang__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.ap-lang__hint {
+  font-size: var(--fs-footnote);
+  color: var(--text-3);
+}
+.ap-lang__check {
+  flex: none;
+  width: 20px;
+  color: var(--accent-ink);
+  font-weight: 700;
+  text-align: center;
+}
+.ap-lang[aria-checked='true'] {
+  font-weight: 600;
+}
+/* aberto por /aparencia#idioma: o título não fica escondido atrás do cabeçalho fixo */
+#idioma {
+  scroll-margin-top: calc(var(--safe-top) + 132px);
+}

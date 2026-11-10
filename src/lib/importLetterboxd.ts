@@ -6,6 +6,7 @@ import { ensureCatalogItem, type CatalogResult } from './queries'
 import { supabase } from './supabase'
 import type { Visibility } from './types'
 
+import { t } from './i18n'
 /** Procura cada filme no TMDB, 4 de cada vez, avisando o progresso. */
 export async function matchFilms(films: LbFilm[], onProgress: (done: number) => void, signal: { cancelled: boolean }): Promise<FilmMatch[]> {
   const out: FilmMatch[] = new Array(films.length)
@@ -21,7 +22,7 @@ export async function matchFilms(films: LbFilm[], onProgress: (done: number) => 
           body: { category: 'filme', q: film.name },
         })
         if (!error) {
-          if (data?.missingKey) throw new Error('A busca de filmes está sem a chave do TMDB no Supabase.')
+          if (data?.missingKey) throw new Error(t('A busca de filmes está sem a chave do TMDB no Supabase.'))
           results = data?.results ?? []
           break
         }
@@ -57,7 +58,7 @@ export async function runImport(
 ): Promise<ImportResult> {
   const { data: auth } = await supabase.auth.getUser()
   const uid = auth.user?.id
-  if (!uid) throw new Error('Sessão expirada. Entre de novo.')
+  if (!uid) throw new Error(t('Sessão expirada. Entre de novo.'))
 
   // 1. Catálogo: um item por filme escolhido
   const chosen = matches.filter((m) => m.chosen)
@@ -72,7 +73,7 @@ export async function runImport(
       itemByExternal.set(ext.external_id, id)
     }
     itemByFilm.set(filmKey(m.film), id)
-    onProgress('Cadastrando filmes', i + 1, chosen.length)
+    onProgress(t('Cadastrando filmes'), i + 1, chosen.length)
   }
 
   // 2. Diário, sem duplicar o que já existe (mesmo item no mesmo dia)
@@ -114,7 +115,7 @@ export async function runImport(
     }))
     const { error } = await supabase.from('reviews').insert(batch)
     if (error) throw error
-    onProgress('Gravando o diário', Math.min(i + 50, toInsert.length), toInsert.length)
+    onProgress(t('Gravando o diário'), Math.min(i + 50, toInsert.length), toInsert.length)
   }
 
   // 3. Quero ver (o banco tira do quero ver o que já está no diário)
@@ -127,7 +128,7 @@ export async function runImport(
         .from('watchlist')
         .upsert(wl.slice(i, i + 100).map((item_id) => ({ user_id: uid, item_id, visibility })), { onConflict: 'user_id,item_id', ignoreDuplicates: true })
       if (error) throw error
-      onProgress('Gravando o quero ver', Math.min(i + 100, wl.length), wl.length)
+      onProgress(t('Gravando o quero ver'), Math.min(i + 100, wl.length), wl.length)
     }
     watchlistAdded = wl.length
   }

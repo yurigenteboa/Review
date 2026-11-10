@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 import { useBreakpoint } from '../../lib/breakpoints'
 import { Glass } from './Glass'
 
+import { t } from '../../lib/i18n'
 interface SheetProps {
   open: boolean
   onClose: () => void
@@ -142,7 +143,7 @@ export function Sheet({ open, onClose, title, children, desktop = 'dialog' }: Sh
             key="backdrop"
             type="button"
             className="sheet-backdrop"
-            aria-label="Fechar"
+            aria-label={t('Fechar')}
             tabIndex={-1}
             onClick={onClose}
             initial={{ opacity: 0 }}
@@ -183,7 +184,7 @@ export function Sheet({ open, onClose, title, children, desktop = 'dialog' }: Sh
               ) : (
                 <div className="sheet__top">
                   {title && <h2 className="sheet__title">{title}</h2>}
-                  <button type="button" className="icon-btn tap sheet__close" aria-label="Fechar" onClick={onClose}>
+                  <button type="button" className="icon-btn tap sheet__close" aria-label={t('Fechar')} onClick={onClose}>
                     <CloseIcon />
                   </button>
                 </div>

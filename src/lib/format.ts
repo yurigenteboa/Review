@@ -1,13 +1,15 @@
-const rtf = new Intl.RelativeTimeFormat('pt-BR', { numeric: 'auto' })
+import { locale, t } from './i18n'
+
+const rtf = new Intl.RelativeTimeFormat(locale(), { numeric: 'auto' })
 
 /** "agora", "há 5 min", "ontem", "há 3 dias", "12 de out." */
 export function timeAgo(iso: string): string {
   const diff = (Date.now() - new Date(iso).getTime()) / 1000
-  if (diff < 60) return 'agora'
+  if (diff < 60) return t('agora')
   if (diff < 3600) return rtf.format(-Math.round(diff / 60), 'minute')
   if (diff < 86400) return rtf.format(-Math.round(diff / 3600), 'hour')
   if (diff < 7 * 86400) return rtf.format(-Math.round(diff / 86400), 'day')
-  return new Date(iso).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })
+  return new Date(iso).toLocaleDateString(locale(), { day: 'numeric', month: 'short' })
 }
 
 /** Iniciais para o avatar: "Yuri Soares" -> "YS" */
@@ -25,5 +27,5 @@ export function avatarColor(id: string): string {
 }
 
 export function displayName(p: { display_name: string | null; username: string | null } | null | undefined): string {
-  return p?.display_name || (p?.username ? `@${p.username}` : 'Alguém')
+  return p?.display_name || (p?.username ? `@${p.username}` : t('Alguém'))
 }

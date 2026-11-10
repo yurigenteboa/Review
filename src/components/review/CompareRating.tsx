@@ -4,6 +4,7 @@ import { formatRating, type CategoryId } from '../../lib/categories'
 import { haptic } from '../../lib/haptics'
 import type { PlaceRank } from '../../lib/queries'
 
+import { t } from '../../lib/i18n'
 export type Bucket = 1 | 2 | 3
 export interface CompareResult {
   bucket: Bucket
@@ -15,9 +16,9 @@ export interface CompareResult {
 }
 
 const BUCKETS: { id: Bucket; label: string; emoji: string }[] = [
-  { id: 3, label: 'Gostei', emoji: '😍' },
-  { id: 2, label: 'Ok', emoji: '🙂' },
-  { id: 1, label: 'Não gostei', emoji: '😕' },
+  { id: 3, label: t('Gostei'), emoji: '😍' },
+  { id: 2, label: t('Ok'), emoji: '🙂' },
+  { id: 1, label: t('Não gostei'), emoji: '😕' },
 ]
 /** Faixa de nota de cada grupo (na escala de 0,5 a 5 que o resto do app usa). */
 const RANGE: Record<Bucket, [number, number]> = { 3: [4, 5], 2: [2.5, 3.5], 1: [0.5, 2] }
@@ -109,11 +110,11 @@ export function CompareRating({
   const plural = CATEGORY_PLURAL[category]
 
   return (
-    <section className="compare" aria-label="Nota por comparação">
+    <section className="compare" aria-label={t('Nota por comparação')}>
       {!range && !value && (
         <>
-          <span className="compare__q">Como foi?</span>
-          <div className="compare__buckets" role="group" aria-label="Como foi">
+          <span className="compare__q">{t('Como foi?')}</span>
+          <div className="compare__buckets" role="group" aria-label={t('Como foi')}>
             {BUCKETS.map((b) => (
               <button key={b.id} type="button" className="compare__bucket tap" aria-pressed={bucket === b.id} onClick={() => choose(b.id)}>
                 <span aria-hidden="true">{b.emoji}</span>
@@ -126,18 +127,18 @@ export function CompareRating({
 
       {range && against && (
         <div className="compare__vs" role="group" aria-live="polite">
-          <span className="compare__q">Melhor ou pior que…</span>
+          <span className="compare__q">{t('Melhor ou pior que…')}</span>
           <strong className="compare__other">{against.title}</strong>
           <div className="compare__answers">
             <button type="button" className="btn btn--primary tap" onClick={() => answer(true)}>
-              Melhor
+              {t('Melhor')}
             </button>
             <button type="button" className="btn btn--plain tap" onClick={() => answer(false)}>
-              Pior
+              {t('Pior')}
             </button>
           </div>
           <button type="button" className="link-btn" onClick={() => answer('empate')}>
-            Parecido
+            {t('Parecido')}
           </button>
         </div>
       )}
@@ -146,10 +147,10 @@ export function CompareRating({
         <div className="compare__done" role="status">
           <span className="compare__score">{formatRating(value.rating)}</span>
           <span className="compare__place">
-            {value.total === 1 ? `O primeiro no seu ranking de ${plural}` : `${value.place}º de ${value.total} no seu ranking de ${plural}`}
+            {value.total === 1 ? t('O primeiro no seu ranking de {plural}', { plural }) : t('{place}º de {total} no seu ranking de {plural}', { place: value.place, total: value.total, plural })}
           </span>
           <button type="button" className="link-btn" onClick={restart}>
-            Refazer
+            {t('Refazer')}
           </button>
         </div>
       )}

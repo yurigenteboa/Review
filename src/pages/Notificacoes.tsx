@@ -13,20 +13,31 @@ import { useFriends, useMarkAllRead, useNotifications, useRespondFriend } from '
 import type { Notification } from '../lib/types'
 import { EmptyState, LoadingCards } from './states'
 
+import { t } from '../lib/i18n'
 function text(n: Notification) {
   const who = displayName(n.actor)
   const item = n.review?.item?.title
   switch (n.type) {
     case 'friend_request':
-      return `${who} quer ser seu amigo`
+      return t('{who} quer ser seu amigo', { who })
     case 'friend_accepted':
-      return `Você e ${who} agora são amigos`
+      return t('Você e {who} agora são amigos', { who })
     case 'like':
-      return `${who} curtiu sua review${item ? ` de ${item}` : ''}`
+      return item ? t('{who} curtiu sua review de {item}', { who, item }) : t('{who} curtiu sua review', { who })
     case 'comment':
-      return `${who} comentou na sua review${item ? ` de ${item}` : ''}${n.comment?.body ? `: “${n.comment.body.slice(0, 80)}”` : ''}`
+      return (item ? t('{who} comentou na sua review de {item}', { who, item }) : t('{who} comentou na sua review', { who })) + (n.comment?.body ? `: “${n.comment.body.slice(0, 80)}”` : '')
     case 'companion':
-      return `${who} registrou que vocês ${n.item?.category === 'album' ? 'ouviram' : ['bar', 'restaurante', 'cafe', 'cidade'].includes(n.item?.category ?? '') ? 'foram a' : 'viram'} ${n.item?.title ?? 'algo'} juntos${n.meta?.watched_on ? ` (${formatDay(n.meta.watched_on)})` : ''}`
+    {
+      const what = n.item?.title ?? t('algo')
+      const cat = n.item?.category ?? ''
+      const text =
+        cat === 'album'
+          ? t('{who} registrou que vocês ouviram {what} juntos', { who, what })
+          : ['bar', 'restaurante', 'cafe', 'cidade'].includes(cat)
+            ? t('{who} registrou que vocês foram a {what} juntos', { who, what })
+            : t('{who} registrou que vocês viram {what} juntos', { who, what })
+      return text + (n.meta?.watched_on ? ` (${formatDay(n.meta.watched_on)})` : '')
+    }
   }
 }
 
@@ -56,10 +67,10 @@ export default function Notificacoes({ onCompose }: { onCompose: (s: ComposeStar
 
   return (
     <div className="page">
-      <PageHeader title="Notificações" />
+      <PageHeader title={t('Notificações')} />
       <div className="page__body">
         {list.isLoading && <LoadingCards count={2} />}
-        {list.data?.length === 0 && <EmptyState title="Nada por aqui" text="Curtidas, comentários, pedidos de amizade e quem viu algo com você aparecem aqui." />}
+        {list.data?.length === 0 && <EmptyState title={t('Nada por aqui')} text={t('Curtidas, comentários, pedidos de amizade e quem viu algo com você aparecem aqui.')} />}
         {(list.data?.length ?? 0) > 0 && (
           <div className="group">
             {list.data!.map((n) => (
@@ -85,12 +96,12 @@ export default function Notificacoes({ onCompose }: { onCompose: (s: ComposeStar
                       })
                     }
                   >
-                    Registrar
+                    {t('Registrar')}
                   </button>
                 )}
                 {n.type === 'friend_request' && pendingFrom.has(n.actor.id) && (
                   <button type="button" className="btn btn--primary tap" style={smallBtn} disabled={respond.isPending} onClick={() => respond.mutate({ other: n.actor.id, accept: true })}>
-                    Aceitar
+                    {t('Aceitar')}
                   </button>
                 )}
               </div>

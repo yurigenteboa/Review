@@ -15,6 +15,7 @@ import { useDoubleTap, useLongPress } from '../../lib/gestures'
 import { haptic } from '../../lib/haptics'
 import { SpoilerText } from './SpoilerText'
 
+import { t } from '../../lib/i18n'
 type CoverItem = Pick<Item, 'title' | 'category' | 'image_url'>
 
 /** Capa do item: a imagem quando existir (Fase 3), senão gradiente da categoria + iniciais. */
@@ -89,7 +90,7 @@ export function PhotoStrip({ paths }: { paths: string[] }) {
     <div className="photo-strip no-scrollbar">
       {(urls ?? paths.map(() => '')).map((u, i) =>
         u ? (
-          <img key={i} src={u} alt={`Foto ${i + 1} da review`} loading="lazy" />
+          <img key={i} src={u} alt={t('Foto {v} da review', { v: i + 1 })} loading="lazy" />
         ) : (
           <span key={i} className="photo-strip__ph" />
         ),
@@ -110,17 +111,17 @@ export function EntryLine({ review, big = false }: { review: Review; big?: boole
           <strong style={{ fontSize: big ? '0.875rem' : '0.8125rem' }}>{formatRating(review.rating)}</strong>
         </span>
       ) : (
-        <strong style={{ color: 'var(--text-2)', fontWeight: 600 }}>{verb}, sem nota</strong>
+        <strong style={{ color: 'var(--text-2)', fontWeight: 600 }}>{t('{verb}, sem nota', { verb })}</strong>
       )}
       {review.loved && (
-        <span className="loved" role="img" aria-label="Curtiu">
+        <span className="loved" role="img" aria-label={t('Curtiu')}>
           ♥
         </span>
       )}
-      {review.rewatch && <span>↻ de novo</span>}
+      {review.rewatch && <span>{t('↻ de novo')}</span>}
       <span>{formatDay(review.experienced_at)}</span>
       {review.watched_where && <span>{WATCHED_WHERE_LABEL[review.watched_where]}</span>}
-      {people.length > 0 && <span>com {people.join(', ')}</span>}
+      {people.length > 0 && <span>{t('com {pessoas}', { pessoas: people.join(', ') })}</span>}
     </span>
   )
 }
@@ -201,14 +202,14 @@ export function ReviewCard({ review, showItem = true }: { review: Review; showIt
             type="button"
             className="like-btn tap"
             aria-pressed={pendingLike}
-            aria-label={pendingLike ? 'Descurtir' : 'Curtir'}
+            aria-label={pendingLike ? t('Descurtir') : t('Curtir')}
             disabled={!userId || toggleLike.isPending}
             onClick={() => userId && toggleLike.mutate({ reviewId: review.id, liked, uid: userId })}
           >
             <HeartIcon filled={pendingLike} />
             {likeCount > 0 && likeCount}
           </button>
-          <button type="button" className="like-btn tap" aria-label={`Comentários (${commentCount})`} onClick={() => setCommentsOpen(true)}>
+          <button type="button" className="like-btn tap" aria-label={t('Comentários ({commentCount})', { commentCount })} onClick={() => setCommentsOpen(true)}>
             <CommentIcon />
             {commentCount > 0 && commentCount}
           </button>
@@ -228,7 +229,7 @@ export function ReviewCard({ review, showItem = true }: { review: Review; showIt
 /** Fase 1: o que foi pedido na noite (entradas filhas), cada um levando à página do item. */
 function CardOrders({ entries }: { entries: ChildEntry[] }) {
   return (
-    <div className="card-orders" aria-label="O que foi pedido">
+    <div className="card-orders" aria-label={t('O que foi pedido')}>
       {entries.map((c) => (
         <Link key={c.id} to={`/item/${c.item.id}`} className="card-orders__item tap">
           <span>{c.item.title}</span>

@@ -6,6 +6,7 @@ import { compressImage } from './images'
 import { supabase } from './supabase'
 import type { Item, Visibility } from './types'
 
+import { t } from './i18n'
 const ITEM_FIELDS = 'id, category, title, subtitle, image_url, year'
 export const PROFILE_MEDIA_BUCKET = 'profile-media'
 
@@ -96,18 +97,18 @@ export function useRemoveFavorite() {
 
 /** Verbo do "agora" por categoria: "ouvindo", "vendo"… */
 export const NOW_VERB: Record<CategoryId, string> = {
-  album: 'ouvindo',
-  filme: 'vendo',
-  serie: 'vendo',
-  jogo: 'jogando',
-  livro: 'lendo',
-  bar: 'indo ao',
-  banheiro: 'usando',
-  cidade: 'em',
-  drink: 'tomando',
-  prato: 'comendo',
-  restaurante: 'comendo no',
-  cafe: 'no',
+  album: t('ouvindo'),
+  filme: t('vendo'),
+  serie: t('vendo'),
+  jogo: t('jogando'),
+  livro: t('lendo'),
+  bar: t('indo ao'),
+  banheiro: t('usando'),
+  cidade: t('em'),
+  drink: t('tomando'),
+  prato: t('comendo'),
+  restaurante: t('comendo no'),
+  cafe: t('no'),
 }
 
 
@@ -180,7 +181,7 @@ export function useSaveGoal() {
       const row = { year: p.year, category: p.category, target: p.target, visibility: p.visibility }
       const { error } = p.id ? await supabase.from('goals').update(row).eq('id', p.id) : await supabase.from('goals').insert(row)
       if (error) {
-        if (error.code === '23505') throw new Error('Já existe uma meta para isso neste ano.')
+        if (error.code === '23505') throw new Error(t('Já existe uma meta para isso neste ano.'))
         throw error
       }
     },
@@ -258,8 +259,8 @@ export function useRatingVsFriends(category: CategoryId | null, enabled: boolean
 export function friendsLabel(r: { my_avg: number | null; friends_counted: number; friends_more_generous: number } | null | undefined): string | null {
   if (!r || r.my_avg == null || r.friends_counted < 3) return null
   const stricter = r.friends_more_generous / r.friends_counted
-  if (stricter >= 0.8) return `Mais exigente que ${Math.round(stricter * 100)}% dos amigos`
-  if (stricter <= 0.2) return `Mais generoso que ${Math.round((1 - stricter) * 100)}% dos amigos`
+  if (stricter >= 0.8) return t('Mais exigente que {v}% dos amigos', { v: Math.round(stricter * 100) })
+  if (stricter <= 0.2) return t('Mais generoso que {v}% dos amigos', { v: Math.round((1 - stricter) * 100) })
   return null
 }
 
@@ -318,7 +319,7 @@ export function useSaveProfileExtras() {
       if (p.is_public !== undefined) patch.is_public = p.is_public
       const { error } = await supabase.from('profiles').update(patch).eq('id', p.userId)
       if (error) {
-        if (error.code === '23514') throw new Error('Confira os links: só endereços que começam com https://, até 5.')
+        if (error.code === '23514') throw new Error(t('Confira os links: só endereços que começam com https://, até 5.'))
         throw error
       }
     },

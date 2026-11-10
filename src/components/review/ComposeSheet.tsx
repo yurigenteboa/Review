@@ -18,6 +18,7 @@ import { haptic } from '../../lib/haptics'
 import { OrderPicker } from './OrderPicker'
 import { CompareRating, type CompareResult } from './CompareRating'
 
+import { locale, t, tp } from '../../lib/i18n'
 export interface ComposeStart {
   category?: CategoryId
   title?: string
@@ -39,24 +40,24 @@ interface Props {
 }
 
 const VIS: { id: Visibility; label: string; hint: string }[] = [
-  { id: 'privado', label: 'Privado', hint: 'Só você vê. Bom para o diário pessoal.' },
-  { id: 'amigos', label: 'Amigos', hint: 'Você e seus amigos no MMisc.' },
-  { id: 'publico', label: 'Público', hint: 'Qualquer pessoa com conta no MMisc.' },
+  { id: 'privado', label: t('Privado'), hint: t('Só você vê. Bom para o diário pessoal.') },
+  { id: 'amigos', label: t('Amigos'), hint: t('Você e seus amigos no MMisc.') },
+  { id: 'publico', label: t('Público'), hint: t('Qualquer pessoa com conta no MMisc.') },
 ]
 
 const PLACEHOLDER: Record<CategoryId, string> = {
-  album: 'Ex.: Clube da Esquina',
-  filme: 'Ex.: Bacurau',
-  serie: 'Ex.: Succession',
-  jogo: 'Ex.: Hollow Knight',
-  livro: 'Ex.: Torto Arado',
-  bar: 'Ex.: Bar do bairro',
-  banheiro: 'Ex.: Banheiro da rodoviária',
-  cidade: 'Ex.: Paraty',
-  drink: 'Ex.: Negroni',
-  prato: 'Ex.: Coxinha',
-  restaurante: 'Ex.: Mocotó',
-  cafe: 'Ex.: Café Girondino',
+  album: t('Ex.: Clube da Esquina'),
+  filme: t('Ex.: Bacurau'),
+  serie: t('Ex.: Succession'),
+  jogo: t('Ex.: Hollow Knight'),
+  livro: t('Ex.: Torto Arado'),
+  bar: t('Ex.: Bar do bairro'),
+  banheiro: t('Ex.: Banheiro da rodoviária'),
+  cidade: t('Ex.: Paraty'),
+  drink: t('Ex.: Negroni'),
+  prato: t('Ex.: Coxinha'),
+  restaurante: t('Ex.: Mocotó'),
+  cafe: t('Ex.: Café Girondino'),
 }
 
 const WHERE_OPTIONS = Object.keys(WATCHED_WHERE_LABEL) as WatchedWhere[]
@@ -300,8 +301,12 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
         pedidos: orders.length,
       })
       if (blank) writeDraft(null)
-      const pedidos = orders.length ? ` com ${orders.length} ${orders.length === 1 ? 'pedido' : 'pedidos'}` : ''
-      onDone(res.edited ? `Entrada atualizada${pedidos}` : `Registrado no seu diário${pedidos}`)
+      const n = orders.length
+      onDone(
+        res.edited
+          ? n ? tp(n, 'Entrada atualizada com {n} pedido', 'Entrada atualizada com {n} pedidos') : t('Entrada atualizada')
+          : n ? tp(n, 'Registrado no seu diário com {n} pedido', 'Registrado no seu diário com {n} pedidos') : t('Registrado no seu diário'),
+      )
       onClose()
       navigate(`/item/${res.itemId}`)
     } catch {
@@ -321,13 +326,13 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
   const yesterday = localDay(-1)
 
   return (
-    <Sheet open={open} onClose={close} title={edit ? 'Editar entrada' : 'Registrar'}>
+    <Sheet open={open} onClose={close} title={edit ? t('Editar entrada') : t('Registrar')}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {draft && (
           <div className="draft-note" role="status">
-            <span>Rascunho de {new Date(draft.savedAt).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })} restaurado</span>
+            <span>{t('Rascunho de {v} restaurado', { v: new Date(draft.savedAt).toLocaleDateString(locale(), { day: 'numeric', month: 'short' }) })}</span>
             <button type="button" className="link-btn" onClick={discardDraft}>
-              Descartar
+              {t('Descartar')}
             </button>
           </div>
         )}
@@ -355,7 +360,7 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
               </span>
               {!edit && !start.itemId && (
                 <button type="button" className="btn btn--plain tap" style={{ minHeight: 44, padding: '0 14px', fontSize: '0.875rem' }} onClick={unpick}>
-                  Trocar
+                  {t('Trocar')}
                 </button>
               )}
             </div>
@@ -363,7 +368,7 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <label style={{ display: 'block' }}>
-              <span className="field-label">O que você quer registrar?</span>
+              <span className="field-label">{t('O que você quer registrar?')}</span>
               <input className="field" value={title} placeholder={PLACEHOLDER[category]} onChange={(e) => setTitle(e.target.value)} />
             </label>
 
@@ -385,7 +390,7 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
                     <Cover item={it} size={44} radius={10} />
                     <span style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                       <strong style={{ fontWeight: 600 }}>{it.title}</strong>
-                      <span style={{ fontSize: '0.8125rem', color: 'var(--text-3)' }}>{it.subtitle ? `${it.subtitle} · ` : ''}já no MMisc</span>
+                      <span style={{ fontSize: '0.8125rem', color: 'var(--text-3)' }}>{it.subtitle ? `${it.subtitle} · ` : ''}{t('já no MMisc')}</span>
                     </span>
                   </button>
                 ))}
@@ -401,7 +406,7 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
                 error={remote.error ? String(remote.error) : remote.data?.error}
                 hide={known}
                 limit={6}
-                label={placeCat && near && term.length < 2 ? 'Você está em algum destes?' : undefined}
+                label={placeCat && near && term.length < 2 ? t('Você está em algum destes?') : undefined}
                 onPick={(r) => {
                   setExternal(r)
                   setTitle(r.title)
@@ -411,11 +416,11 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
 
             {title.trim() && (
               <label style={{ display: 'block' }}>
-                <span className="field-label">Não achou? Detalhe para o cadastro manual (opcional)</span>
+                <span className="field-label">{t('Não achou? Detalhe para o cadastro manual (opcional)')}</span>
                 <input
                   className="field"
                   value={subtitle}
-                  placeholder={placeCat ? 'Bairro, cidade' : 'Artista, diretor, ano…'}
+                  placeholder={placeCat ? t('Bairro, cidade') : t('Artista, diretor, ano…')}
                   onChange={(e) => setSubtitle(e.target.value)}
                 />
               </label>
@@ -450,7 +455,7 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
               setCompareKey((k) => k + 1)
             }}
           >
-            Registrar sem nota
+            {t('Registrar sem nota')}
           </button>
         )}
 
@@ -460,18 +465,18 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
         )}
 
         <div className="compose-quick">
-          <div className="segmented" role="radiogroup" aria-label="Quando" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
+          <div className="segmented" role="radiogroup" aria-label={t('Quando')} style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
             <button type="button" role="radio" aria-checked={day === today} onClick={() => setDay(today)}>
-              Hoje
+              {t('Hoje')}
             </button>
             <button type="button" role="radio" aria-checked={day === yesterday} onClick={() => setDay(yesterday)}>
-              Ontem
+              {t('Ontem')}
             </button>
             <label className="segmented__date" data-checked={day !== today && day !== yesterday}>
-              <span>{day !== today && day !== yesterday ? day.split('-').reverse().join('/') : 'Outro dia'}</span>
+              <span>{day !== today && day !== yesterday ? new Date(`${day}T12:00:00`).toLocaleDateString(locale(), { day: 'numeric', month: 'numeric', year: 'numeric' }) : t('Outro dia')}</span>
               <input
                 type="date"
-                aria-label="Escolher outro dia"
+                aria-label={t('Escolher outro dia')}
                 value={day}
                 max={today}
                 onChange={(e) => e.target.value && setDay(e.target.value)}
@@ -483,15 +488,15 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
                 haptic()
                 setLoved((v) => !v)
               }}>
-              <span aria-hidden="true">{loved ? '♥' : '♡'}</span> Curti
+              <span aria-hidden="true">{loved ? '♥' : '♡'}</span> {t('Curti')}
             </button>
             <button type="button" className="toggle-chip tap" aria-pressed={isRewatch} onClick={() => setRewatch(!isRewatch)}>
-              <span aria-hidden="true">↻</span> {category === 'album' ? 'Reouvi' : screen ? 'Revi' : 'De novo'}
+              <span aria-hidden="true">↻</span> {category === 'album' ? t('Reouvi') : screen ? t('Revi') : t('De novo')}
             </button>
             {placeCat && photos.length < MAX_PHOTOS && (
               // Bar e banheiro: câmera direto, sem passar por "Mais detalhes"
               <label className="toggle-chip tap" style={{ cursor: 'pointer' }}>
-                <span aria-hidden="true">📷</span> {photos.length ? `Foto (${photos.length})` : 'Foto'}
+                <span aria-hidden="true">📷</span> {photos.length ? t('Foto ({length})', { length: photos.length }) : t('Foto')}
                 <input
                   type="file"
                   accept="image/*"
@@ -508,8 +513,8 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
         </div>
 
         <div>
-          <span className="field-label">Quem pode ver</span>
-          <div className="segmented" role="radiogroup" aria-label="Quem pode ver">
+          <span className="field-label">{t('Quem pode ver')}</span>
+          <div className="segmented" role="radiogroup" aria-label={t('Quem pode ver')}>
             {VIS.map((v) => (
               <button key={v.id} type="button" role="radio" aria-checked={visibility === v.id} onClick={() => setVisibility(v.id)}>
                 {v.label}
@@ -521,8 +526,8 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
 
         {/* ---------- mais detalhes (recolhido) ---------- */}
         <button type="button" className="details-toggle tap" aria-expanded={details} aria-controls="compose-details" onClick={toggleDetails}>
-          <span>Mais detalhes</span>
-          <span style={{ fontSize: '0.8125rem', color: 'var(--text-3)', fontWeight: 500 }}>texto, nota privada, com quem, fotos</span>
+          <span>{t('Mais detalhes')}</span>
+          <span style={{ fontSize: '0.8125rem', color: 'var(--text-3)', fontWeight: 500 }}>{t('texto, nota privada, com quem, fotos')}</span>
           <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.4" style={{ transform: details ? 'rotate(180deg)' : 'none', transition: 'transform .2s' }}>
             <path d="M6 9l6 6 6-6" />
           </svg>
@@ -532,8 +537,8 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
           <div id="compose-details" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {screen && (
               <div>
-                <span className="field-label">Onde viu</span>
-                <div className="segmented" role="radiogroup" aria-label="Onde viu" style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}>
+                <span className="field-label">{t('Onde viu')}</span>
+                <div className="segmented" role="radiogroup" aria-label={t('Onde viu')} style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}>
                   {WHERE_OPTIONS.map((w) => (
                     <button key={w} type="button" role="radio" aria-checked={where === w} onClick={() => setWhere(where === w ? null : w)}>
                       {WATCHED_WHERE_LABEL[w]}
@@ -545,8 +550,8 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
 
             {acceptedFriends.length > 0 && (
               <div>
-                <span className="field-label">{screen ? 'Viu com quem?' : 'Com quem?'}</span>
-                <div className="chips no-scrollbar" role="group" aria-label="Amigos que estavam junto" style={{ margin: 0, padding: 0 }}>
+                <span className="field-label">{screen ? t('Viu com quem?') : t('Com quem?')}</span>
+                <div className="chips no-scrollbar" role="group" aria-label={t('Amigos que estavam junto')} style={{ margin: 0, padding: 0 }}>
                   {acceptedFriends.map((f) => {
                     const on = companions.includes(f.id)
                     return (
@@ -564,50 +569,50 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
                     )
                   })}
                 </div>
-                <span className="field-hint">Eles recebem um aviso para registrar a própria entrada em 1 toque.</span>
+                <span className="field-hint">{t('Eles recebem um aviso para registrar a própria entrada em 1 toque.')}</span>
               </div>
             )}
 
             <label style={{ display: 'block' }}>
-              <span className="field-label">Sua review</span>
+              <span className="field-label">{t('Sua review')}</span>
               <textarea
                 className="field"
                 rows={4}
                 value={body}
                 maxLength={5000}
-                placeholder="Conte como foi…"
+                placeholder={t('Conte como foi…')}
                 onChange={(e) => setBody(e.target.value)}
                 style={{ height: 'auto', padding: '12px 14px', resize: 'none', lineHeight: 1.4 }}
               />
-              <span className="field-hint">Para esconder só um trecho, escreva entre barras duplas: ||o final||</span>
+              <span className="field-hint">{t('Para esconder só um trecho, escreva entre barras duplas: ||o final||')}</span>
             </label>
             {body.trim() && (
               <button type="button" className="toggle-chip tap" aria-pressed={spoiler} onClick={() => setSpoiler((v) => !v)} style={{ alignSelf: 'flex-start' }}>
-                <span aria-hidden="true">⚠</span> Contém spoiler (borra o texto todo)
+                <span aria-hidden="true">⚠</span> {t('Contém spoiler (borra o texto todo)')}
               </button>
             )}
 
             <label style={{ display: 'block' }}>
               <span className="field-label">
-                <span aria-hidden="true">🔒 </span>Nota privada
+                <span aria-hidden="true">🔒 </span>{t('Nota privada')}
               </span>
               <textarea
                 className="field"
                 rows={3}
                 value={noteValue}
                 maxLength={5000}
-                placeholder="Cenas, frases, por que deu essa nota…"
+                placeholder={t('Cenas, frases, por que deu essa nota…')}
                 onChange={(e) => {
                   setNote(e.target.value)
                   setNoteTouched(true)
                 }}
                 style={{ height: 'auto', padding: '12px 14px', resize: 'none', lineHeight: 1.4 }}
               />
-              <span className="field-hint">Só você vê, mesmo que a review seja pública.</span>
+              <span className="field-hint">{t('Só você vê, mesmo que a review seja pública.')}</span>
             </label>
 
             <div>
-              <span className="field-label">Critérios (opcional)</span>
+              <span className="field-label">{t('Critérios (opcional)')}</span>
               <div className="group">
                 {cat.criteria.map((c) => (
                   <CriterionInput
@@ -623,14 +628,14 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
 
             <div>
               <span className="field-label">
-                {edit ? 'Adicionar fotos' : 'Fotos'} ({photos.length}/{MAX_PHOTOS})
+                {edit ? t('Adicionar fotos') : t('Fotos')} ({photos.length}/{MAX_PHOTOS})
               </span>
               <div className="photo-strip no-scrollbar">
                 {previews.map((u, i) => (
                   <button
                     key={u}
                     type="button"
-                    aria-label={`Remover foto ${i + 1}`}
+                    aria-label={t('Remover foto {v}', { v: i + 1 })}
                     onClick={() => setPhotos((p) => p.filter((_, j) => j !== i))}
                     style={{ padding: 0, border: 'none', background: 'none', position: 'relative' }}
                   >
@@ -641,7 +646,7 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
                 {photos.length < MAX_PHOTOS && (
                   <label className="photo-add tap">
                     <span aria-hidden="true">+</span>
-                    <span className="visually-hidden">Adicionar fotos</span>
+                    <span className="visually-hidden">{t('Adicionar fotos')}</span>
                     <input
                       type="file"
                       accept="image/*"
@@ -661,12 +666,12 @@ export function ComposeSheet({ open, start, onClose, onDone }: Props) {
 
         {create.error && (
           <p role="alert" style={{ margin: 0, color: 'var(--cat-filme-ink)', fontSize: '0.875rem' }}>
-            Não deu para salvar: {(create.error as Error).message}
+            {t('Não deu para salvar: {message}', { message: (create.error as Error).message })}
           </p>
         )}
 
         <button type="button" className="btn btn--primary tap" disabled={!ready} onClick={submit} style={{ opacity: ready ? 1 : 0.45 }}>
-          {create.isPending ? 'Salvando…' : edit ? 'Salvar alterações' : rating > 0 ? `${verb} · registrar` : `${verb} · registrar sem nota`}
+          {create.isPending ? t('Salvando…') : edit ? t('Salvar alterações') : rating > 0 ? t('{verb} · registrar', { verb }) : t('{verb} · registrar sem nota', { verb })}
         </button>
       </div>
     </Sheet>

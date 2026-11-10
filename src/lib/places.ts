@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from './supabase'
 import type { Item, Profile } from './types'
 
+import { t } from './i18n'
 export type FichaField = 'area' | 'endereco' | 'horario' | 'faixa_preco' | 'atributos' | 'link'
 
 export interface Ficha {
@@ -16,28 +17,28 @@ export interface Ficha {
 }
 
 export const FIELD_LABEL: Record<FichaField, string> = {
-  area: 'Bairro e cidade',
-  endereco: 'Endereço',
-  horario: 'Horário',
-  faixa_preco: 'Faixa de preço',
-  atributos: 'Características',
-  link: 'Site ou Instagram',
+  area: t('Bairro e cidade'),
+  endereco: t('Endereço'),
+  horario: t('Horário'),
+  faixa_preco: t('Faixa de preço'),
+  atributos: t('Características'),
+  link: t('Site ou Instagram'),
 }
 
 /** Mesma lista do banco (valid_suggestion_value). */
 export const ATTRIBUTES: { id: string; label: string }[] = [
-  { id: 'musica_ao_vivo', label: 'Música ao vivo' },
-  { id: 'mesa_na_calcada', label: 'Mesa na calçada' },
-  { id: 'pet_friendly', label: 'Aceita pet' },
-  { id: 'bom_para_date', label: 'Bom para date' },
-  { id: 'bom_para_grupo', label: 'Bom para grupo' },
-  { id: 'bom_para_trabalhar', label: 'Dá para trabalhar' },
-  { id: 'wifi', label: 'Wi-fi' },
-  { id: 'tomada', label: 'Tomada' },
-  { id: 'acessivel', label: 'Acessível' },
-  { id: 'aceita_reserva', label: 'Aceita reserva' },
-  { id: 'vegetariano', label: 'Opções vegetarianas' },
-  { id: 'abre_tarde', label: 'Abre até tarde' },
+  { id: 'musica_ao_vivo', label: t('Música ao vivo') },
+  { id: 'mesa_na_calcada', label: t('Mesa na calçada') },
+  { id: 'pet_friendly', label: t('Aceita pet') },
+  { id: 'bom_para_date', label: t('Bom para date') },
+  { id: 'bom_para_grupo', label: t('Bom para grupo') },
+  { id: 'bom_para_trabalhar', label: t('Dá para trabalhar') },
+  { id: 'wifi', label: t('Wi-fi') },
+  { id: 'tomada', label: t('Tomada') },
+  { id: 'acessivel', label: t('Acessível') },
+  { id: 'aceita_reserva', label: t('Aceita reserva') },
+  { id: 'vegetariano', label: t('Opções vegetarianas') },
+  { id: 'abre_tarde', label: t('Abre até tarde') },
 ]
 export const attrLabel = (id: string) => ATTRIBUTES.find((a) => a.id === id)?.label ?? id
 export const priceLabel = (n: number) => '$'.repeat(n)

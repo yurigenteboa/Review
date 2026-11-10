@@ -28,6 +28,7 @@ import { useFriends } from '../lib/social'
 import type { Item, Profile, Review } from '../lib/types'
 import { LoadingCards } from './states'
 
+import { locale, t, tp } from '../lib/i18n'
 interface Props {
   item: Item
   onCompose: (s: ComposeStart) => void
@@ -72,10 +73,10 @@ export default function Filme({ item, onCompose }: Props) {
       />
 
       {movie.data?.missingKey && (
-        <p className="notice">A ficha completa ainda não foi ligada (falta a chave {movie.data.missingKey} no Supabase).</p>
+        <p className="notice">{t('A ficha completa ainda não foi ligada (falta a chave {missingKey} no Supabase).', { missingKey: movie.data.missingKey })}</p>
       )}
       {(movie.error || movie.data?.error) && !d && (
-        <p className="notice" role="alert">Não deu para carregar a ficha do TMDB agora. As reviews continuam abaixo.</p>
+        <p className="notice" role="alert">{t('Não deu para carregar a ficha do TMDB agora. As reviews continuam abaixo.')}</p>
       )}
 
       {myEntries.length > 0 && <MyDiary entries={myEntries} onEdit={(r) => onCompose({ edit: r })} />}
@@ -97,7 +98,7 @@ export default function Filme({ item, onCompose }: Props) {
           <CastAndCrew d={d} />
           {d.genres.length > 0 && (
             <section className="movie-section" aria-labelledby="sec-generos">
-              <h2 id="sec-generos">Gêneros</h2>
+              <h2 id="sec-generos">{t('Gêneros')}</h2>
               <div className="genres">
                 {d.genres.map((g) => (
                   <span key={g} className="genre">
@@ -142,7 +143,7 @@ function Hero({ item, d }: { item: Item; d: MovieDetails | undefined }) {
         <button
           type="button"
           className="glass glass--pill tap"
-          aria-label="Voltar"
+          aria-label={t('Voltar')}
           onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/'))}
           style={{ position: 'absolute', top: 'calc(var(--safe-top) + 12px)', left: 16, zIndex: 2, width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text)' }}
         >
@@ -152,7 +153,7 @@ function Hero({ item, d }: { item: Item; d: MovieDetails | undefined }) {
 
       <div className="movie-head">
         {poster ? (
-          <img className="movie-poster" src={poster} alt={`Pôster de ${item.title}`} />
+          <img className="movie-poster" src={poster} alt={t('Pôster de {title}', { title: item.title })} />
         ) : (
           <div className="movie-poster" aria-hidden="true" />
         )}
@@ -176,7 +177,7 @@ function Hero({ item, d }: { item: Item; d: MovieDetails | undefined }) {
           {directors.length > 0 && (
             <div className="movie-meta" style={{ marginTop: 4 }}>
               <span>
-                Direção de <strong>{directors.join(', ')}</strong>
+                {t('Direção de {nomes}', { nomes: <strong>{directors.join(', ')}</strong> })}
               </span>
             </div>
           )}
@@ -228,7 +229,7 @@ function ActionBar({
   async function share() {
     const url = window.location.href
     const title = d?.title ?? item.title
-    const text = mine?.rating != null ? `Dei ${formatRating(mine.rating)} para ${title} no MMisc` : `${title} no MMisc`
+    const text = mine?.rating != null ? t('Dei {nota} para {title} no MMisc', { nota: formatRating(mine.rating), title }) : t('{title} no MMisc', { title })
     try {
       if (navigator.share) {
         await navigator.share({ title, text, url })
@@ -250,18 +251,18 @@ function ActionBar({
       <div ref={sentinel} aria-hidden="true" style={{ height: 1 }} />
       <Glass variant="bar" className="movie-actions" style={stuck ? undefined : { background: 'transparent', borderBottomColor: 'transparent', WebkitBackdropFilter: 'none', backdropFilter: 'none' }}>
         {stuck && (
-          <button type="button" className="icon-btn tap" aria-label="Voltar" style={{ width: 44, height: 44, borderRadius: 22, flex: 'none' }} onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/'))}>
+          <button type="button" className="icon-btn tap" aria-label={t('Voltar')} style={{ width: 44, height: 44, borderRadius: 22, flex: 'none' }} onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/'))}>
             <BackChevron />
           </button>
         )}
         <button type="button" className="btn btn--primary tap" onClick={onCompose}>
           <EyeIcon />
-          <span>{mine ? 'Vi de novo' : 'Vi'}</span>
+          <span>{mine ? t('Vi de novo') : t('Vi')}</span>
         </button>
         <button
           type="button"
           className="btn btn--plain tap action-icon"
-          aria-label={loved ? 'Tirar o curti' : 'Curti'}
+          aria-label={loved ? t('Tirar o curti') : t('Curti')}
           aria-pressed={loved}
           disabled={love.isPending}
           onClick={() => (mine ? love.mutate({ review: mine, loved: !mine.loved }) : onLoveFirst())}
@@ -271,19 +272,19 @@ function ActionBar({
         <button
           type="button"
           className="btn btn--plain tap action-icon"
-          aria-label={wanted ? 'Tirar do quero ver' : 'Quero ver'}
+          aria-label={wanted ? t('Tirar do quero ver') : t('Quero ver')}
           aria-pressed={wanted}
           disabled={want.isPending}
           onClick={() => want.mutate({ itemId: item.id, on: !iWant })}
         >
           <BookmarkIcon filled={wanted} />
         </button>
-        <button type="button" className="btn btn--plain tap action-icon" onClick={share} aria-label={copied ? 'Link copiado' : 'Compartilhar'}>
+        <button type="button" className="btn btn--plain tap action-icon" onClick={share} aria-label={copied ? t('Link copiado') : t('Compartilhar')}>
           <ShareIcon />
         </button>
       </Glass>
       <span className="visually-hidden" aria-live="polite">
-        {copied ? 'Link copiado' : ''}
+        {copied ? t('Link copiado') : ''}
       </span>
     </>
   )
@@ -298,13 +299,13 @@ function MyDiary({ entries, onEdit }: { entries: Review[]; onEdit: (r: Review) =
   const rated = [...entries].reverse().filter((r): r is Review & { rating: number } => r.rating != null)
   return (
     <section className="movie-section" aria-labelledby="sec-diario">
-      <h2 id="sec-diario">Seu diário</h2>
+      <h2 id="sec-diario">{t('Seu diário')}</h2>
       {rated.length > 1 && (
-        <p className="rating-history" aria-label="Como sua nota mudou">
+        <p className="rating-history" aria-label={t('Como sua nota mudou')}>
           {rated.map((r, i) => (
             <span key={r.id}>
               {i > 0 && <span aria-hidden="true"> → </span>}
-              <strong>{formatRating(r.rating)}</strong> <span style={{ color: 'var(--text-3)' }}>em {formatDay(r.experienced_at)}</span>
+              <strong>{formatRating(r.rating)}</strong> <span style={{ color: 'var(--text-3)' }}>{t('em {dia}', { dia: formatDay(r.experienced_at) })}</span>
             </span>
           ))}
         </p>
@@ -316,13 +317,13 @@ function MyDiary({ entries, onEdit }: { entries: Review[]; onEdit: (r: Review) =
             {notes.data?.[r.id] && (
               <p className="private-note">
                 <span aria-hidden="true">🔒 </span>
-                <span className="visually-hidden">Nota privada: </span>
+                <span className="visually-hidden">{t('Nota privada:')} </span>
                 {notes.data[r.id]}
               </p>
             )}
             <span style={{ display: 'flex', gap: 16 }}>
               <button type="button" className="link-btn" onClick={() => onEdit(r)}>
-                Editar
+                {t('Editar')}
               </button>
               <button
                 type="button"
@@ -330,10 +331,10 @@ function MyDiary({ entries, onEdit }: { entries: Review[]; onEdit: (r: Review) =
                 style={{ color: 'var(--cat-filme-ink)' }}
                 disabled={del.isPending}
                 onClick={() => {
-                  if (window.confirm('Apagar esta entrada do diário? Isso não pode ser desfeito.')) del.mutate(r)
+                  if (window.confirm(t('Apagar esta entrada do diário? Isso não pode ser desfeito.'))) del.mutate(r)
                 }}
               >
-                Apagar
+                {t('Apagar')}
               </button>
             </span>
           </div>
@@ -348,8 +349,8 @@ function MyDiary({ entries, onEdit }: { entries: Review[]; onEdit: (r: Review) =
 /** Diferença arredondada para meia estrela: 1 -> "1 estrela", 0,5 -> "meia estrela" */
 function starsDiff(n: number): string {
   const v = Math.round(Math.abs(n) * 2) / 2
-  if (v === 0.5) return 'meia estrela'
-  return `${formatRating(v).replace(',0', '')} ${v >= 2 ? 'estrelas' : 'estrela'}`
+  if (v === 0.5) return t('meia estrela')
+  return tp(v, '{n} estrela', '{n} estrelas')
 }
 
 function FriendsBlock({
@@ -369,17 +370,19 @@ function FriendsBlock({
   let comparison: string | null = null
   if (mine?.rating != null && rated.length) {
     const diff = mine.rating - avg
-    if (Math.abs(diff) < 0.25) comparison = 'Você deu praticamente a mesma nota que a média dos seus amigos.'
-    else comparison = `Você deu ${starsDiff(diff)} a ${diff > 0 ? 'mais' : 'menos'} que a média dos seus amigos.`
+    if (Math.abs(diff) < 0.25) comparison = t('Você deu praticamente a mesma nota que a média dos seus amigos.')
+    else comparison = diff > 0
+        ? t('Você deu {diferenca} a mais que a média dos seus amigos.', { diferenca: starsDiff(diff) })
+        : t('Você deu {diferenca} a menos que a média dos seus amigos.', { diferenca: starsDiff(diff) })
   }
 
   return (
     <section className="movie-section" aria-labelledby="sec-amigos">
-      <h2 id="sec-amigos">Seus amigos</h2>
+      <h2 id="sec-amigos">{t('Seus amigos')}</h2>
       <div className="movie-card">
         {friendsReviews.length === 0 ? (
           <p style={{ margin: 0, fontSize: 'var(--fs-callout)', color: 'var(--text-3)' }}>
-            Nenhum amigo registrou este filme ainda. {mine ? 'Você foi o primeiro do grupo.' : 'Seja o primeiro do grupo.'}
+            {mine ? t('Nenhum amigo registrou este filme ainda. Você foi o primeiro do grupo.') : t('Nenhum amigo registrou este filme ainda. Seja o primeiro do grupo.')}
           </p>
         ) : (
           <>
@@ -389,12 +392,12 @@ function FriendsBlock({
                   key={r.id}
                   to={`/u/${r.user_id}`}
                   className="friend-chip tap"
-                  aria-label={`${displayName(r.author)}: ${r.rating != null ? formatRating(r.rating) : 'viu, sem nota'}${r.loved ? ', curtiu' : ''}`}
+                  aria-label={`${displayName(r.author)}: ${r.rating != null ? formatRating(r.rating) : t('viu, sem nota')}${r.loved ? t(', curtiu') : ''}`}
                 >
                   <Avatar profile={r.author} size={48} />
                   <span className="friend-chip__name">{displayName(r.author)}</span>
                   <span className="friend-chip__rate">
-                    {r.rating != null ? `★ ${formatRating(r.rating)}` : 'viu'}
+                    {r.rating != null ? `★ ${formatRating(r.rating)}` : t('viu')}
                     {r.loved && <span style={{ color: 'var(--like)' }}> ♥</span>}
                   </span>
                 </Link>
@@ -404,7 +407,7 @@ function FriendsBlock({
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 14 }}>
                 <span className="score-big__value">{formatRating(avg)}</span>
                 <span style={{ fontSize: 'var(--fs-footnote)', color: 'var(--text-3)' }}>
-                  média de {rated.length} {rated.length === 1 ? 'amigo' : 'amigos'}
+                  {tp(rated.length, 'média de {n} amigo', 'média de {n} amigos')}
                 </span>
               </div>
             )}
@@ -420,9 +423,12 @@ function FriendsBlock({
             </span>
             <span>
               {friendsWant.length === 1
-                ? `${displayName(friendsWant[0])} quer ver`
-                : `${friendsWant.length} amigos querem ver`}
-              {iWant ? ', como você. Bom para marcar sessão.' : '.'}
+                ? iWant
+                  ? t('{nome} quer ver, como você. Bom para marcar sessão.', { nome: displayName(friendsWant[0]) })
+                  : t('{nome} quer ver.', { nome: displayName(friendsWant[0]) })
+                : iWant
+                  ? t('{n} amigos querem ver, como você. Bom para marcar sessão.', { n: friendsWant.length })
+                  : t('{n} amigos querem ver.', { n: friendsWant.length })}
             </span>
           </div>
         )}
@@ -445,14 +451,14 @@ function RatingsBlock({ reviews, mine, loading }: { reviews: Review[]; mine: Rev
 
   return (
     <section className="movie-section" aria-labelledby="sec-notas">
-      <h2 id="sec-notas">Notas no MMisc</h2>
+      <h2 id="sec-notas">{t('Notas no MMisc')}</h2>
       <div className="movie-card">
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <span className="score-big__value">{rated.length ? formatRating(avg) : '–'}</span>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             <Stars value={avg} size={18} withNumber />
             <span style={{ fontSize: 'var(--fs-footnote)', color: 'var(--text-3)' }}>
-              {loading ? 'Carregando…' : rated.length === 0 ? 'Ninguém deu nota ainda' : rated.length === 1 ? '1 nota' : `${rated.length} notas`}
+              {loading ? t('Carregando…') : rated.length === 0 ? t('Ninguém deu nota ainda') : tp(rated.length, '{n} nota', '{n} notas')}
             </span>
           </div>
         </div>
@@ -477,7 +483,7 @@ function RatingsBlock({ reviews, mine, loading }: { reviews: Review[]; mine: Rev
             {mineBin !== null && (
               <p style={{ margin: '8px 0 0', fontSize: '0.75rem', color: 'var(--text-3)' }}>
                 <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 3, background: 'var(--accent)', marginRight: 6, verticalAlign: -1 }} />
-                sua nota
+                {t('sua nota')}
               </p>
             )}
           </>
@@ -513,15 +519,15 @@ function ProviderGroup({
           return (
             <li key={p.id} className="provider" data-mine={mine}>
               {editing ? (
-                <button type="button" className="provider__btn tap" aria-pressed={mine} aria-label={`${p.name}: ${mine ? 'você assina' : 'marcar que assino'}`} onClick={() => onToggle(p, !mine)}>
+                <button type="button" className="provider__btn tap" aria-pressed={mine} aria-label={`${p.name}: ${mine ? t('você assina') : t('marcar que assino')}`} onClick={() => onToggle(p, !mine)}>
                   {logo}
                 </button>
               ) : (
-                <span role="img" aria-label={mine ? `${p.name} (você assina)` : p.name} title={p.name}>
+                <span role="img" aria-label={mine ? t('{name} (você assina)', { name: p.name }) : p.name} title={p.name}>
                   {logo}
                 </span>
               )}
-              {mine && <span className="provider__tag">assino</span>}
+              {mine && <span className="provider__tag">{t('assino')}</span>}
             </li>
           )
         })}
@@ -542,38 +548,38 @@ function WhereToWatch({ providers }: { providers: MovieDetails['providers'] }) {
 
   return (
     <section className="movie-section" aria-labelledby="sec-onde">
-      <h2 id="sec-onde">Onde assistir no Brasil</h2>
+      <h2 id="sec-onde">{t('Onde assistir no Brasil')}</h2>
       <div className="movie-card">
         {onMine.length > 0 && !editing && (
           <p className="on-my-service">
-            Está no {onMine.map((p) => p.name).join(' e no ')}, que você assina.
+            {t('Está em {servicos}, que você assina.', { servicos: new Intl.ListFormat(locale(), { type: 'conjunction' }).format(onMine.map((p) => p.name)) })}
           </p>
         )}
         {empty ? (
-          <p style={{ margin: 0, fontSize: 'var(--fs-callout)', color: 'var(--text-3)' }}>Não está em streaming, aluguel ou venda no Brasil agora.</p>
+          <p style={{ margin: 0, fontSize: 'var(--fs-callout)', color: 'var(--text-3)' }}>{t('Não está em streaming, aluguel ou venda no Brasil agora.')}</p>
         ) : (
           <div className="providers">
-            <ProviderGroup label="Streaming" list={providers!.flatrate} mineIds={mineIds} editing={editing} onToggle={onToggle} />
-            {!editing && <ProviderGroup label="Alugar" list={providers!.rent} mineIds={new Set()} editing={false} onToggle={onToggle} />}
-            {!editing && <ProviderGroup label="Comprar" list={providers!.buy} mineIds={new Set()} editing={false} onToggle={onToggle} />}
+            <ProviderGroup label={t('Streaming')} list={providers!.flatrate} mineIds={mineIds} editing={editing} onToggle={onToggle} />
+            {!editing && <ProviderGroup label={t('Alugar')} list={providers!.rent} mineIds={new Set()} editing={false} onToggle={onToggle} />}
+            {!editing && <ProviderGroup label={t('Comprar')} list={providers!.buy} mineIds={new Set()} editing={false} onToggle={onToggle} />}
           </div>
         )}
-        {editing && <p className="credit">Toque nos serviços que você assina. Isso vale para todos os filmes e para o filtro do seu “quero ver”.</p>}
+        {editing && <p className="credit">{t('Toque nos serviços que você assina. Isso vale para todos os filmes e para o filtro do seu “quero ver”.')}</p>}
         <p className="credit" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0 12px' }}>
           <span>
-            Dados: JustWatch
+            {t('Dados: JustWatch')}
             {providers?.link && (
               <>
                 {' · '}
                 <a href={providers.link} target="_blank" rel="noopener noreferrer">
-                  ver opções
+                  {t('ver opções')}
                 </a>
               </>
             )}
           </span>
           {providers && providers.flatrate.length > 0 && (
             <button type="button" className="link-btn" style={{ fontSize: '0.8125rem', minHeight: 36 }} onClick={() => setEditing((e) => !e)}>
-              {editing ? 'Pronto' : 'Meus streamings'}
+              {editing ? t('Pronto') : t('Meus streamings')}
             </button>
           )}
         </p>
@@ -590,13 +596,13 @@ function Synopsis({ text }: { text: string | null }) {
   const long = text.length > 260
   return (
     <section className="movie-section" aria-labelledby="sec-sinopse">
-      <h2 id="sec-sinopse">Sinopse</h2>
+      <h2 id="sec-sinopse">{t('Sinopse')}</h2>
       <p className="synopsis" data-clamp={long && !open} id="synopsis-text">
         {text}
       </p>
       {long && (
         <button type="button" className="link-btn" aria-expanded={open} aria-controls="synopsis-text" onClick={() => setOpen((o) => !o)}>
-          {open ? 'Ler menos' : 'Ler mais'}
+          {open ? t('Ler menos') : t('Ler mais')}
         </button>
       )}
     </section>
@@ -608,13 +614,13 @@ function Synopsis({ text }: { text: string | null }) {
 function Trailer({ trailer }: { trailer: { key: string; name: string } }) {
   return (
     <section className="movie-section" aria-labelledby="sec-trailer">
-      <h2 id="sec-trailer">Trailer</h2>
+      <h2 id="sec-trailer">{t('Trailer')}</h2>
       <a
         className="trailer tap"
         href={`https://www.youtube.com/watch?v=${encodeURIComponent(trailer.key)}`}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label={`Assistir trailer no YouTube: ${trailer.name}`}
+        aria-label={t('Assistir trailer no YouTube: {name}', { name: trailer.name })}
       >
         <img src={`https://i.ytimg.com/vi/${encodeURIComponent(trailer.key)}/hqdefault.jpg`} alt="" loading="lazy" />
         <span className="trailer__play" aria-hidden="true">
@@ -637,7 +643,7 @@ function CastAndCrew({ d }: { d: MovieDetails }) {
   for (const c of d.crew) crew.set(c.role, [...(crew.get(c.role) ?? []), c.name])
   return (
     <section className="movie-section" aria-labelledby="sec-elenco">
-      <h2 id="sec-elenco">Elenco e equipe</h2>
+      <h2 id="sec-elenco">{t('Elenco e equipe')}</h2>
       {d.cast.length > 0 && (
         <ul className="cast-row no-scrollbar" style={{ listStyle: 'none' }}>
           {d.cast.map((p) => (
@@ -691,25 +697,25 @@ function ReviewsBlock({
 
   return (
     <section className="movie-section" aria-labelledby="sec-reviews">
-      <h2 id="sec-reviews">Reviews</h2>
+      <h2 id="sec-reviews">{t('Reviews')}</h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {loading && <LoadingCards count={1} />}
-        {friendsText.length > 0 && <span className="providers__label">Dos seus amigos</span>}
+        {friendsText.length > 0 && <span className="providers__label">{t('Dos seus amigos')}</span>}
         {friendsText.map((r) => (
           <ReviewCard key={r.id} review={r} showItem={false} />
         ))}
-        {othersText.length > 0 && <span className="providers__label">De outras pessoas</span>}
+        {othersText.length > 0 && <span className="providers__label">{t('De outras pessoas')}</span>}
         {othersText.map((r) => (
           <ReviewCard key={r.id} review={r} showItem={false} />
         ))}
         {!loading && empty && (
           <div className="movie-card" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
             <span style={{ color: 'var(--text-3)' }}>
-              {hasMine ? 'Só você escreveu sobre este filme até agora (está no seu diário, acima).' : 'Ninguém escreveu sobre este filme ainda.'}
+              {hasMine ? t('Só você escreveu sobre este filme até agora (está no seu diário, acima).') : t('Ninguém escreveu sobre este filme ainda.')}
             </span>
             {!hasMine && (
               <button type="button" className="btn btn--plain tap" onClick={onCompose}>
-                Escrever a primeira
+                {t('Escrever a primeira')}
               </button>
             )}
           </div>
@@ -754,7 +760,7 @@ function SimilarRow({ list }: { list: MovieSimilar[] }) {
 
   return (
     <section className="movie-section" aria-labelledby="sec-parecidos">
-      <h2 id="sec-parecidos">Parecidos</h2>
+      <h2 id="sec-parecidos">{t('Parecidos')}</h2>
       <div className="similar-row no-scrollbar">
         {list.map((m) => (
           <button key={m.id} type="button" className="similar-card tap" aria-busy={busy === m.id} disabled={busy !== null} onClick={() => go(m)}>
@@ -766,7 +772,7 @@ function SimilarRow({ list }: { list: MovieSimilar[] }) {
       </div>
       {open.error && (
         <p className="credit" role="alert">
-          Não deu para abrir esse filme agora.
+          {t('Não deu para abrir esse filme agora.')}
         </p>
       )}
     </section>

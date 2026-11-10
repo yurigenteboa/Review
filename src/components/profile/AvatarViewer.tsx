@@ -6,6 +6,7 @@ import { useRemoveProfileImage, useUploadProfileImage } from '../../lib/profileD
 import type { Profile } from '../../lib/types'
 import { Avatar } from '../review/ReviewCard'
 
+import { t } from '../../lib/i18n'
 type AvatarProfile = Pick<Profile, 'id' | 'display_name' | 'username' | 'avatar_url'>
 
 /** Foto do Google vem pequena (=s96-c); pede uma versão maior para ver ampliada. */
@@ -31,7 +32,7 @@ export function AvatarViewer({ profile: p, size, isMe }: { profile: AvatarProfil
       <button
         type="button"
         className="avatar-btn tap"
-        aria-label={p.avatar_url ? `Ver foto de ${name}` : 'Adicionar foto de perfil'}
+        aria-label={p.avatar_url ? t('Ver foto de {name}', { name }) : t('Adicionar foto de perfil')}
         onClick={() => setOpen(true)}
       >
         <Avatar profile={p} size={size} />
@@ -80,13 +81,13 @@ function AvatarLightbox({ open, onClose, profile: p, isMe }: { open: boolean; on
           className="avatar-lightbox"
           role="dialog"
           aria-modal="true"
-          aria-label={`Foto de ${name}`}
+          aria-label={t('Foto de {name}', { name })}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={(e) => e.target === e.currentTarget && onClose()}
         >
-          <button ref={closeBtn} type="button" className="icon-btn tap avatar-lightbox__close" aria-label="Fechar" onClick={onClose}>
+          <button ref={closeBtn} type="button" className="icon-btn tap avatar-lightbox__close" aria-label={t('Fechar')} onClick={onClose}>
             <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" aria-hidden="true">
               <path d="M6 6l12 12M18 6L6 18" />
             </svg>
@@ -103,7 +104,7 @@ function AvatarLightbox({ open, onClose, profile: p, isMe }: { open: boolean; on
               <img
                 className="avatar-lightbox__img"
                 src={largeUrl(p.avatar_url)}
-                alt={`Foto de ${name}`}
+                alt={t('Foto de {name}', { name })}
                 referrerPolicy="no-referrer"
                 style={{ opacity: busy ? 0.5 : 1 }}
               />
@@ -121,11 +122,11 @@ function AvatarLightbox({ open, onClose, profile: p, isMe }: { open: boolean; on
           {isMe && (
             <div className="avatar-lightbox__actions">
               <button type="button" className="btn btn--primary tap" disabled={busy} onClick={() => input.current?.click()}>
-                {upload.isPending ? 'Enviando…' : p.avatar_url ? 'Trocar foto' : 'Adicionar foto'}
+                {upload.isPending ? t('Enviando…') : p.avatar_url ? t('Trocar foto') : t('Adicionar foto')}
               </button>
               {p.avatar_url && (
                 <button type="button" className="btn btn--plain tap" disabled={busy} onClick={() => remove.mutate({ userId: p.id, kind: 'avatar' })}>
-                  {remove.isPending ? 'Removendo…' : 'Remover'}
+                  {remove.isPending ? t('Removendo…') : t('Remover')}
                 </button>
               )}
               <input ref={input} type="file" accept="image/*" hidden onChange={pick} />
@@ -133,7 +134,7 @@ function AvatarLightbox({ open, onClose, profile: p, isMe }: { open: boolean; on
           )}
           {error && (
             <p role="alert" className="avatar-lightbox__error">
-              Não deu para salvar a foto: {error.message}
+              {t('Não deu para salvar a foto: {message}', { message: error.message })}
             </p>
           )}
         </motion.div>

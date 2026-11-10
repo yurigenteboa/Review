@@ -9,12 +9,13 @@ import { catColor, categoryById, childCategories, formatRating } from '../lib/ca
 import { initials } from '../lib/format'
 import { averageRating, latestPerPerson, sortDiary, useBestPlaces, useChildItems, useDeleteReview, useGenericOf, useItem, useItemRedirect, useItemReviews } from '../lib/queries'
 import { useDebounced } from '../lib/hooks'
-import { DID_VERB, WANT_VERB, useItemWatchers, useToggleWatchlist } from '../lib/diary'
+import { DID_VERB, WANT_LABEL, useItemWatchers, useToggleWatchlist } from '../lib/diary'
 import { isTmdbMovie } from '../lib/movie'
 import { PlaceInfo } from '../components/place/PlaceInfo'
 import Filme from './Filme'
 import { EmptyState, ErrorState, LoadingCards } from './states'
 
+import { t, tp } from '../lib/i18n'
 export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => void }) {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -41,9 +42,9 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
     return (
       <div className="page">
         <EmptyState
-          title="Esse item não existe mais"
-          text="O link pode ser antigo ou o item foi apagado."
-          action={{ label: 'Ir para a busca', onClick: () => navigate('/buscar') }}
+          title={t('Esse item não existe mais')}
+          text={t('O link pode ser antigo ou o item foi apagado.')}
+          action={{ label: t('Ir para a busca'), onClick: () => navigate('/buscar') }}
         />
       </div>
     )
@@ -89,7 +90,7 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
             <div style={{ position: 'absolute', left: 0, right: 0, top: 'calc(var(--safe-top) + 40px)', display: 'flex', justifyContent: 'center' }}>
               <img
                 src={it.image_url}
-                alt={`Capa de ${it.title}`}
+                alt={t('Capa de {title}', { title: it.title })}
                 style={{
                   height: it.category === 'album' ? 170 : 200,
                   width: it.category === 'album' ? 170 : 'auto',
@@ -110,7 +111,7 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
       <button
         type="button"
         className="glass glass--pill tap"
-        aria-label="Voltar"
+        aria-label={t('Voltar')}
         onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/'))}
         style={{ position: 'fixed', top: 'calc(var(--safe-top) + 12px)', left: 16, zIndex: 10, width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text)' }}
       >
@@ -125,12 +126,12 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
         {it.subtitle && <p style={{ margin: 0, fontSize: '0.9375rem', color: 'var(--text-2)' }}>{it.subtitle}</p>}
         {it.parent_id && (
           <Link to={`/item/${it.parent_id}`} className="link-btn tap" style={{ display: 'inline-flex', minHeight: 36, alignItems: 'center', fontSize: '0.9375rem' }}>
-            no {it.parent_title ?? 'lugar'} ›
+            {it.parent_title ? t('no {lugar} ›', { lugar: it.parent_title }) : t('no lugar ›')}
           </Link>
         )}
         {generic.data && (
           <Link to={`/item/${generic.data}`} className="link-btn tap" style={{ display: 'inline-flex', minHeight: 36, alignItems: 'center', fontSize: '0.9375rem', marginLeft: it.parent_id ? 12 : 0 }}>
-            Onde mais tem {it.title} ›
+            {t('Onde mais tem {title} ›', { title: it.title })}
           </Link>
         )}
 
@@ -139,8 +140,8 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             <Stars value={avg} size={20} withNumber />
             <span style={{ fontSize: '0.8125rem', color: 'var(--text-2)' }}>
-              {rated === 0 ? 'Sem notas ainda' : rated === 1 ? '1 nota' : `${rated} notas`}
-              {list.length > rated ? ` · ${list.length} ${list.length === 1 ? 'registro' : 'registros'}` : ''}
+              {rated === 0 ? t('Sem notas ainda') : tp(rated, '{n} nota', '{n} notas')}
+              {list.length > rated ? ` · ${tp(list.length, '{n} registro', '{n} registros')}` : ''}
             </span>
           </div>
         </div>}
@@ -161,7 +162,7 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
 
         {isGeneric ? (
           <p style={{ margin: '16px 0 0', fontSize: '0.875rem', color: 'var(--text-2)' }}>
-            Registre {it.title} dentro de um lugar (bar, restaurante ou café) em “O que você pediu?”.
+            {t('Registre {title} dentro de um lugar (bar, restaurante ou café) em “O que você pediu?”.', { title: it.title })}
           </p>
         ) : (
         <div style={{ display: 'flex', gap: 8, marginTop: 20 }}>
@@ -171,7 +172,7 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
             style={{ flex: 1 }}
             onClick={() => onCompose({ category: it.category, title: it.title, itemId: it.id })}
           >
-            {mine ? `${verb} de novo` : `${verb} · registrar`}
+            {mine ? t('{verb} de novo', { verb }) : t('{verb} · registrar', { verb })}
           </button>
           <button
             type="button"
@@ -181,7 +182,7 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
             onClick={() => want.mutate({ itemId: it.id, on: !iWant })}
             style={iWant ? { background: 'color-mix(in srgb, var(--accent) 16%, var(--fill))', color: 'var(--accent-ink)' } : undefined}
           >
-            {iWant ? '✓ Na lista' : `Quero ${WANT_VERB[it.category]}`}
+            {iWant ? t('✓ Na lista') : WANT_LABEL[it.category]}
           </button>
         </div>
         )}
@@ -196,7 +197,7 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
       )}
 
       {!isGeneric && (<>
-      <h2 style={{ margin: '24px 20px 10px', fontSize: '1.375rem', letterSpacing: -0.4 }}>Reviews</h2>
+      <h2 style={{ margin: '24px 20px 10px', fontSize: '1.375rem', letterSpacing: -0.4 }}>{t('Reviews')}</h2>
       <div className="page__body" style={{ paddingTop: 0 }}>
         {reviews.isLoading && <LoadingCards count={1} />}
         {list.map((r) => (
@@ -205,18 +206,18 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
             {r.user_id === userId && (
               <span style={{ alignSelf: 'flex-end', display: 'flex', gap: 16 }}>
                 <button type="button" className="link-btn" style={{ fontSize: '0.875rem' }} onClick={() => onCompose({ edit: r })}>
-                  Editar
+                  {t('Editar')}
                 </button>
                 <button
                   type="button"
                   className="link-btn"
                   disabled={del.isPending}
                   onClick={() => {
-                    if (window.confirm('Apagar esta entrada do diário? Isso não pode ser desfeito.')) del.mutate(r)
+                    if (window.confirm(t('Apagar esta entrada do diário? Isso não pode ser desfeito.'))) del.mutate(r)
                   }}
                   style={{ fontSize: '0.875rem', color: 'var(--cat-filme-ink)' }}
                 >
-                  Apagar
+                  {t('Apagar')}
                 </button>
               </span>
             )}
@@ -224,7 +225,7 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
         ))}
         {!reviews.isLoading && list.length === 0 && (
           <p style={{ margin: 0, padding: 20, textAlign: 'center', background: 'var(--surface)', borderRadius: 'var(--r-lg)', color: 'var(--text-3)' }}>
-            Ninguém registrou ainda. Seja o primeiro.
+            {t('Ninguém registrou ainda. Seja o primeiro.')}
           </p>
         )}
       </div>
@@ -239,7 +240,7 @@ function PlaceMenu({ placeId, onCompose }: { placeId: string; onCompose: () => v
   const list = menu.data ?? []
   return (
     <section aria-labelledby="o-que-pedir">
-      <h2 id="o-que-pedir" style={{ margin: '24px 20px 10px', fontSize: '1.375rem', letterSpacing: -0.4 }}>O que pedir aqui</h2>
+      <h2 id="o-que-pedir" style={{ margin: '24px 20px 10px', fontSize: '1.375rem', letterSpacing: -0.4 }}>{t('O que pedir aqui')}</h2>
       <div className="page__body" style={{ paddingTop: 0 }}>
         {menu.isLoading && <LoadingCards count={1} />}
         {list.length > 0 && (
@@ -253,7 +254,7 @@ function PlaceMenu({ placeId, onCompose }: { placeId: string; onCompose: () => v
                 </span>
                 <span className="place-menu__meta">
                   <strong>{c.rated ? formatRating(c.avg) : '–'}</strong>
-                  {c.entries === 1 ? '1 registro' : `${c.entries} registros`}
+                  {tp(c.entries, '{n} registro', '{n} registros')}
                 </span>
               </Link>
             ))}
@@ -261,9 +262,9 @@ function PlaceMenu({ placeId, onCompose }: { placeId: string; onCompose: () => v
         )}
         {!menu.isLoading && list.length === 0 && (
           <EmptyState
-            title="Ninguém contou o que pediu aqui"
-            text="Registre sua ida e diga o que pediu: drinks, pratos e o banheiro."
-            action={{ label: 'Registrar o que pedi', onClick: onCompose }}
+            title={t('Ninguém contou o que pediu aqui')}
+            text={t('Registre sua ida e diga o que pediu: drinks, pratos e o banheiro.')}
+            action={{ label: t('Registrar o que pedi'), onClick: onCompose }}
           />
         )}
       </div>
@@ -280,12 +281,12 @@ function BestPlaces({ generic, title, drink }: { generic: string; title: string;
   return (
     <section aria-labelledby="onde-tem">
       <h2 id="onde-tem" style={{ margin: '24px 20px 10px', fontSize: '1.375rem', letterSpacing: -0.4 }}>
-        Onde {drink ? 'tomar' : 'comer'} {title}
+        {drink ? t('Onde tomar {title}', { title }) : t('Onde comer {title}', { title })}
       </h2>
       <div className="page__body" style={{ paddingTop: 0 }}>
         <label style={{ display: 'block' }}>
-          <span className="visually-hidden">Bairro ou cidade</span>
-          <input className="field" value={area} placeholder="Filtrar por bairro ou cidade (ex.: Pinheiros)" onChange={(e) => setArea(e.target.value)} />
+          <span className="visually-hidden">{t('Bairro ou cidade')}</span>
+          <input className="field" value={area} placeholder={t('Filtrar por bairro ou cidade (ex.: Pinheiros)')} onChange={(e) => setArea(e.target.value)} />
         </label>
         {best.isLoading && <LoadingCards count={1} />}
         {list.length > 0 && (
@@ -302,7 +303,7 @@ function BestPlaces({ generic, title, drink }: { generic: string; title: string;
                 </span>
                 <span className="place-menu__meta">
                   <strong>{b.avg_rating != null ? formatRating(b.avg_rating) : '–'}</strong>
-                  {b.ratings === 1 ? '1 nota' : `${b.ratings} notas`}
+                  {tp(b.ratings, '{n} nota', '{n} notas')}
                 </span>
               </Link>
             ))}
@@ -310,12 +311,12 @@ function BestPlaces({ generic, title, drink }: { generic: string; title: string;
         )}
         {!best.isLoading && list.length === 0 && (
           <EmptyState
-            title={debounced.trim() ? `Nada em “${debounced.trim()}” ainda` : 'Ninguém registrou ainda'}
-            text={`Quando alguém pedir ${title} num bar, restaurante ou café, o lugar aparece aqui.`}
+            title={debounced.trim() ? t('Nada em “{v}” ainda', { v: debounced.trim() }) : t('Ninguém registrou ainda')}
+            text={t('Quando alguém pedir {title} num bar, restaurante ou café, o lugar aparece aqui.', { title })}
           />
         )}
         <p style={{ margin: '4px 4px 0', fontSize: '0.75rem', color: 'var(--text-3)' }}>
-          Nota de cada lugar = média das notas que você pode ver (suas, de amigos e públicas). Lugares com poucas notas ficam mais perto do meio.
+          {t('Nota de cada lugar = média das notas que você pode ver (suas, de amigos e públicas). Lugares com poucas notas ficam mais perto do meio.')}
         </p>
       </div>
     </section>

@@ -1,3 +1,4 @@
+import { t } from '../lib/i18n'
 // Estados de carregamento, vazio e erro reaproveitados pelas telas.
 
 export function LoadingCards({ count = 3 }: { count?: number }) {
@@ -6,7 +7,7 @@ export function LoadingCards({ count = 3 }: { count?: number }) {
       {Array.from({ length: count }, (_, i) => (
         <div key={i} className="review-card skeleton" aria-hidden="true" style={{ height: 150 }} />
       ))}
-      <span className="visually-hidden" role="status">Carregando…</span>
+      <span className="visually-hidden" role="status">{t('Carregando…')}</span>
     </>
   )
 }
@@ -36,15 +37,15 @@ export function EmptyState({
 export function ErrorState({ error, onRetry }: { error: unknown; onRetry?: () => void }) {
   return (
     <div role="alert" style={{ textAlign: 'center', padding: '40px 24px', display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center' }}>
-      <strong>Não deu para carregar</strong>
+      <strong>{t('Não deu para carregar')}</strong>
       <span style={{ fontSize: '0.875rem', color: 'var(--text-3)' }}>
         {/network|fetch|load failed/i.test((error as Error)?.message ?? '')
-          ? 'Parece que a internet caiu. Confira a conexão e tente de novo.'
-          : 'Tente de novo em instantes.'}
+          ? t('Parece que a internet caiu. Confira a conexão e tente de novo.')
+          : t('Tente de novo em instantes.')}
       </span>
       {onRetry && (
         <button type="button" className="btn btn--plain tap" onClick={onRetry}>
-          Tentar de novo
+          {t('Tentar de novo')}
         </button>
       )}
     </div>

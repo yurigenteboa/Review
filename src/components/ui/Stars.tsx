@@ -1,3 +1,4 @@
+import { t } from '../../lib/i18n'
 import { useAppearance } from '../../lib/appearance'
 import { formatRating } from '../../lib/categories'
 
@@ -19,7 +20,7 @@ interface StarsProps {
  */
 export function Stars({ value, size = 14, withNumber = false }: StarsProps) {
   const { nota } = useAppearance()
-  const label = `${formatRating(value)} de 5 estrelas`
+  const label = t('{nota} de 5 estrelas', { nota: formatRating(value) })
   if (nota === 'numero') {
     if (withNumber) return null
     return (

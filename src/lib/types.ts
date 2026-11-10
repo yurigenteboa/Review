@@ -1,6 +1,7 @@
 // Formatos dos dados que vêm do Supabase.
 import type { CategoryId } from './categories'
 
+import { t } from './i18n'
 export type Visibility = 'privado' | 'amigos' | 'publico'
 
 export interface Profile {
@@ -139,14 +140,14 @@ export interface UserService {
 }
 
 export const WATCHED_WHERE_LABEL: Record<WatchedWhere, string> = {
-  cinema: 'Cinema',
-  streaming: 'Streaming',
-  casa: 'Em casa',
-  outro: 'Outro',
+  cinema: t('Cinema'),
+  streaming: t('Streaming'),
+  casa: t('Em casa'),
+  outro: t('Outro'),
 }
 
 export const VISIBILITY_LABEL: Record<Visibility, string> = {
-  privado: 'Privado',
-  amigos: 'Amigos',
-  publico: 'Público',
+  privado: t('Privado'),
+  amigos: t('Amigos'),
+  publico: t('Público'),
 }

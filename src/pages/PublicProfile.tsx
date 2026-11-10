@@ -10,19 +10,18 @@ import { SpoilerText } from '../components/review/SpoilerText'
 import { Glass } from '../components/ui/Glass'
 import { Stars } from '../components/ui/Stars'
 import { useAuth } from '../lib/auth'
-import { CATEGORIES, categoryById, formatRating, type CategoryId } from '../lib/categories'
+import { CATEGORIES, categoryById, formatRating } from '../lib/categories'
 import { formatDay } from '../lib/diary'
 import { displayName } from '../lib/format'
+import { NOW_VERB } from '../lib/profileData'
 import { CATEGORY_PLURAL, coverImages, latestPerItem, ratingHistogram, summary, tasteLabels } from '../lib/profileStats'
 import { asReviews, parseHandle, usePublicProfile, type PublicProfileData } from '../lib/publicProfile'
 import type { Item } from '../lib/types'
 import { ErrorState, LoadingCards } from './states'
 
+import { t } from '../lib/i18n'
 const thisYear = new Date().getFullYear()
 
-const NOW_VERB: Record<CategoryId, string> = {
-  album: 'ouvindo', filme: 'vendo', serie: 'vendo', jogo: 'jogando', livro: 'lendo', bar: 'indo ao', banheiro: 'usando', cidade: 'em', drink: 'tomando', prato: 'comendo', restaurante: 'comendo no', cafe: 'no',
-}
 
 /**
  * Perfil público: mmisc.com.br/@usuario. Abre sem login e mostra só o que é público
@@ -48,10 +47,10 @@ export default function PublicProfile() {
     return (
       <Shell>
         <div className="public-missing">
-          <h1>Perfil não encontrado</h1>
-          <p>Esse @ não existe ou a pessoa deixou o perfil privado.</p>
+          <h1>{t('Perfil não encontrado')}</h1>
+          <p>{t('Esse @ não existe ou a pessoa deixou o perfil privado.')}</p>
           <Link to="/" className="btn btn--primary tap public-cta__btn">
-            {session ? 'Voltar ao MMisc' : 'Conhecer o MMisc'}
+            {session ? t('Voltar ao MMisc') : t('Conhecer o MMisc')}
           </Link>
         </div>
       </Shell>
@@ -113,8 +112,8 @@ function PublicView({ data: d, loggedIn, isMe }: { data: PublicProfileData; logg
 
       {loggedIn && (
         <Glass variant="pill" className="public-banner">
-          <span>{isMe ? 'Assim seu perfil aparece para quem tem o link.' : 'Versão pública do perfil.'}</span>
-          <Link to={isMe ? '/perfil' : `/u/${p.id}`}>{isMe ? 'Voltar' : 'Abrir no app'}</Link>
+          <span>{isMe ? t('Assim seu perfil aparece para quem tem o link.') : t('Versão pública do perfil.')}</span>
+          <Link to={isMe ? '/perfil' : `/u/${p.id}`}>{isMe ? t('Voltar') : t('Abrir no app')}</Link>
         </Glass>
       )}
 
@@ -142,7 +141,7 @@ function PublicView({ data: d, loggedIn, isMe }: { data: PublicProfileData; logg
           </div>
         )}
         {labels.length > 0 && (
-          <ul className="taste-labels" aria-label="Rótulos de gosto">
+          <ul className="taste-labels" aria-label={t('Rótulos de gosto')}>
             {labels.map((l) => (
               <li key={l}>{l}</li>
             ))}
@@ -150,7 +149,7 @@ function PublicView({ data: d, loggedIn, isMe }: { data: PublicProfileData; logg
         )}
         <dl className="profile__stats">
           <div>
-            <dt>em {thisYear}</dt>
+            <dt>{t('em {ano}', { ano: thisYear })}</dt>
             <dd>{stats.entriesThisYear}</dd>
           </div>
           <div>
@@ -158,7 +157,7 @@ function PublicView({ data: d, loggedIn, isMe }: { data: PublicProfileData; logg
             <dd>{stats.items}</dd>
           </div>
           <div>
-            <dt>nota média</dt>
+            <dt>{t('nota média')}</dt>
             <dd>{stats.average != null ? formatRating(stats.average) : '–'}</dd>
           </div>
         </dl>
@@ -168,18 +167,18 @@ function PublicView({ data: d, loggedIn, isMe }: { data: PublicProfileData; logg
         {!loggedIn && (
           <section className="profile-section public-cta">
             <p>
-              <strong>{first}</strong> usa o MMisc para dar nota para tudo: álbuns, filmes, bares, banheiros, cidades.
+              {t('{nome} usa o MMisc para dar nota para tudo: álbuns, filmes, bares, banheiros, cidades.', { nome: <strong>{first}</strong> })}
             </p>
             <Link to="/" className="btn btn--primary tap public-cta__btn">
-              Entrar no MMisc
+              {t('Entrar no MMisc')}
             </Link>
-            <span className="profile-section__hint">Sem senha: com o Google ou um código por e-mail.</span>
+            <span className="profile-section__hint">{t('Sem senha: com o Google ou um código por e-mail.')}</span>
           </section>
         )}
 
         {showcase.length > 0 && (
           <section className="profile-section" aria-labelledby="pub-favs">
-            <h2 id="pub-favs" className="profile-section__title">Favoritos</h2>
+            <h2 id="pub-favs" className="profile-section__title">{t('Favoritos')}</h2>
             {showcase.map((c) => (
               <div key={c} className="fav-group">
                 {showcase.length > 1 && <h3 className="fav-group__title">{categoryById(c).label}</h3>}
@@ -208,7 +207,7 @@ function PublicView({ data: d, loggedIn, isMe }: { data: PublicProfileData; logg
 
         {ranks.length > 0 && (
           <section className="profile-section" aria-labelledby="pub-top">
-            <h2 id="pub-top" className="profile-section__title">Top 10 de {rankYear}</h2>
+            <h2 id="pub-top" className="profile-section__title">{t('Top 10 de {rankYear}', { rankYear })}</h2>
             {rankCats.map((c) => (
               <div key={c} className="fav-group">
                 <h3 className="fav-group__title">{CATEGORY_PLURAL[c]}</h3>
@@ -237,11 +236,11 @@ function PublicView({ data: d, loggedIn, isMe }: { data: PublicProfileData; logg
         {reviews.length > 0 && (
           <>
             <section className="profile-section" aria-labelledby="pub-activity">
-              <h2 id="pub-activity" className="profile-section__title">Atividade</h2>
+              <h2 id="pub-activity" className="profile-section__title">{t('Atividade')}</h2>
               <YearHeatmap entries={reviews} color="var(--accent)" />
             </section>
             <section className="profile-section" aria-labelledby="pub-ratings">
-              <h2 id="pub-ratings" className="profile-section__title">Notas</h2>
+              <h2 id="pub-ratings" className="profile-section__title">{t('Notas')}</h2>
               <RatingBars bins={ratingHistogram(reviews)} color="var(--accent)" average={stats.average} />
             </section>
           </>
@@ -250,9 +249,9 @@ function PublicView({ data: d, loggedIn, isMe }: { data: PublicProfileData; logg
         <Achievements entries={reviews} isMe={false} />
 
         <section className="profile-section" aria-labelledby="pub-recent">
-          <h2 id="pub-recent" className="profile-section__title">Recentes</h2>
+          <h2 id="pub-recent" className="profile-section__title">{t('Recentes')}</h2>
           {recent.length === 0 ? (
-            <p className="profile-section__hint">Nenhuma review pública ainda.</p>
+            <p className="profile-section__hint">{t('Nenhuma review pública ainda.')}</p>
           ) : (
             <ul className="public-reviews">
               {recent.map((r) => (
@@ -273,15 +272,15 @@ function PublicView({ data: d, loggedIn, isMe }: { data: PublicProfileData; logg
           )}
           {latestPerItem(reviews).length > recent.length && (
             <p className="profile-section__hint" style={{ marginTop: 10 }}>
-              Mostrando as 20 mais recentes.
+              {t('Mostrando as 20 mais recentes.')}
             </p>
           )}
         </section>
 
-        <nav className="legal__nav" aria-label="Páginas do MMisc" style={{ marginTop: 8 }}>
-          <Link to="/sobre">Sobre</Link>
-          <Link to="/privacidade">Privacidade</Link>
-          <Link to="/termos">Termos</Link>
+        <nav className="legal__nav" aria-label={t('Páginas do MMisc')} style={{ marginTop: 8 }}>
+          <Link to="/sobre">{t('Sobre')}</Link>
+          <Link to="/privacidade">{t('Privacidade')}</Link>
+          <Link to="/termos">{t('Termos')}</Link>
         </nav>
       </div>
     </Shell>

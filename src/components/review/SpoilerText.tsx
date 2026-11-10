@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { t } from '../../lib/i18n'
 /**
  * Texto de review com proteção de spoiler.
  * - Trechos entre ||barras duplas|| aparecem borrados até o toque.
@@ -27,7 +28,7 @@ function Hidden({ children }: { children: string }) {
   const [shown, setShown] = useState(false)
   if (shown) return <span className="spoiler spoiler--shown">{children}</span>
   return (
-    <button type="button" className="spoiler" onClick={() => setShown(true)} aria-label="Spoiler escondido. Toque para mostrar">
+    <button type="button" className="spoiler" onClick={() => setShown(true)} aria-label={t('Spoiler escondido. Toque para mostrar')}>
       <span aria-hidden="true">{children}</span>
     </button>
   )

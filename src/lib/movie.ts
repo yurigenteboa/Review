@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { supabase } from './supabase'
 import type { Item } from './types'
 
+import { t } from './i18n'
 export interface MoviePerson {
   id: number
   name: string
@@ -106,5 +107,5 @@ export function formatRuntime(min: number | null): string | null {
 
 /** "L", "10", "12", "14", "16", "18" -> rótulo acessível */
 export function certificationLabel(c: string): string {
-  return c === 'L' ? 'Livre para todos os públicos' : `Não recomendado para menores de ${c} anos`
+  return c === 'L' ? t('Livre para todos os públicos') : t('Não recomendado para menores de {c} anos', { c })
 }

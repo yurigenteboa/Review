@@ -7,6 +7,7 @@ import { useMyProfile } from '../../lib/queries'
 import { useFriends } from '../../lib/social'
 import { supabase } from '../../lib/supabase'
 
+import { t } from '../../lib/i18n'
 const HIDE_KEY = 'mmisc.gettingStartedHidden'
 
 /** Quantas entradas a pessoa já tem (só a contagem, sem baixar as reviews). */
@@ -44,13 +45,13 @@ export function GettingStarted() {
   if (!me || hidden || friends.isLoading || entries.isLoading) return null
 
   const steps = [
-    { done: Boolean(me.username), label: 'Escolher seu @', hint: 'É como seus amigos te acham', to: '/perfil' },
-    { done: Boolean(me.avatar_url), label: 'Colocar uma foto', hint: 'Toque na sua foto no perfil', to: '/perfil' },
-    { done: (entries.data ?? 0) > 0, label: 'Fazer o primeiro registro', hint: 'Um álbum, filme, bar… leva 2 toques', action: () => requestCompose() },
+    { done: Boolean(me.username), label: t('Escolher seu @'), hint: t('É como seus amigos te acham'), to: '/perfil' },
+    { done: Boolean(me.avatar_url), label: t('Colocar uma foto'), hint: t('Toque na sua foto no perfil'), to: '/perfil' },
+    { done: (entries.data ?? 0) > 0, label: t('Fazer o primeiro registro'), hint: t('Um álbum, filme, bar… leva 2 toques'), action: () => requestCompose() },
     {
       done: (friends.data ?? []).some((f) => f.status === 'aceita'),
-      label: 'Adicionar um amigo',
-      hint: 'Mande seu link de convite',
+      label: t('Adicionar um amigo'),
+      hint: t('Mande seu link de convite'),
       to: '/amigos',
     },
   ]
@@ -67,16 +68,16 @@ export function GettingStarted() {
   }
 
   return (
-    <section className="starter" aria-label="Primeiros passos">
+    <section className="starter" aria-label={t('Primeiros passos')}>
       <header className="starter__head">
         <div>
-          <h2>Primeiros passos</h2>
+          <h2>{t('Primeiros passos')}</h2>
           <p>
-            {doneCount} de {steps.length} feitos
+            {t('{feitos} de {total} feitos', { feitos: doneCount, total: steps.length })}
           </p>
         </div>
         <button type="button" className="link-btn" onClick={hide}>
-          Ocultar
+          {t('Ocultar')}
         </button>
       </header>
       <div className="starter__bar" aria-hidden="true">
@@ -102,7 +103,7 @@ export function GettingStarted() {
           )
           return (
             <li key={s.label} className={s.done ? 'is-done' : undefined}>
-              <span className="visually-hidden">{s.done ? 'Feito: ' : 'A fazer: '}</span>
+              <span className="visually-hidden">{s.done ? t('Feito: ') : t('A fazer: ')}</span>
               {s.done ? (
                 <div className="starter__row">{body}</div>
               ) : s.to ? (
@@ -119,7 +120,7 @@ export function GettingStarted() {
         })}
       </ol>
       <Link to="/importar" className="starter__extra">
-        Já usa o Letterboxd? Traga seu diário de filmes
+        {t('Já usa o Letterboxd? Traga seu diário de filmes')}
       </Link>
     </section>
   )

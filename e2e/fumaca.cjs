@@ -49,8 +49,9 @@ async function mockSupabase(page, sent) {
   })
 }
 
-async function newPage(browser, { logged, device, standalone }) {
-  const ctx = await browser.newContext(device ? { ...devices[device] } : { viewport: { width: 1440, height: 900 } })
+async function newPage(browser, { logged, device, standalone, locale = 'pt-BR' }) {
+  // locale = idioma do "aparelho": o app abre nele (Idiomas). Padrão: português, como os textos abaixo.
+  const ctx = await browser.newContext({ ...(device ? devices[device] : { viewport: { width: 1440, height: 900 } }), locale })
   const page = await ctx.newPage()
   const errors = []
   const sent = []
@@ -259,6 +260,53 @@ async function healthy(name, page, errors) {
       if (wide <= 1) ok(`texto a 160% sem rolagem lateral: ${path}`)
       else fail(`texto a 160% em ${path}`, `${wide}px a mais na largura`)
     }
+    await ctx.close()
+  }
+
+  // 5. Idiomas: abre no idioma do aparelho, troca pela tela Aparência e cada idioma abre sem quebrar
+  {
+    const { ctx, page, errors } = await newPage(browser, { logged: false, device: 'iPhone 13', locale: 'de-DE' })
+    await page.goto(BASE + '/')
+    await page.waitForTimeout(600)
+    const lang = await page.evaluate(() => document.documentElement.lang)
+    if (lang === 'de-DE' && (await page.getByRole('button', { name: 'Weiter mit Google' }).count())) ok('idioma: abre no idioma do aparelho (alemão)')
+    else fail('idioma do aparelho', `lang=${lang}, sem o botão em alemão`)
+    await page.goto(BASE + '/aparencia#idioma')
+    await healthy('idioma: tela Aparência em alemão', page, errors)
+    await Promise.all([page.waitForEvent('load'), page.getByRole('radio', { name: 'English' }).click()])
+    await page.waitForTimeout(600)
+    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('mmisc.aparencia') || '{}').idioma)
+    if (saved === 'en' && (await page.getByRole('heading', { name: 'Appearance' }).count())) ok('idioma: escolher English recarrega em inglês')
+    else fail('trocar idioma', `idioma salvo=${saved}`)
+    await ctx.close()
+  }
+  for (const [id, home, legal] of [
+    ['en', 'Home', 'Privacy'],
+    ['es', 'Inicio', 'Privacidad'],
+    ['fr', 'Accueil', 'Confidentialité'],
+    ['de', 'Start', 'Datenschutz'],
+    ['fi', 'Koti', 'Tietosuoja'],
+  ]) {
+    const { ctx, page, errors } = await newPage(browser, { logged: true, device: 'iPhone 13' })
+    await page.addInitScript((l) => localStorage.setItem('mmisc.aparencia', JSON.stringify({ idioma: l })), id)
+    await page.goto(BASE + '/')
+    await page.waitForTimeout(800)
+    if (await page.getByRole('link', { name: home }).count()) ok(`${id}: Início traduzido`)
+    else fail(`${id}: Início`, `sem o link "${home}"`)
+    await healthy(`${id}: Início sem erros`, page, errors)
+    await page.goto(BASE + '/privacidade')
+    await page.waitForTimeout(500)
+    const notice = await page.locator('.legal__translation').count()
+    const wide = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
+    if (notice && wide <= 1 && (await page.getByRole('heading', { name: legal }).count())) ok(`${id}: Privacidade traduzida com aviso`)
+    else fail(`${id}: Privacidade`, `aviso=${notice}, largura+${wide}`)
+    for (const path of ['/buscar', '/perfil', '/aparencia']) {
+      await page.goto(BASE + path)
+      await page.waitForTimeout(400)
+      const w = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
+      if (w > 1) fail(`${id}: ${path}`, `${w}px a mais na largura`)
+    }
+    await healthy(`${id}: Buscar, Perfil e Aparência`, page, errors)
     await ctx.close()
   }
 

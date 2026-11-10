@@ -1,3 +1,4 @@
+import { formatNumber, t } from './i18n'
 // Categorias iniciais. Na Fase 2 elas passam a vir da tabela `categories` do Supabase;
 // este arquivo continua servindo de fallback e de referência para os critérios.
 
@@ -37,18 +38,18 @@ const PLACES_WITH_INSIDE: CategoryId[] = ['bar', 'restaurante', 'cafe']
 export const PLACE_SEARCH: CategoryId[] = ['bar', 'restaurante', 'cafe', 'banheiro']
 
 export const CATEGORIES: Category[] = [
-  { id: 'album', label: 'Álbum', criteria: ['Produção', 'Letras', 'Coesão'], group: 'cultura' },
-  { id: 'filme', label: 'Filme', criteria: ['Roteiro', 'Fotografia', 'Atuação'], group: 'cultura' },
-  { id: 'serie', label: 'Série', criteria: ['Roteiro', 'Elenco', 'Final'], group: 'cultura' },
-  { id: 'jogo', label: 'Jogo', criteria: ['Jogabilidade', 'Visual', 'História'], group: 'cultura' },
-  { id: 'livro', label: 'Livro', criteria: ['Escrita', 'Ritmo', 'Final'], group: 'cultura' },
-  { id: 'bar', label: 'Bar', criteria: ['Bebida', 'Comida', 'Ambiente', 'Preço'], group: 'lugar', ratingMode: 'comparacao' },
-  { id: 'restaurante', label: 'Restaurante', criteria: ['Comida', 'Atendimento', 'Ambiente', 'Preço'], group: 'lugar', ratingMode: 'comparacao' },
-  { id: 'cafe', label: 'Café', criteria: ['Café', 'Comida', 'Ambiente', 'Preço'], group: 'lugar', ratingMode: 'comparacao' },
-  { id: 'banheiro', label: 'Banheiro', criteria: ['Limpeza', 'Papel', 'Cheiro', 'Acessível'], group: 'lugar', livesIn: PLACES_WITH_INSIDE },
-  { id: 'cidade', label: 'Cidade', criteria: ['Andar a pé', 'Comida', 'Custo'], group: 'lugar' },
-  { id: 'drink', label: 'Drink', criteria: ['Sabor', 'Equilíbrio', 'Preço'], group: 'consumo', livesIn: PLACES_WITH_INSIDE },
-  { id: 'prato', label: 'Prato', criteria: ['Sabor', 'Porção', 'Preço'], group: 'consumo', livesIn: PLACES_WITH_INSIDE },
+  { id: 'album', label: t('Álbum'), criteria: [t('Produção'), t('Letras'), t('Coesão')], group: 'cultura' },
+  { id: 'filme', label: t('Filme'), criteria: [t('Roteiro'), t('Fotografia'), t('Atuação')], group: 'cultura' },
+  { id: 'serie', label: t('Série'), criteria: [t('Roteiro'), t('Elenco'), t('Final')], group: 'cultura' },
+  { id: 'jogo', label: t('Jogo'), criteria: [t('Jogabilidade'), t('Visual'), t('História')], group: 'cultura' },
+  { id: 'livro', label: t('Livro'), criteria: [t('Escrita'), t('Ritmo'), t('Final')], group: 'cultura' },
+  { id: 'bar', label: t('Bar'), criteria: [t('Bebida'), t('Comida'), t('Ambiente'), t('Preço')], group: 'lugar', ratingMode: 'comparacao' },
+  { id: 'restaurante', label: t('Restaurante'), criteria: [t('Comida'), t('Atendimento'), t('Ambiente'), t('Preço')], group: 'lugar', ratingMode: 'comparacao' },
+  { id: 'cafe', label: t('Café'), criteria: [t('bebida::Café'), t('Comida'), t('Ambiente'), t('Preço')], group: 'lugar', ratingMode: 'comparacao' },
+  { id: 'banheiro', label: t('Banheiro'), criteria: [t('Limpeza'), t('Papel'), t('Cheiro'), t('Acessível')], group: 'lugar', livesIn: PLACES_WITH_INSIDE },
+  { id: 'cidade', label: t('Cidade'), criteria: [t('Andar a pé'), t('Comida'), t('Custo')], group: 'lugar' },
+  { id: 'drink', label: t('Drink'), criteria: [t('Sabor'), t('Equilíbrio'), t('Preço')], group: 'consumo', livesIn: PLACES_WITH_INSIDE },
+  { id: 'prato', label: t('Prato'), criteria: [t('Sabor'), t('Porção'), t('Preço')], group: 'consumo', livesIn: PLACES_WITH_INSIDE },
 ]
 
 /**
@@ -70,8 +71,8 @@ export const categoryById = (id: CategoryId): Category =>
 export const catColor = (id: CategoryId) => `var(--cat-${id})`
 export const catInk = (id: CategoryId) => `var(--cat-${id}-ink)`
 
-/** Formata nota no padrão brasileiro: 4.5 -> "4,5" */
-export const formatRating = (n: number) => n.toFixed(1).replace('.', ',')
+/** Formata nota no padrão do idioma: 4.5 -> "4,5" (pt, es, fr, de, fi) ou "4.5" (en) */
+export const formatRating = (n: number) => formatNumber(n, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
 
 /** categorias com nota por comparação e ranking próprio (bar, restaurante, café) */
 export const RANKED_CATEGORIES = CATEGORIES.filter((c) => c.ratingMode === 'comparacao')

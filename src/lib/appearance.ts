@@ -1,5 +1,6 @@
 import { useSyncExternalStore, type CSSProperties } from 'react'
 
+import { currentLang, resolveLang, t, type LangChoice } from './i18n'
 /**
  * Aparência (A1/A2 do plano "Aparência e acessibilidade").
  *
@@ -45,6 +46,8 @@ export interface Appearance {
   fonte: 'inter' | 'sistema' | 'atkinson'
   /** "Usar em todos os meus aparelhos" (A4). Vale só para este aparelho; não vai para a conta. */
   sincronizar: boolean
+  /** Idioma do app: 'auto' = o do aparelho. Trocar recarrega a página (ver lib/i18n.tsx). */
+  idioma: LangChoice
 }
 
 export const DEFAULT_APPEARANCE: Appearance = {
@@ -61,6 +64,7 @@ export const DEFAULT_APPEARANCE: Appearance = {
   categorias: 'coloridas',
   fonte: 'inter',
   sincronizar: true,
+  idioma: 'auto',
 }
 
 /** O que vai para a conta (A4): tudo menos o tamanho do texto e o próprio interruptor. */
@@ -74,24 +78,24 @@ export function syncable(a: Appearance): SyncedAppearance {
 
 /** Estilos inteiros (A3). Nomes nossos: sem marcas de terceiros na interface. */
 export const STYLES: { id: StyleId; label: string; hint: string }[] = [
-  { id: 'vidro', label: 'Vidro', hint: 'O MMisc de sempre: vidro desfocado, cantos redondos.' },
-  { id: 'acrilico', label: 'Acrílico', hint: 'Cantos retos e discretos, superfícies foscas, cara de computador.' },
-  { id: 'anos90', label: 'Anos 90', hint: 'Janelas cinza em relevo, barra de título azul, zero arredondado.' },
-  { id: 'console', label: 'Console', hint: 'Azul-noite, cartões que brilham ao focar. Dá para navegar com controle de videogame.' },
-  { id: 'portatil', label: 'Portátil', hint: 'Claro e arredondado, botões gordinhos e contorno azul no item escolhido.' },
+  { id: 'vidro', label: t('Vidro'), hint: t('O MMisc de sempre: vidro desfocado, cantos redondos.') },
+  { id: 'acrilico', label: t('Acrílico'), hint: t('Cantos retos e discretos, superfícies foscas, cara de computador.') },
+  { id: 'anos90', label: t('Anos 90'), hint: t('Janelas cinza em relevo, barra de título azul, zero arredondado.') },
+  { id: 'console', label: t('Console'), hint: t('Azul-noite, cartões que brilham ao focar. Dá para navegar com controle de videogame.') },
+  { id: 'portatil', label: t('Portátil'), hint: t('Claro e arredondado, botões gordinhos e contorno azul no item escolhido.') },
 ]
 
 /** Degraus do tamanho do texto (1 = padrão). */
 export const TEXT_STEPS = [0.85, 1, 1.15, 1.3, 1.45, 1.6] as const
 
 export const ACCENTS: { id: AccentId; label: string; light: string; dark: string }[] = [
-  { id: 'marca', label: 'Marca', light: '#1A1714', dark: '#F4E8D0' },
-  { id: 'vermelho', label: 'Vermelho', light: '#E8262A', dark: '#E8262A' },
-  { id: 'roxo', label: 'Roxo', light: '#AB6EC3', dark: '#AB6EC3' },
-  { id: 'verde', label: 'Verde', light: '#7FB95A', dark: '#7FB95A' },
-  { id: 'azul', label: 'Azul', light: '#0A84FF', dark: '#0A84FF' },
-  { id: 'laranja', label: 'Laranja', light: '#FF9500', dark: '#FF9500' },
-  { id: 'rosa', label: 'Rosa', light: '#E0457B', dark: '#E0457B' },
+  { id: 'marca', label: t('Marca'), light: '#1A1714', dark: '#F4E8D0' },
+  { id: 'vermelho', label: t('Vermelho'), light: '#E8262A', dark: '#E8262A' },
+  { id: 'roxo', label: t('Roxo'), light: '#AB6EC3', dark: '#AB6EC3' },
+  { id: 'verde', label: t('Verde'), light: '#7FB95A', dark: '#7FB95A' },
+  { id: 'azul', label: t('Azul'), light: '#0A84FF', dark: '#0A84FF' },
+  { id: 'laranja', label: t('Laranja'), light: '#FF9500', dark: '#FF9500' },
+  { id: 'rosa', label: t('Rosa'), light: '#E0457B', dark: '#E0457B' },
 ]
 
 /** Fundo e superfície de cada tema: os mesmos valores de tokens.css (usados no cálculo de contraste). */
@@ -280,6 +284,11 @@ export function applyAppearance(a: Appearance = current) {
 const userChange = new Set<(a: Appearance) => void>()
 
 /** Muda uma ou mais escolhas, aplica na hora e guarda no aparelho. */
+/** Trocou o idioma de verdade? Então recarrega: os textos são lidos uma vez, ao abrir o app. */
+function reloadIfLanguageChanged(next: Appearance) {
+  if (resolveLang(next.idioma) !== currentLang() && typeof location !== 'undefined') location.reload()
+}
+
 export function setAppearance(patch: Partial<Appearance>) {
   current = { ...current, ...patch }
   persist(current)
@@ -291,11 +300,13 @@ export function setAppearance(patch: Partial<Appearance>) {
   applyAppearance(current)
   listeners.forEach((l) => l())
   userChange.forEach((l) => l(current))
+  if ('idioma' in patch) reloadIfLanguageChanged(current)
 }
 
 export function resetAppearance() {
   // o tamanho do texto e o interruptor de sincronizar são do aparelho: "Voltar ao padrão" não mexe
-  setAppearance({ ...DEFAULT_APPEARANCE, texto: current.texto, sincronizar: current.sincronizar })
+  // o idioma também fica: não é aparência
+  setAppearance({ ...DEFAULT_APPEARANCE, texto: current.texto, sincronizar: current.sincronizar, idioma: current.idioma })
 }
 
 /** A4: avisa quando a PESSOA muda algo (não quando o aparelho troca claro/escuro). */
@@ -325,6 +336,7 @@ export function applyFromAccount(remote: Partial<SyncedAppearance>, when: string
   }
   applyAppearance(current)
   listeners.forEach((l) => l())
+  reloadIfLanguageChanged(current)
 }
 
 export function currentAppearance(): Appearance {

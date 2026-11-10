@@ -14,10 +14,11 @@ import { useUserReviews } from '../lib/queries'
 import { computeRetro, MONTHS_LONG, type RetroData } from '../lib/retro'
 import { ErrorState, LoadingCards } from './states'
 
+import { locale, t, tp } from '../lib/i18n'
 const thisYear = new Date().getFullYear()
 const fmtDay = (iso: string) => {
-  const [, m, d] = iso.split('-').map(Number)
-  return `${d} de ${MONTHS_LONG[m - 1]}`
+  const [y, m, d] = iso.split('-').map(Number)
+  return new Date(y, m - 1, d).toLocaleDateString(locale(), { day: 'numeric', month: 'long' })
 }
 
 /** Retrospectiva do ano (/retrospectiva?ano=2026): só do próprio diário. */
@@ -47,7 +48,7 @@ export default function Retrospectiva() {
     try {
       const blob = await drawStory(r, name, labels)
       const file = new File([blob], `mmisc-${year}.png`, { type: 'image/png' })
-      if (navigator.canShare?.({ files: [file] })) await navigator.share({ files: [file], title: `Meu ${year} no MMisc` })
+      if (navigator.canShare?.({ files: [file] })) await navigator.share({ files: [file], title: t('Meu {year} no MMisc', { year }) })
       else {
         const a = document.createElement('a')
         a.href = URL.createObjectURL(blob)
@@ -56,7 +57,7 @@ export default function Retrospectiva() {
         setTimeout(() => URL.revokeObjectURL(a.href), 5000)
       }
     } catch (e) {
-      if ((e as Error).name !== 'AbortError') setShareError('Não deu para gerar a imagem. Tente de novo.')
+      if ((e as Error).name !== 'AbortError') setShareError(t('Não deu para gerar a imagem. Tente de novo.'))
     } finally {
       setSharing(false)
     }
@@ -64,9 +65,9 @@ export default function Retrospectiva() {
 
   return (
     <div className="page">
-      <PageHeader title={`Seu ${year}`} subtitle={year === thisYear ? 'Até agora' : 'Retrospectiva'}>
+      <PageHeader title={t('Seu {year}', { year })} subtitle={year === thisYear ? t('Até agora') : t('Retrospectiva')}>
         {years.length > 1 && (
-          <div className="chips no-scrollbar" role="group" aria-label="Ano">
+          <div className="chips no-scrollbar" role="group" aria-label={t('Ano')}>
             {years.map((y) => (
               <button key={y} type="button" className="chip tap" aria-pressed={y === year} onClick={() => setParams({ ano: String(y) }, { replace: true })}>
                 {y}
@@ -78,14 +79,18 @@ export default function Retrospectiva() {
 
       <div className="page__body retro">
         {r.entries === 0 ? (
-          <p className="empty-note">Nada registrado em {year}.</p>
+          <p className="empty-note">{t('Nada registrado em {year}.', { year })}</p>
         ) : (
           <>
             <section className="retro__hero">
               <p className="retro__big">{r.entries}</p>
               <p>
-                {r.entries === 1 ? 'registro' : 'registros'} de {r.items} {r.items === 1 ? 'coisa' : 'coisas'} em {r.days} {r.days === 1 ? 'dia' : 'dias'}
-                {r.average != null && ` · nota média ${formatRating(r.average)}`}
+                {t('{registros} de {coisas} em {dias}', {
+                  registros: tp(r.entries, 'registro', 'registros'),
+                  coisas: tp(r.items, '{n} coisa', '{n} coisas'),
+                  dias: tp(r.days, '{n} dia', '{n} dias'),
+                })}
+                {r.average != null && t(' · nota média {nota}', { nota: formatRating(r.average) })}
               </p>
               {labels.length > 0 && (
                 <ul className="taste-labels retro__labels">
@@ -97,7 +102,7 @@ export default function Retrospectiva() {
             </section>
 
             <section className="profile-section">
-              <h2 className="profile-section__title">Por categoria</h2>
+              <h2 className="profile-section__title">{t('Por categoria')}</h2>
               <ul className="retro__cats">
                 {r.byCategory.map((c) => (
                   <li key={c.category}>
@@ -114,15 +119,15 @@ export default function Retrospectiva() {
             <section className="retro__facts">
               {r.topMonth && (
                 <div className="profile-section">
-                  <span className="profile-section__hint">Mês mais ativo</span>
+                  <span className="profile-section__hint">{t('Mês mais ativo')}</span>
                   <strong>{MONTHS_LONG[r.topMonth.month]}</strong>
-                  <span className="profile-section__hint">{r.topMonth.entries} registros</span>
+                  <span className="profile-section__hint">{tp(r.topMonth.entries, '{n} registro', '{n} registros')}</span>
                 </div>
               )}
               {r.longestStreak && r.longestStreak.days > 1 && (
                 <div className="profile-section">
-                  <span className="profile-section__hint">Maior sequência</span>
-                  <strong>{r.longestStreak.days} dias seguidos</strong>
+                  <span className="profile-section__hint">{t('Maior sequência')}</span>
+                  <strong>{tp(r.longestStreak.days, '{n} dia seguido', '{n} dias seguidos')}</strong>
                   <span className="profile-section__hint">
                     {fmtDay(r.longestStreak.start)} a {fmtDay(r.longestStreak.end)}
                   </span>
@@ -130,13 +135,13 @@ export default function Retrospectiva() {
               )}
               {r.loved > 0 && (
                 <div className="profile-section">
-                  <span className="profile-section__hint">Curtiu de verdade</span>
+                  <span className="profile-section__hint">{t('Curtiu de verdade')}</span>
                   <strong>{r.loved} ♥</strong>
                 </div>
               )}
               {r.rewatches > 0 && (
                 <div className="profile-section">
-                  <span className="profile-section__hint">Reviu</span>
+                  <span className="profile-section__hint">{t('Reviu')}</span>
                   <strong>
                     {r.rewatches} {r.rewatches === 1 ? 'vez' : 'vezes'}
                   </strong>
@@ -146,7 +151,7 @@ export default function Retrospectiva() {
 
             {r.best.length > 0 && (
               <section className="profile-section">
-                <h2 className="profile-section__title">Notas mais altas do ano</h2>
+                <h2 className="profile-section__title">{t('Notas mais altas do ano')}</h2>
                 <div className="best-row">
                   {r.best.slice(0, 4).map((b) => (
                     <Link key={b.id} to={`/item/${b.item.id}`} className="best-row__item tap">
@@ -163,7 +168,7 @@ export default function Retrospectiva() {
 
             {top.length > 0 && (
               <section className="profile-section">
-                <h2 className="profile-section__title">Seus Top 3</h2>
+                <h2 className="profile-section__title">{t('Seus Top 3')}</h2>
                 {[...new Set(top.map((t) => t.category))].map((c) => (
                   <p key={c} className="retro__top">
                     <strong>{CATEGORY_PLURAL[c]}:</strong>{' '}
@@ -177,7 +182,7 @@ export default function Retrospectiva() {
             )}
 
             <button type="button" className="btn btn--primary tap" disabled={sharing} onClick={share}>
-              {sharing ? 'Gerando imagem…' : 'Compartilhar nos Stories'}
+              {sharing ? t('Gerando imagem…') : t('Compartilhar nos Stories')}
             </button>
             {shareError && (
               <p role="alert" className="form-error">
@@ -234,8 +239,8 @@ async function drawStory(r: RetroData, name: string, labels: string[]): Promise<
   ctx.font = font(800, 150)
   ctx.fillText(String(r.entries), 90, 680)
   ctx.font = font(500, 46)
-  ctx.fillText(`registros · ${r.items} coisas · ${r.days} dias`, 90, 750)
-  if (r.average != null) ctx.fillText(`nota média ${formatRating(r.average)}`, 90, 815)
+  ctx.fillText(`${tp(r.entries, 'registro', 'registros')} · ${tp(r.items, '{n} coisa', '{n} coisas')} · ${tp(r.days, '{n} dia', '{n} dias')}`, 90, 750)
+  if (r.average != null) ctx.fillText(t('nota média {nota}', { nota: formatRating(r.average) }), 90, 815)
 
   // barras por categoria
   let y = 930
@@ -259,16 +264,16 @@ async function drawStory(r: RetroData, name: string, labels: string[]): Promise<
   y += 40
   ctx.font = font(500, 40)
   if (r.topMonth) {
-    ctx.fillText(`Mês mais ativo: ${MONTHS_LONG[r.topMonth.month]}`, 90, y)
+    ctx.fillText(t('Mês mais ativo: {v}', { v: MONTHS_LONG[r.topMonth.month] }), 90, y)
     y += 64
   }
   if (r.longestStreak && r.longestStreak.days > 1) {
-    ctx.fillText(`Maior sequência: ${r.longestStreak.days} dias seguidos`, 90, y)
+    ctx.fillText(t('Maior sequência: {dias}', { dias: tp(r.longestStreak.days, '{n} dia seguido', '{n} dias seguidos') }), 90, y)
     y += 64
   }
   if (r.best[0]) {
-    const t = r.best[0].item.title
-    ctx.fillText(`Nota mais alta: ${t.length > 28 ? `${t.slice(0, 27)}…` : t}`, 90, y)
+    const title = r.best[0].item.title
+    ctx.fillText(t('Nota mais alta: {titulo}', { titulo: title.length > 28 ? `${title.slice(0, 27)}…` : title }), 90, y)
     y += 64
   }
   if (labels.length) {

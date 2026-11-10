@@ -2,20 +2,21 @@ import type { CategoryId } from '../../lib/categories'
 import type { CatalogResult } from '../../lib/queries'
 import { Cover } from './ReviewCard'
 
+import { t } from '../../lib/i18n'
 /** Crédito obrigatório de cada fonte. */
 export const SOURCE_CREDIT: Record<CategoryId, string> = {
-  album: 'Dados: MusicBrainz · capas: Cover Art Archive',
-  filme: 'Dados e pôsteres: TMDB. Este produto usa a API do TMDB, mas não é endossado nem certificado pelo TMDB.',
-  serie: 'Dados e pôsteres: TMDB. Este produto usa a API do TMDB, mas não é endossado nem certificado pelo TMDB.',
-  jogo: 'Dados e capas: IGDB',
-  livro: 'Dados e capas: Open Library',
-  bar: 'Lugares: Overture Maps e © colaboradores do OpenStreetMap',
-  banheiro: 'Lugares: © colaboradores do OpenStreetMap',
-  cidade: 'Cidades: IBGE e © colaboradores do OpenStreetMap',
+  album: t('Dados: MusicBrainz · capas: Cover Art Archive'),
+  filme: t('Dados e pôsteres: TMDB. Este produto usa a API do TMDB, mas não é endossado nem certificado pelo TMDB.'),
+  serie: t('Dados e pôsteres: TMDB. Este produto usa a API do TMDB, mas não é endossado nem certificado pelo TMDB.'),
+  jogo: t('Dados e capas: IGDB'),
+  livro: t('Dados e capas: Open Library'),
+  bar: t('Lugares: Overture Maps e © colaboradores do OpenStreetMap'),
+  banheiro: t('Lugares: © colaboradores do OpenStreetMap'),
+  cidade: t('Cidades: IBGE e © colaboradores do OpenStreetMap'),
   drink: '',
   prato: '',
-  restaurante: 'Lugares: Overture Maps e © colaboradores do OpenStreetMap',
-  cafe: 'Lugares: Overture Maps e © colaboradores do OpenStreetMap',
+  restaurante: t('Lugares: Overture Maps e © colaboradores do OpenStreetMap'),
+  cafe: t('Lugares: Overture Maps e © colaboradores do OpenStreetMap'),
 }
 
 interface Props {
@@ -33,29 +34,29 @@ interface Props {
 }
 
 /** Lista "Na internet": resultados das APIs externas, prontos para virar item. */
-export function CatalogResults({ category, results, loading, missingKey, error, onPick, hide, limit = 12, label = 'Na internet' }: Props) {
+export function CatalogResults({ category, results, loading, missingKey, error, onPick, hide, limit = 12, label = t('Na internet') }: Props) {
   const list = (results ?? []).filter((r) => !hide?.has(`${r.source}:${r.external_id}`)).slice(0, limit)
 
   return (
-    <section aria-label="Resultados na internet" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+    <section aria-label={t('Resultados na internet')} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
       <span className="field-label" style={{ margin: '4px 4px 0' }}>
         {label}
       </span>
       <div className="group">
-        {loading && <div className="group__row" style={{ color: 'var(--text-3)' }}>Buscando…</div>}
+        {loading && <div className="group__row" style={{ color: 'var(--text-3)' }}>{t('Buscando…')}</div>}
         {missingKey && (
           <div className="group__row" style={{ color: 'var(--text-3)', fontSize: '0.875rem' }}>
-            A busca dessa categoria ainda não foi ligada (falta a chave {missingKey} no Supabase).
+            {t('A busca dessa categoria ainda não foi ligada (falta a chave {missingKey} no Supabase).', { missingKey })}
           </div>
         )}
         {error && !missingKey && (
           <div className="group__row" style={{ color: 'var(--text-3)', fontSize: '0.875rem' }}>
-            A fonte não respondeu agora. Tente de novo em instantes.
+            {t('A fonte não respondeu agora. Tente de novo em instantes.')}
           </div>
         )}
         {!loading && !missingKey && !error && results && list.length === 0 && (
           <div className="group__row" style={{ color: 'var(--text-3)', fontSize: '0.875rem' }}>
-            Nada encontrado. Você pode criar manualmente.
+            {t('Nada encontrado. Você pode criar manualmente.')}
           </div>
         )}
         {list.map((r) => (
@@ -108,10 +109,10 @@ export function NearMeButton({
           <path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z" />
           <circle cx="12" cy="10" r="2.4" />
         </svg>
-        {status === 'loading' ? 'Localizando…' : active ? 'Perto de mim ✓' : 'Perto de mim'}
+        {status === 'loading' ? t('Localizando…') : active ? t('Perto de mim ✓') : t('Perto de mim')}
       </button>
-      {status === 'denied' && <span className="field-hint" style={{ margin: 0 }}>Permita a localização nas configurações do navegador.</span>}
-      {status === 'error' && <span className="field-hint" style={{ margin: 0 }}>Não deu para pegar sua localização.</span>}
+      {status === 'denied' && <span className="field-hint" style={{ margin: 0 }}>{t('Permita a localização nas configurações do navegador.')}</span>}
+      {status === 'error' && <span className="field-hint" style={{ margin: 0 }}>{t('Não deu para pegar sua localização.')}</span>}
     </div>
   )
 }

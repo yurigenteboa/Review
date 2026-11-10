@@ -3,6 +3,7 @@ import { catColor, formatRating, type Category, type CategoryId } from '../../li
 import { haptic } from '../../lib/haptics'
 import { useChildItems, type OrderInput } from '../../lib/queries'
 
+import { t } from '../../lib/i18n'
 const STAR = 'M12 2.5l2.9 6.2 6.6.7-4.9 4.5 1.4 6.6L12 17.2l-6 3.3 1.4-6.6-4.9-4.5 6.6-.7z'
 const MAX_ORDERS = 12
 
@@ -55,8 +56,8 @@ export function OrderPicker({
   const remove = (i: number) => onChange(value.filter((_, j) => j !== i))
 
   return (
-    <section className="orders" aria-label="O que você pediu">
-      <span className="field-label">O que você pediu?</span>
+    <section className="orders" aria-label={t('O que você pediu')}>
+      <span className="field-label">{t('O que você pediu?')}</span>
 
       {value.length > 0 && (
         <ul className="group orders__list">
@@ -68,7 +69,7 @@ export function OrderPicker({
                 <span>{kinds.find((k) => k.id === o.category)?.label}</span>
               </span>
               <MiniRating label={o.title} value={o.rating} onChange={(r) => setRating(i, r)} />
-              <button type="button" className="orders__remove tap" aria-label={`Tirar ${o.title}`} onClick={() => remove(i)}>
+              <button type="button" className="orders__remove tap" aria-label={t('Tirar {title}', { title: o.title })} onClick={() => remove(i)}>
                 ×
               </button>
             </li>
@@ -79,7 +80,7 @@ export function OrderPicker({
       {!full && (
         <>
           <div className="orders__add">
-            <div className="segmented" role="radiogroup" aria-label="Tipo" style={{ gridTemplateColumns: `repeat(${kinds.length}, minmax(0, 1fr))` }}>
+            <div className="segmented" role="radiogroup" aria-label={t('Tipo')} style={{ gridTemplateColumns: `repeat(${kinds.length}, minmax(0, 1fr))` }}>
               {kinds.map((k) => (
                 <button key={k.id} type="button" role="radio" aria-checked={kind === k.id} onClick={() => setKind(k.id)}>
                   {k.label}
@@ -90,8 +91,8 @@ export function OrderPicker({
               <input
                 className="field"
                 value={name}
-                placeholder={kind === 'drink' ? 'Ex.: Negroni' : kind === 'prato' ? 'Ex.: Coxinha' : 'Nome (ex.: Banheiro do térreo)'}
-                aria-label={`Nome do ${kinds.find((k) => k.id === kind)?.label.toLowerCase()}`}
+                placeholder={kind === 'drink' ? t('Ex.: Negroni') : kind === 'prato' ? t('Ex.: Coxinha') : t('Nome (ex.: Banheiro do térreo)')}
+                aria-label={t('Nome: {tipo}', { tipo: kinds.find((k) => k.id === kind)?.label ?? '' })}
                 enterKeyHint="done"
                 onChange={(e) => setName(e.target.value)}
                 onKeyDown={(e) => {
@@ -102,13 +103,13 @@ export function OrderPicker({
                 }}
               />
               <button type="button" className="btn btn--plain tap orders__add-btn" disabled={!name.trim()} onClick={addTyped}>
-                Adicionar
+                {t('Adicionar')}
               </button>
             </div>
           </div>
 
           {suggestions.length > 0 && (
-            <div className="chips orders__suggest" role="group" aria-label={term ? 'Parecidos neste lugar' : 'Mais pedidos neste lugar'}>
+            <div className="chips orders__suggest" role="group" aria-label={term ? t('Parecidos neste lugar') : t('Mais pedidos neste lugar')}>
               {suggestions.map((c) => (
                 <button
                   key={c.id}
@@ -132,7 +133,7 @@ export function OrderPicker({
 function MiniRating({ label, value, onChange }: { label: string; value: number | null; onChange: (v: number | null) => void }) {
   const v = value ?? 0
   return (
-    <div className="mini-rating" role="radiogroup" aria-label={`Nota de ${label}`}>
+    <div className="mini-rating" role="radiogroup" aria-label={t('Nota de {label}', { label })}>
       {[1, 2, 3, 4, 5].map((i) => {
         const fill = v >= i ? 100 : v >= i - 0.5 ? 50 : 0
         return (

@@ -5,6 +5,7 @@ import { displayName } from '../../lib/format'
 import { useFriends } from '../../lib/social'
 import { Avatar, Cover } from '../review/ReviewCard'
 
+import { t, tp } from '../../lib/i18n'
 const MAX_FRIENDS = 8
 const MAX_LIST = 6
 
@@ -24,25 +25,25 @@ export function HomeAside() {
   const queue = list.data ?? []
 
   return (
-    <aside className="page-aside" aria-label="Amigos e sua lista">
+    <aside className="page-aside" aria-label={t('Amigos e sua lista')}>
       {received.length > 0 && (
         <Link to="/amigos" className="aside-callout tap">
-          <strong>{received.length === 1 ? '1 pedido de amizade' : `${received.length} pedidos de amizade`}</strong>
-          <span>Responder em Amigos</span>
+          <strong>{tp(received.length, '{n} pedido de amizade', '{n} pedidos de amizade')}</strong>
+          <span>{t('Responder em Amigos')}</span>
         </Link>
       )}
 
       <section className="aside-section">
         <header className="aside-section__head">
-          <h2>Amigos</h2>
+          <h2>{t('Amigos')}</h2>
           <Link to="/amigos" className="aside-section__more">
-            {accepted.length > MAX_FRIENDS ? `Ver todos (${accepted.length})` : 'Gerenciar'}
+            {accepted.length > MAX_FRIENDS ? t('Ver todos ({n})', { n: accepted.length }) : t('Gerenciar')}
           </Link>
         </header>
-        {friends.isLoading && <p className="aside-empty">Carregando…</p>}
+        {friends.isLoading && <p className="aside-empty">{t('Carregando…')}</p>}
         {!friends.isLoading && accepted.length === 0 && (
           <p className="aside-empty">
-            Ainda ninguém. <Link to="/amigos">Mande seu link de convite.</Link>
+            {t('Ainda ninguém.')} <Link to="/amigos">{t('Mande seu link de convite.')}</Link>
           </p>
         )}
         <ul className="aside-people">
@@ -62,15 +63,15 @@ export function HomeAside() {
 
       <section className="aside-section">
         <header className="aside-section__head">
-          <h2>Na sua lista</h2>
+          <h2>{t('Na sua lista')}</h2>
           {queue.length > 0 && (
             <Link to="/perfil?aba=quero" className="aside-section__more">
-              Ver tudo ({queue.length})
+              {t('Ver tudo ({n})', { n: queue.length })}
             </Link>
           )}
         </header>
         {!list.isLoading && queue.length === 0 && (
-          <p className="aside-empty">Marque “Quero ver” num filme, álbum ou bar e ele aparece aqui.</p>
+          <p className="aside-empty">{t('Marque “Quero ver” num filme, álbum ou bar e ele aparece aqui.')}</p>
         )}
         <ul className="watch-grid aside-grid">
           {queue.slice(0, MAX_LIST).map((r) => (

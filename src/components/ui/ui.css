@@ -775,6 +775,14 @@
 .legal a {
   color: var(--accent-ink);
 }
+.legal .legal__translation {
+  margin: 0 0 8px;
+  padding: 10px 14px;
+  border-radius: var(--r-md);
+  background: var(--fill);
+  color: var(--text);
+  font-size: var(--fs-footnote);
+}
 .legal__nav {
   display: flex;
   flex-wrap: wrap;

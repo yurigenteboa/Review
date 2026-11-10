@@ -8,6 +8,7 @@ import { useDebounced } from '../lib/hooks'
 import { useBreakpoint } from '../lib/breakpoints'
 import { useFriends, useRequestFriend, useRespondFriend, useRemoveFriend, useSearchPeople } from '../lib/social'
 
+import { t } from '../lib/i18n'
 export default function Amigos() {
   const { userId } = useAuth()
   const [q, setQ] = useState('')
@@ -31,24 +32,24 @@ export default function Amigos() {
   return (
     <div className="page page--with-aside">
       <div className="page__main">
-        <PageHeader title="Amigos">
+        <PageHeader title={t('Amigos')}>
           <label className="search-field">
             <span style={{ color: 'var(--text-3)', display: 'flex' }}>
               <SearchIcon size={18} />
             </span>
-            <span className="visually-hidden">Buscar pessoas pelo @ ou nome</span>
-            <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por @ ou nome" autoCapitalize="none" />
+            <span className="visually-hidden">{t('Buscar pessoas pelo @ ou nome')}</span>
+            <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('Buscar por @ ou nome')} autoCapitalize="none" />
           </label>
         </PageHeader>
 
         <div className="page__body">
           {term.trim().length >= 2 && (
             <>
-              <span style={sectionTitle}>Pessoas</span>
+              <span style={sectionTitle}>{t('Pessoas')}</span>
               <div className="group">
-                {people.isLoading && <div className="group__row" style={{ color: 'var(--text-3)' }}>Buscando…</div>}
+                {people.isLoading && <div className="group__row" style={{ color: 'var(--text-3)' }}>{t('Buscando…')}</div>}
                 {people.data?.filter((p) => p.id !== userId).length === 0 && (
-                  <div className="group__row" style={{ color: 'var(--text-3)' }}>Ninguém com esse nome ou @. Mande seu link de convite.</div>
+                  <div className="group__row" style={{ color: 'var(--text-3)' }}>{t('Ninguém com esse nome ou @. Mande seu link de convite.')}</div>
                 )}
                 {people.data
                   ?.filter((p) => p.id !== userId)
@@ -60,16 +61,16 @@ export default function Amigos() {
                         person={p}
                         actions={
                           st?.status === 'aceita' ? (
-                            <span className="vis-badge">Amigos</span>
+                            <span className="vis-badge">{t('Amigos')}</span>
                           ) : st?.requested_by_me ? (
-                            <span className="vis-badge">Pedido enviado</span>
+                            <span className="vis-badge">{t('Pedido enviado')}</span>
                           ) : st ? (
                             <button type="button" className="btn btn--primary tap" style={smallBtn} onClick={() => respond.mutate({ other: p.id, accept: true })}>
-                              Aceitar
+                              {t('Aceitar')}
                             </button>
                           ) : (
                             <button type="button" className="btn btn--primary tap" style={smallBtn} disabled={request.isPending} onClick={() => request.mutate(p.id)}>
-                              Adicionar
+                              {t('Adicionar')}
                             </button>
                           )
                         }
@@ -82,7 +83,7 @@ export default function Amigos() {
 
           {received.length > 0 && (
             <>
-              <span style={sectionTitle}>Pedidos de amizade ({received.length})</span>
+              <span style={sectionTitle}>{t('Pedidos de amizade ({n})', { n: received.length })}</span>
               <div className="group">
                 {received.map((f) => (
                   <PersonRow
@@ -91,10 +92,10 @@ export default function Amigos() {
                     actions={
                       <>
                         <button type="button" className="btn btn--primary tap" style={smallBtn} disabled={respond.isPending} onClick={() => respond.mutate({ other: f.id, accept: true })}>
-                          Aceitar
+                          {t('Aceitar')}
                         </button>
                         <button type="button" className="btn btn--plain tap" style={smallBtn} disabled={respond.isPending} onClick={() => respond.mutate({ other: f.id, accept: false })}>
-                          Recusar
+                          {t('Recusar')}
                         </button>
                       </>
                     }
@@ -106,11 +107,11 @@ export default function Amigos() {
 
           {!wide && <InviteCard />}
 
-          <span style={sectionTitle}>Seus amigos ({accepted.length})</span>
+          <span style={sectionTitle}>{t('Seus amigos ({n})', { n: accepted.length })}</span>
           <div className="group">
-            {friends.isLoading && <div className="group__row" style={{ color: 'var(--text-3)' }}>Carregando…</div>}
+            {friends.isLoading && <div className="group__row" style={{ color: 'var(--text-3)' }}>{t('Carregando…')}</div>}
             {!friends.isLoading && accepted.length === 0 && (
-              <div className="group__row" style={{ color: 'var(--text-3)' }}>Ainda ninguém. Mande o link de convite acima.</div>
+              <div className="group__row" style={{ color: 'var(--text-3)' }}>{t('Ainda ninguém. Mande o link de convite acima.')}</div>
             )}
             {accepted.map((f) => (
               <PersonRow key={f.id} person={f} />
@@ -119,16 +120,16 @@ export default function Amigos() {
 
           {sent.length > 0 && (
             <>
-              <span style={sectionTitle}>Pedidos enviados</span>
+              <span style={sectionTitle}>{t('Pedidos enviados')}</span>
               <div className="group">
                 {sent.map((f) => (
                   <PersonRow
                     key={f.id}
                     person={f}
-                    sub="aguardando resposta"
+                    sub={t('aguardando resposta')}
                     actions={
                       <button type="button" className="btn btn--plain tap" style={smallBtn} disabled={remove.isPending} onClick={() => remove.mutate(f.id)}>
-                        Cancelar
+                        {t('Cancelar')}
                       </button>
                     }
                   />
@@ -146,7 +147,7 @@ export default function Amigos() {
       </div>
 
       {wide && (
-        <aside className="page-aside" aria-label="Convidar amigos">
+        <aside className="page-aside" aria-label={t('Convidar amigos')}>
           <InviteCard />
         </aside>
       )}
