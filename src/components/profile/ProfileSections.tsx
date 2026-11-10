@@ -26,6 +26,8 @@ import type { Item, Review, Visibility } from '../../lib/types'
 import { VISIBILITY_LABEL } from '../../lib/types'
 import { computeAchievements } from '../../lib/achievements'
 import { ItemPicker } from './ItemPicker'
+import { linkText, socialNetwork } from '../../lib/socialLinks'
+import { SOCIAL_ICON_SVG } from '../../lib/socialIcons'
 
 import { t, tp } from '../../lib/i18n'
 const thisYear = new Date().getFullYear()
@@ -36,20 +38,59 @@ const diaryItems = (entries: Review[], cat: CategoryId): Item[] =>
 
 // ---------- Links ----------
 
+/** Ícone da rede para onde o link leva; corrente genérica quando não é uma rede conhecida. */
+export function LinkIcon({ url, size = 16 }: { url: string; size?: number }) {
+  const net = socialNetwork(url)
+  const icon = net ? SOCIAL_ICON_SVG[net.id] : null
+  if (!icon)
+    return (
+      <svg className="link-icon" width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+        <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" />
+      </svg>
+    )
+  const [, , w, h] = icon.vb.split(' ').map(Number)
+  // ícone largo (marca escrita, como a do Last.fm): mesma altura, largura proporcional
+  const width = w > h * 1.5 ? Math.round((size * 0.75 * w) / h) : size
+  const height = w > h * 1.5 ? Math.round(size * 0.75) : size
+  return (
+    <svg
+      className="link-icon"
+      width={width}
+      height={height}
+      viewBox={icon.vb}
+      aria-hidden="true"
+      // SVG fixo do próprio app (lib/socialIcons.ts), nunca vindo do usuário
+      dangerouslySetInnerHTML={{ __html: icon.svg }}
+    />
+  )
+}
+
+const WORDMARKS = new Set(['lastfm'])
+
 export function LinksRow({ links }: { links: ProfileLink[] }) {
   if (!links.length) return null
   return (
     <ul className="profile-links" aria-label={t('Links')}>
-      {links.map((l) => (
-        <li key={l.url}>
-          <a href={l.url} target="_blank" rel="noopener noreferrer nofollow" className="tap">
-            <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-              <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" />
-            </svg>
-            {l.label || linkDomain(l.url)}
-          </a>
-        </li>
-      ))}
+      {links.map((l, i) => {
+        const net = socialNetwork(l.url)
+        const text = linkText(l)
+        return (
+          <li key={`${i}-${l.url}`}>
+            <a
+              href={l.url}
+              target="_blank"
+              rel="noopener noreferrer nofollow me"
+              className="tap"
+              title={net && net.name !== text ? `${net.name}: ${linkDomain(l.url)}` : linkDomain(l.url)}
+            >
+              <LinkIcon url={l.url} />
+              {/* logotipo escrito (Last.fm): sem nome personalizado, o próprio logotipo já diz o nome */}
+              <span className={net && WORDMARKS.has(net.id) && text === net.name ? 'visually-hidden' : undefined}>{text}</span>
+              {net && net.name !== text && <span className="visually-hidden"> ({net.name})</span>}
+            </a>
+          </li>
+        )
+      })}
     </ul>
   )
 }

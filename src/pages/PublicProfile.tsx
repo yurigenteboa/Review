@@ -19,7 +19,7 @@ import { asReviews, parseHandle, usePublicProfile, type PublicProfileData } from
 import type { Item } from '../lib/types'
 import { ErrorState, LoadingCards } from './states'
 
-import { t } from '../lib/i18n'
+import { t, tp } from '../lib/i18n'
 const thisYear = new Date().getFullYear()
 
 
@@ -153,7 +153,7 @@ function PublicView({ data: d, loggedIn, isMe }: { data: PublicProfileData; logg
             <dd>{stats.entriesThisYear}</dd>
           </div>
           <div>
-            <dt>{stats.items === 1 ? 'item' : 'itens'}</dt>
+            <dt>{tp(stats.items, 'item', 'itens')}</dt>
             <dd>{stats.items}</dd>
           </div>
           <div>

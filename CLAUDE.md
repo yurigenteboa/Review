@@ -39,7 +39,7 @@ docs/                  um arquivo por frente (tabela abaixo)
 - Vidro (`<Glass>`) só no que flutua; no máximo 2–3 camadas com blur por tela. Texto com contraste ≥ 4,5:1 em todos os temas e estilos (`e2e/contraste.cjs` mede).
 - Botões reais (`<button>`), `aria-label` em botão só com ícone, alvos de toque ≥ 44 px. Contador vermelho é `.count-badge` (não `.badge`).
 - Textos da interface em português do Brasil e SEMPRE dentro de `t('…')` / `tp(n, '…', '…')`; o português é a chave. Texto novo = `npm run i18n` e traduzir nos 5 dicionários. Nota por `formatRating` ("4,5" em pt, "4.5" em en); datas com `locale()`, nunca `'pt-BR'` fixo. Detalhe em `docs/IDIOMAS.md`.
-- Nada de nomes, logos ou símbolos de marcas de terceiros na interface (estilos se chamam Console, Portátil…).
+- Nada de nomes, logos ou símbolos de marcas de terceiros na interface (estilos se chamam Console, Portátil…). **Única exceção (pedido do dono em 10/11):** o ícone e o nome da rede num link do perfil, só para mostrar para onde o link leva (`src/lib/socialLinks.ts` + `socialIcons.ts`, gerado por `scripts/marca/icones_redes.py` a partir dos SVGs oficiais em `scripts/marca/redes/`).
 - Toda tabela nova no Supabase tem RLS ligada e policies explícitas (`privado` / `amigos` / `publico`, ou só o dono); revogar o que o Supabase dá por padrão a anon/authenticated.
 - Toda mudança de banco vira arquivo em `supabase/migrations/AAAAMMDDHHMM_descricao.sql` + bateria em `supabase/tests/`; nada de clique solto no painel.
 - Antes de mexer em RLS ou auth, explique o plano e espere confirmação.
@@ -63,7 +63,7 @@ Depois vieram Filmes, Perfil, Desktop, Mobile, Marca, Aparência e Idiomas. **Pl
 | --- | --- | --- | --- |
 | Base: banco, catálogo, amigos, login | `docs/BASE.md`, `docs/LOGIN-SOCIAL.md` | No ar: login por e-mail e Google, catálogo por Edge Function, amizades, convites, curtidas, comentários | Testar amigos com um amigo de verdade; chaves da Twitch (jogos); Apple/Meta depois |
 | Filmes | `docs/FILMES.md` | F1 (página 2.0) e F2 (diário) no ar; F3 passou para Perfil | Mostrar ou não a nota do TMDB; sinopses no idioma da pessoa |
-| Perfil | `docs/PERFIL.md` | Etapas 1–4: favoritos, agora, metas, Top 10, perfil público, conquistas, retrospectiva, importar Letterboxd | — |
+| Perfil | `docs/PERFIL.md` | Etapas 1–4: favoritos, agora, metas, Top 10, perfil público, conquistas, retrospectiva, importar Letterboxd; 10/11: links sem limite (teto 50) com ícone da rede, botões numa linha própria | — |
 | Desktop e tablet | `docs/DESKTOP.md` | D0–D5 feitos (barra lateral, painel, atalhos) | — |
 | Mobile | `docs/MOBILE.md` | M0–M4 feitos (velocidade, navegação, registro rápido, gestos, instalar); M5 virou Fase 0 da rede | — |
 | Rede de reviews de tudo | `docs/REDE.md` | Fase 0 (erros e métricas) e 1 (ligações, pedidos dentro do bar) feitas; Fase 2 (lugares) 2a–2e feitas | **Portões com uso real:** bar + 3 pedidos em < 30 s; 50 lugares reais e busca acha 9 de 10. Depois: ranking de amigos, filhas ao editar a noite, "Pedi de novo". Próxima fase: 3 Eventos |

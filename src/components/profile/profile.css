@@ -71,7 +71,20 @@
   font-size: var(--fs-title);
   letter-spacing: -0.4px;
   line-height: 1.15;
-  overflow-wrap: anywhere;
+  /* quebra só palavra que não cabe sozinha (antes "andre" virava "an / dre") */
+  overflow-wrap: break-word;
+}
+/* Botões do perfil (Editar, Adicionar, Pedido enviado…): linha própria, abaixo de bio e links */
+.profile__actions {
+  display: flex;
+  gap: 8px;
+}
+.profile__actions > .btn {
+  flex: 1;
+  min-height: 44px;
+  padding: 0 14px;
+  font-size: var(--fs-callout);
+  font-weight: 600;
 }
 .profile__names span {
   font-size: var(--fs-callout);
@@ -381,7 +394,7 @@
 .profile-links {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 14px;
+  gap: 6px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -389,12 +402,29 @@
 .profile-links a {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   min-height: 32px;
+  max-width: 100%;
+  padding: 0 12px 0 10px;
+  border-radius: var(--r-pill);
+  background: var(--fill);
   font-size: var(--fs-footnote);
   font-weight: 600;
-  color: var(--accent-ink);
+  color: var(--text);
   text-decoration: none;
+}
+.profile-links a > span:not(.visually-hidden) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (hover: hover) {
+  .profile-links a:hover {
+    background: color-mix(in srgb, var(--text) 16%, transparent);
+  }
+}
+.link-icon {
+  flex-shrink: 0;
 }
 
 /* Agora */
@@ -694,9 +724,20 @@
 }
 .edit-link {
   display: grid;
-  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr) auto;
+  grid-template-columns: 22px minmax(0, 0.8fr) minmax(0, 1.4fr) auto;
   gap: 6px;
   align-items: center;
+}
+.edit-link__icon {
+  display: grid;
+  place-items: center;
+  color: var(--text-2);
+  overflow: hidden;
+}
+/* logotipo escrito (Last.fm) cabe na coluna de 22px */
+.edit-link__icon svg {
+  max-width: 22px;
+  height: auto;
 }
 .chips-wrap {
   display: flex;

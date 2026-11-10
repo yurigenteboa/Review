@@ -319,7 +319,7 @@ export function useSaveProfileExtras() {
       if (p.is_public !== undefined) patch.is_public = p.is_public
       const { error } = await supabase.from('profiles').update(patch).eq('id', p.userId)
       if (error) {
-        if (error.code === '23514') throw new Error(t('Confira os links: só endereços que começam com https://, até 5.'))
+        if (error.code === '23514') throw new Error(t('Confira os links: só endereços que começam com https://, até {n}.', { n: LINKS_MAX }))
         throw error
       }
     },
@@ -340,6 +340,9 @@ export function normalizeUrl(raw: string): string | null {
     return null
   }
 }
+
+/** Teto de links do perfil. Só contra abuso (o perfil é uma linha só no banco); igual ao do banco. */
+export const LINKS_MAX = 50
 
 /** "https://www.letterboxd.com/yuri/" -> "letterboxd.com" */
 export const linkDomain = (url: string) => {

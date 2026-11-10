@@ -4,7 +4,7 @@ import { Sheet } from '../ui/Sheet'
 import { CATEGORIES, categoryById, type CategoryId } from '../../lib/categories'
 import { BIO_MAX, useSaveProfile, type ProfileFull } from '../../lib/profile'
 import {
-  linkDomain,
+  LINKS_MAX,
   normalizeUrl,
   useRemoveProfileImage,
   useSaveProfileExtras,
@@ -12,6 +12,8 @@ import {
   type ProfileLink,
 } from '../../lib/profileData'
 import { publicProfileUrl } from '../../lib/publicProfile'
+import { LinkIcon } from './ProfileSections'
+import { linkText } from '../../lib/socialLinks'
 
 import { t } from '../../lib/i18n'
 /** Editar perfil: nome, @, bio, foto, capa, links e as categorias da vitrine. */
@@ -149,14 +151,20 @@ export function EditProfileSheet({ profile: p, onClose }: { profile: ProfileFull
         </label>
 
         <fieldset className="edit-block">
-          <legend className="field-label">{t('Links (até 5)')}</legend>
+          <legend className="field-label">{t('Links')}</legend>
+          <span className="field-hint" style={{ margin: '0 4px 8px' }}>
+            {t('Quantos quiser. Link de rede social (Instagram, Letterboxd, Spotify…) ganha o ícone dela.')}
+          </span>
           {links.map((l, i) => (
             <div key={i} className="edit-link">
+              <span className="edit-link__icon">
+                <LinkIcon url={normalizeUrl(l.url) ?? ''} size={18} />
+              </span>
               <input
                 className="field"
                 value={l.label}
                 maxLength={40}
-                placeholder={l.url ? linkDomain(normalizeUrl(l.url) ?? l.url) : t('Nome')}
+                placeholder={l.url ? linkText({ label: '', url: normalizeUrl(l.url) ?? l.url }) : t('Nome')}
                 aria-label={t('Nome do link {v}', { v: i + 1 })}
                 onChange={(e) => setLinks(links.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)))}
               />
@@ -174,8 +182,8 @@ export function EditProfileSheet({ profile: p, onClose }: { profile: ProfileFull
               </button>
             </div>
           ))}
-          {links.length < 5 && (
-            <button type="button" className="link-btn" onClick={() => setLinks([...links, { label: '', url: '' }])}>
+          {links.length < LINKS_MAX && (
+            <button type="button" className="link-btn" style={{ alignSelf: 'flex-start' }} onClick={() => setLinks([...links, { label: '', url: '' }])}>
               {t('+ Adicionar link')}
             </button>
           )}

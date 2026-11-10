@@ -4,7 +4,6 @@ import { RankingsSection } from './RankingsSection'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { DiaryList, WatchlistGrid } from '../review/DiaryViews'
 import { Cover, ReviewCard } from '../review/ReviewCard'
-import { smallBtn } from '../social/PersonRow'
 import { Glass } from '../ui/Glass'
 import { signOut } from '../../lib/auth'
 import { catColor, categoryById, formatRating, type CategoryId } from '../../lib/categories'
@@ -101,7 +100,6 @@ export function ProfileView({ userId, isMe }: { userId: string; isMe: boolean })
 
       <Glass className="profile__card">
         <ProfileHeader profile={p} isMe={isMe} />
-        <LinksRow links={p.links ?? []} />
         <NowLine userId={userId} isMe={isMe} entries={all} />
         {labels.length > 0 && (
           <ul className="taste-labels" aria-label={t('Rótulos de gosto')}>
@@ -116,7 +114,7 @@ export function ProfileView({ userId, isMe }: { userId: string; isMe: boolean })
             <dd>{stats.entriesThisYear}</dd>
           </div>
           <div>
-            <dt>{stats.items === 1 ? 'item' : 'itens'}</dt>
+            <dt>{tp(stats.items, 'item', 'itens')}</dt>
             <dd>{stats.items}</dd>
           </div>
           <div>
@@ -276,13 +274,6 @@ function ProfileHeader({ profile: p, isMe }: { profile: ProfileFull; isMe: boole
           <h1>{displayName(p)}</h1>
           <span>{p.username ? `@${p.username}` : isMe ? t('sem @ ainda') : ''}</span>
         </div>
-        {isMe ? (
-          <button type="button" className="btn btn--plain tap" style={smallBtn} onClick={() => setEditing(true)}>
-            {t('Editar')}
-          </button>
-        ) : (
-          <FriendAction id={p.id} name={displayName(p)} />
-        )}
       </div>
       {p.bio ? (
         <p className="profile__bio">{p.bio}</p>
@@ -293,6 +284,16 @@ function ProfileHeader({ profile: p, isMe }: { profile: ProfileFull; isMe: boole
           </button>
         )
       )}
+      <LinksRow links={p.links ?? []} />
+      <div className="profile__actions">
+        {isMe ? (
+          <button type="button" className="btn btn--plain tap" onClick={() => setEditing(true)}>
+            {t('Editar perfil')}
+          </button>
+        ) : (
+          <FriendAction id={p.id} name={displayName(p)} />
+        )}
+      </div>
       {isMe && editing && <EditProfileSheet profile={p} onClose={() => setEditing(false)} />}
     </>
   )
@@ -310,8 +311,8 @@ function FriendAction({ id, name }: { id: string; name: string }) {
       <button
         type="button"
         className="btn btn--plain tap"
-        style={smallBtn}
         disabled={busy}
+        aria-label={t('Amigos. Tocar para desfazer a amizade')}
         onClick={() => {
           if (window.confirm(t('Desfazer amizade com {name}? Vocês deixam de ver as reviews "Amigos" um do outro.', { name }))) remove.mutate(id)
         }}
@@ -321,19 +322,32 @@ function FriendAction({ id, name }: { id: string; name: string }) {
     )
   if (state === 'enviado')
     return (
-      <button type="button" className="btn btn--plain tap" style={smallBtn} disabled={busy} onClick={() => remove.mutate(id)}>
-        {t('Cancelar pedido')}
+      <button
+        type="button"
+        className="btn btn--plain tap"
+        disabled={busy}
+        aria-label={t('Pedido enviado. Tocar para cancelar')}
+        onClick={() => {
+          if (window.confirm(t('Cancelar o pedido de amizade para {name}?', { name }))) remove.mutate(id)
+        }}
+      >
+        {t('Pedido enviado')}
       </button>
     )
   if (state === 'recebido')
     return (
-      <button type="button" className="btn btn--primary tap" style={smallBtn} disabled={busy} onClick={() => respond.mutate({ other: id, accept: true })}>
-        {t('Aceitar')}
-      </button>
+      <>
+        <button type="button" className="btn btn--primary tap" disabled={busy} onClick={() => respond.mutate({ other: id, accept: true })}>
+          {t('Aceitar pedido')}
+        </button>
+        <button type="button" className="btn btn--plain tap" disabled={busy} onClick={() => respond.mutate({ other: id, accept: false })}>
+          {t('Recusar')}
+        </button>
+      </>
     )
   return (
-    <button type="button" className="btn btn--primary tap" style={smallBtn} disabled={busy} onClick={() => request.mutate(id)}>
-      {t('Adicionar')}
+    <button type="button" className="btn btn--primary tap" disabled={busy} onClick={() => request.mutate(id)}>
+      {t('Adicionar amigo')}
     </button>
   )
 }
