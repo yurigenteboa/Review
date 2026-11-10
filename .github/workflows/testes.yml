@@ -1,0 +1,54 @@
+# Testes automáticos a cada push na main (e em pull requests).
+# Não publica nada: a Vercel continua publicando sozinha. Se algo aqui ficar vermelho,
+# o GitHub avisa no commit (✗) e por e-mail; o que quebrou aparece no log do passo.
+# Para rodar no PC o mesmo que roda aqui: npm run test:banco · npm run test:e2e · npm run i18n
+name: Testes
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: testes-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  app:
+    name: Build, traduções, fumaça e contraste
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Tipos e build
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: https://dgvrkmqenkwfeytgaouv.supabase.co
+          VITE_SUPABASE_ANON_KEY: fake
+      - name: Lint (só erros param)
+        run: npx oxlint src
+      - name: Traduções completas nos 5 idiomas
+        run: npm run i18n
+      - name: Navegador dos testes
+        run: npx playwright install --with-deps chromium
+      - name: Fumaça e contraste
+        run: npm run test:e2e
+
+  banco:
+    name: Regras do banco (RLS) em PGlite
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:banco

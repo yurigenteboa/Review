@@ -65,3 +65,12 @@ No Windows o cairosvg precisa da biblioteca Cairo; se der erro de DLL, instale o
 1. **Cores das cartas × cores das categorias.** No logo, música = vermelho, cinema = creme, cidade = roxo, banheiro = verde. No app, álbum = roxo, filme = vermelho, cidade = azul-piscina, banheiro = azul. Opções: deixar como está (marca ≠ categoria), ou alinhar as categorias do app às cartas.
 
 Resolvidos em 08/11: destaque do app e fundo do login (seção "Cores do app"); grafia = MMisc.
+
+## Notas de implementação (movidas do CLAUDE.md em 10/11)
+- Guia completo em `docs/MARCA.md`. Logo = cartas em leque (música vermelha com disco, cinema creme, cidade roxa, banheiro verde) + letreiro "MMisc" creme, sempre sobre preto.
+- Vetores em `public/brand/`: `logo-arte.svg` (completo, só sobre preto), `simbolo.svg` (= `public/favicon.svg`, para tamanhos pequenos), `simbolo-liso.svg` (16 px), `letreiro.svg` (uma cor). Imagem original em `docs/marca/logo-original.png`.
+- PNGs (ícones, `favicon.ico`, 20 telas de abertura, `brand/og.png`) saem de `scripts/marca/gerar_marca.py`; não editar PNG à mão.
+- Código: `<Wordmark>` (`components/ui/Brand.tsx`) e `WORDMARK_PATH`/`drawWordmark` (`lib/brand.ts`). Barra lateral: desktop = letreiro, tablet = símbolo. Login: logo completo como `<h1>`. Retrospectiva: letreiro no canvas. `index.html` tem bloco `og:padrao` (prévia do site) que o `proxy.ts` remove em `/@usuario`.
+- **Grafia oficial: MMisc** (08/11; todos os textos do app trocados).
+- **Cores do app (08/11):** destaque = par preto/creme do logo (`--accent` tinta `#1A1714` no claro, creme no escuro; texto sobre botão = `var(--on-accent)`, nunca `#fff`; sombra `var(--accent-shadow)`). Vermelho NÃO é destaque (já é curtir/apagar e Filme). Tokens `--brand-*`. Login/capa do perfil = `--login-gradient` (preto com brilhos das cartas), cartão do login sólido. Retrospectiva preto → vermelho escuro, texto creme. Página "Sobre" com o letreiro (`PageHeader.title` aceita ReactNode).
+- Em aberto: cores das cartas × `--cat-*`.
