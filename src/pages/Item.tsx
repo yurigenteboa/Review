@@ -12,6 +12,8 @@ import { useDebounced } from '../lib/hooks'
 import { DID_VERB, WANT_LABEL, useItemWatchers, useToggleWatchlist } from '../lib/diary'
 import { isTmdbMovie } from '../lib/movie'
 import { PlaceInfo } from '../components/place/PlaceInfo'
+import { AlbumInfo } from '../components/album/AlbumInfo'
+import { albumCover, useAlbumForItem } from '../lib/albuns'
 import Filme from './Filme'
 import { EmptyState, ErrorState, LoadingCards } from './states'
 
@@ -32,6 +34,8 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
   const consumoNoLugar = Boolean(item.data?.parent_id) && (item.data?.category === 'drink' || item.data?.category === 'prato')
   const generic = useGenericOf(item.data?.id, consumoNoLugar)
   const redirect = useItemRedirect(id, missing)
+  // Álbuns: ficha do acervo de referência (data, gêneros, nota do público, paradas, parecidos)
+  const acervo = useAlbumForItem(item.data)
   useEffect(() => {
     if (redirect.data) navigate(`/item/${redirect.data}`, { replace: true })
   }, [redirect.data, navigate])
@@ -61,6 +65,9 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
   const mine = list.find((r) => r.user_id === userId)
   const verb = DID_VERB[it.category]
   const isGeneric = it.source === 'generico'
+  const album = acervo.data ?? null
+  // item cadastrado antes de o acervo ter capa: usa a capa do acervo
+  const heroImage = it.image_url ?? (album ? albumCover(album) : null)
 
   const crit = cat.criteria.map((c) => {
     const vals = latest.map((r) => r.criteria_scores?.[c]).filter((v): v is number => typeof v === 'number' && v > 0)
@@ -78,18 +85,18 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
           background: `linear-gradient(160deg, color-mix(in srgb, var(--cat-${it.category}) 50%, #000), var(--cat-${it.category}))`,
         }}
       >
-        {it.image_url ? (
+        {heroImage ? (
           <>
             {/* a própria capa, desfocada, vira o fundo colorido para o vidro */}
             <img
-              src={it.image_url}
+              src={heroImage}
               alt=""
               aria-hidden="true"
               style={{ position: 'absolute', inset: -40, width: 'calc(100% + 80px)', height: 'calc(100% + 80px)', objectFit: 'cover', filter: 'blur(40px) saturate(160%)', opacity: 0.9 }}
             />
             <div style={{ position: 'absolute', left: 0, right: 0, top: 'calc(var(--safe-top) + 40px)', display: 'flex', justifyContent: 'center' }}>
               <img
-                src={it.image_url}
+                src={heroImage}
                 alt={t('Capa de {title}', { title: it.title })}
                 style={{
                   height: it.category === 'album' ? 170 : 200,
@@ -187,6 +194,8 @@ export default function Item({ onCompose }: { onCompose: (s: ComposeStart) => vo
         </div>
         )}
       </Glass>
+
+      {album && <AlbumInfo album={album} mmiscAvg={avg} mmiscN={rated} />}
 
       {isGeneric && <BestPlaces generic={it.id} title={it.title} drink={it.category === 'drink'} />}
 

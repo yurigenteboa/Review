@@ -24,6 +24,9 @@ export const SearchIcon = ({ size = 24 }: IconProps) => (
 export const MapIcon = ({ size = 24 }: IconProps) => (
   <svg {...base(size)}><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z" /><circle cx="12" cy="10" r="2.4" /></svg>
 )
+export const DiscIcon = ({ size = 24 }: IconProps) => (
+  <svg {...base(size)}><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="2.5" /><path d="M12 6.5a5.5 5.5 0 0 0-5.5 5.5" /></svg>
+)
 export const PersonIcon = ({ size = 24 }: IconProps) => (
   <svg {...base(size)}><circle cx="12" cy="8" r="4" /><path d="M4 21c1.2-4 4.4-6 8-6s6.8 2 8 6" /></svg>
 )

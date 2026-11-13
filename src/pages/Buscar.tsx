@@ -69,6 +69,11 @@ export default function Buscar({ onCompose }: { onCompose: (s: ComposeStart) => 
         <div style={{ marginTop: 12 }}>
           <CategoryChips value={cat} onChange={setCat} />
         </div>
+        {cat === 'album' && (
+          <Link to="/albuns" className="link-btn tap" style={{ display: 'inline-flex', minHeight: 44, alignItems: 'center', marginTop: 4 }}>
+            {t('Explorar paradas, gêneros e artistas ›')}
+          </Link>
+        )}
         {placeCat && (
           <div style={{ marginTop: 10 }}>
             <NearMeButton active={Boolean(near)} status={status} onRequest={request} onClear={clear} />

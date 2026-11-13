@@ -49,6 +49,9 @@ const Pessoa = lazy(SCREENS.Pessoa)
 const Notificacoes = lazy(SCREENS.Notificacoes)
 // Mapa: a biblioteca de mapa é pesada, então só baixa quando a tela abre (fora do prefetch)
 const Mapa = lazy(() => import('./pages/Mapa'))
+const Albuns = lazy(() => import('./pages/Albuns'))
+const AlbumGenero = lazy(() => import('./pages/AlbumGenero'))
+const AlbumArtista = lazy(() => import('./pages/AlbumArtista'))
 const Legal = lazy(SCREENS.Legal)
 const PublicProfile = lazy(SCREENS.PublicProfile)
 // Telas raras: só quando abertas (o leitor de .zip pesa)
@@ -286,6 +289,9 @@ function Shell() {
             <Route path="/notificacoes" element={<Notificacoes onCompose={openCompose} />} />
             <Route path="/convite/:code" element={<div className="page" aria-busy="true" />} />
             <Route path="/mapa" element={<Mapa />} />
+            <Route path="/albuns" element={<Albuns />} />
+            <Route path="/albuns/genero/:g" element={<AlbumGenero />} />
+            <Route path="/albuns/artista/:slug" element={<AlbumArtista />} />
             <Route path="/perfil" element={<Perfil />} />
             <Route path="/item/:id" element={<Item onCompose={openCompose} />} />
             <Route path="/kit" element={<Kit />} />

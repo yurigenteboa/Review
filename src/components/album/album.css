@@ -1,0 +1,663 @@
+/* Aba Álbuns (acervo de referência): paradas, gêneros, artistas e a ficha na página do álbum.
+   Cores só por tokens; a única cor de dado é a da categoria Álbum (--cat-album), em intensidades. */
+
+.alb-page {
+  padding-bottom: 32px;
+}
+.alb-h2 {
+  margin: 14px 4px 2px;
+  font-size: var(--fs-title);
+  letter-spacing: -0.4px;
+  line-height: 1.2;
+}
+.alb-h3 {
+  margin: 16px 4px 8px;
+  font-size: 1.0625rem;
+  letter-spacing: -0.2px;
+}
+.alb-note {
+  margin: 2px 4px 0;
+  font-size: var(--fs-footnote);
+  color: var(--text-3);
+}
+.alb-error {
+  color: var(--cat-filme-ink);
+  font-size: 0.875rem;
+}
+.alb-link {
+  color: var(--cat-album-ink);
+  text-decoration: none;
+  font-weight: 600;
+}
+.alb-link:hover {
+  text-decoration: underline;
+}
+.alb-back {
+  min-height: 44px;
+  padding: 0 14px;
+}
+.alb-skeleton {
+  height: 220px;
+  border-radius: var(--r-md);
+  background: var(--fill);
+}
+.alb-skeleton--strip {
+  flex: none;
+  width: 100%;
+  height: 150px;
+}
+
+/* ---------- filtros ---------- */
+.alb-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.alb-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.alb-genre-pick,
+.alb-view {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.alb-sheet-row {
+  width: 100%;
+  border: none;
+  background: none;
+  text-align: left;
+  justify-content: space-between;
+}
+.alb-sheet-row span {
+  font-size: var(--fs-footnote);
+  color: var(--text-3);
+}
+
+/* ---------- capa ---------- */
+.alb-cover {
+  display: block;
+  flex: none;
+  aspect-ratio: 1;
+  object-fit: cover;
+  background: var(--fill);
+  border-radius: 8px;
+}
+.alb-cover--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.125rem;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--cat-album) 55%, #000), var(--cat-album));
+}
+
+/* ---------- lista ---------- */
+.alb-list {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+.alb-row {
+  display: grid;
+  grid-template-columns: auto 64px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 84px;
+  padding: 10px 14px;
+  border: none;
+  border-bottom: 0.5px solid var(--separator);
+  background: none;
+  color: var(--text);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+.alb-row:last-child {
+  border-bottom: none;
+}
+.alb-row:not(:has(.alb-row__rank)) {
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+}
+.alb-row__rank {
+  min-width: 2ch;
+  font-size: 1.0625rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-2);
+  text-align: right;
+}
+.alb-row__cover {
+  width: 64px;
+  height: 64px;
+}
+.alb-row__text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.alb-row__title {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.alb-row__artist {
+  font-size: 0.9375rem;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.alb-row__meta {
+  font-size: var(--fs-footnote);
+  color: var(--text-3);
+}
+.alb-heard {
+  color: var(--cat-album-ink);
+  font-weight: 600;
+}
+.alb-genres {
+  font-size: var(--fs-footnote);
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.alb-genres strong {
+  color: var(--cat-album-ink);
+  font-weight: 700;
+}
+.alb-row__score {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.alb-row__score strong {
+  font-size: 1.125rem;
+  font-weight: 800;
+}
+.alb-row__score small {
+  font-size: var(--fs-caption);
+  color: var(--text-3);
+}
+
+/* ---------- grade ---------- */
+.alb-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px 12px;
+}
+.alb-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+.alb-tile__art {
+  position: relative;
+  display: block;
+}
+.alb-tile__cover {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+}
+.alb-tile__rank,
+.alb-tile__heard {
+  position: absolute;
+  top: 6px;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-pill);
+  background: var(--scrim, rgba(0, 0, 0, 0.6));
+  color: #fff;
+  font-size: 0.8125rem;
+  font-weight: 800;
+}
+.alb-tile__rank {
+  left: 6px;
+}
+.alb-tile__heard {
+  right: 6px;
+}
+.alb-tile__title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.alb-tile__artist {
+  font-size: var(--fs-footnote);
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.alb-more {
+  align-self: center;
+  margin-top: 12px;
+  min-height: 44px;
+}
+.alb-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ---------- chips de gênero ---------- */
+.alb-genre-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.alb-gchip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: var(--r-pill);
+  background: var(--fill);
+  color: var(--text-2);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+.alb-gchip--main {
+  background: color-mix(in srgb, var(--cat-album) 16%, var(--surface));
+  color: var(--cat-album-ink);
+  font-weight: 700;
+  font-size: 0.9375rem;
+}
+
+/* ---------- aba Gêneros ---------- */
+.alb-decades {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  background: var(--surface);
+  border-radius: var(--r-md);
+}
+.alb-decade {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.alb-decade__title {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  font-size: 0.9375rem;
+}
+.alb-genre-row {
+  justify-content: space-between;
+  text-decoration: none;
+  color: inherit;
+  width: 100%;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  background: none;
+  font: inherit;
+  text-align: left;
+}
+.alb-genre-row__text,
+.alb-genre-row__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.alb-genre-row__meta {
+  align-items: flex-end;
+  flex: none;
+}
+.alb-genre-row small {
+  font-size: var(--fs-footnote);
+  color: var(--text-3);
+}
+
+/* ---------- números ---------- */
+.alb-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+}
+.alb-kpis > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+.alb-kpis strong {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  font-variant-numeric: tabular-nums;
+}
+.alb-kpis span {
+  font-size: var(--fs-footnote);
+  color: var(--text-3);
+}
+
+.alb-bars {
+  margin: 0;
+  padding: 14px 14px 8px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-sizing: content-box;
+}
+.alb-bars__plot {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  border-bottom: 1px solid var(--separator);
+}
+.alb-bars__col {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+.alb-bars__bar {
+  display: block;
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  background: var(--cat-album);
+}
+.alb-bars__col:hover .alb-bars__bar {
+  background: var(--cat-album-ink);
+}
+.alb-bars__axis {
+  display: flex;
+  gap: 2px;
+  margin-top: 6px;
+}
+.alb-bars__axis span {
+  flex: 1;
+  min-width: 0;
+  overflow: visible;
+  white-space: nowrap;
+  text-align: center;
+  font-size: var(--fs-caption);
+  color: var(--text-3);
+}
+.alb-bars__axis span:empty::before {
+  content: '\00a0';
+}
+
+.alb-hbars {
+  margin: 0;
+  padding: 6px 0;
+  list-style: none;
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+.alb-hbars__row {
+  display: grid;
+  grid-template-columns: minmax(0, 11rem) minmax(0, 1fr) 3ch;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 4px 14px;
+  color: inherit;
+  text-decoration: none;
+}
+.alb-hbars__name {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.875rem;
+  font-weight: 600;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.alb-hbars__name small {
+  font-size: var(--fs-caption);
+  font-weight: 400;
+  color: var(--text-3);
+}
+.alb-hbars__track {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--fill);
+  overflow: hidden;
+}
+.alb-hbars__track span {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--cat-album);
+}
+.alb-hbars__v {
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.alb-heat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  overflow-x: auto;
+}
+.alb-heat__row {
+  display: grid;
+  grid-template-columns: minmax(6.5rem, 9rem) repeat(var(--cols, 8), minmax(16px, 1fr));
+  gap: 2px;
+  align-items: center;
+}
+.alb-heat__head {
+  font-size: var(--fs-caption);
+  color: var(--text-3);
+}
+.alb-heat__name {
+  font-size: 0.8125rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 6px;
+}
+.alb-heat__head .alb-heat__name {
+  font-weight: 600;
+}
+.alb-heat__col {
+  text-align: center;
+}
+.alb-heat__cell {
+  height: 22px;
+  border-radius: 4px;
+}
+
+.alb-career {
+  margin: 0;
+  padding: 10px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+.alb-career svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.alb-career__grid {
+  stroke: var(--separator);
+  stroke-width: 1;
+}
+.alb-career__tick {
+  fill: var(--text-3);
+  font-size: 10px;
+}
+.alb-career__line {
+  fill: none;
+  stroke: color-mix(in srgb, var(--cat-album) 45%, transparent);
+  stroke-width: 2;
+}
+.alb-career__dot {
+  fill: var(--cat-album);
+  stroke: var(--surface);
+  stroke-width: 2;
+}
+.alb-career__dot:hover {
+  fill: var(--cat-album-ink);
+}
+
+/* ---------- ficha na página do álbum ---------- */
+.alb-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 var(--gutter);
+  margin-top: 12px;
+}
+.alb-ref {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.alb-ref__box {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 14px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+.alb-ref__label {
+  font-size: var(--fs-footnote);
+  font-weight: 600;
+  color: var(--text-3);
+}
+.alb-ref__value {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
+}
+.alb-ref__sub {
+  font-size: var(--fs-footnote);
+  color: var(--text-3);
+}
+.alb-fact {
+  align-items: flex-start;
+}
+.alb-fact__k {
+  flex: none;
+  width: 6.5rem;
+  font-size: 0.875rem;
+  color: var(--text-3);
+  padding-top: 2px;
+}
+.alb-fact__v {
+  min-width: 0;
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+.alb-ranks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 8px;
+}
+.alb-rank {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 64px;
+  padding: 12px 14px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: inherit;
+  text-decoration: none;
+}
+.alb-rank strong {
+  font-size: 1.375rem;
+  font-weight: 800;
+  color: var(--cat-album-ink);
+  font-variant-numeric: tabular-nums;
+}
+.alb-rank span {
+  font-size: var(--fs-footnote);
+  color: var(--text-2);
+}
+.alb-strip {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scroll-snap-type: x proximity;
+}
+.alb-strip__item {
+  flex: none;
+  width: 128px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  scroll-snap-align: start;
+  cursor: pointer;
+}
+.alb-strip__cover {
+  width: 128px;
+  height: 128px;
+  border-radius: 10px;
+}
+.alb-strip__item > strong {
+  font-size: 0.875rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.alb-strip__item > span:not(.alb-cover) {
+  font-size: var(--fs-caption);
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+[data-movimento='reduzido'] .alb-strip {
+  scroll-snap-type: none;
+}

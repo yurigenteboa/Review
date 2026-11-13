@@ -30,3 +30,7 @@ dist-ssr
 
 # Fase 2e: arquivos grandes de lugares (baixados e gerados no PC, não vão para o git)
 dados/
+
+# Acervo de álbuns: .docx (~2,8 GB), capas e dados de terceiros ficam só no PC (o repositório é público).
+# O que vai para o site é gerado por scripts/albuns/acervo.py em public/albuns/.
+Albuns/

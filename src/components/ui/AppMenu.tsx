@@ -6,7 +6,7 @@ import { signOut, useAuth } from '../../lib/auth'
 import { useProfileFull } from '../../lib/profile'
 import { useFriends } from '../../lib/social'
 import { Avatar } from '../review/ReviewCard'
-import { GlobeIcon, LanguageIcon, MapIcon, PaletteIcon, PersonIcon, SparkleIcon } from './Icons'
+import { DiscIcon, GlobeIcon, LanguageIcon, MapIcon, PaletteIcon, PersonIcon, SparkleIcon } from './Icons'
 
 import { LANGS, currentLang, t } from '../../lib/i18n'
 const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
@@ -115,6 +115,7 @@ function MenuContent({ onClose }: { onClose: () => void }) {
 
   const items: { to: string; label: string; icon: ReactNode; hint?: string }[] = [
     { to: '/perfil', label: t('Perfil'), icon: <PersonIcon /> },
+    { to: '/albuns', label: t('Álbuns'), icon: <DiscIcon />, hint: t('Paradas, gêneros e artistas') },
     { to: '/mapa', label: t('Mapa'), icon: <MapIcon /> },
     { to: '/retrospectiva', label: t('Retrospectiva'), icon: <SparkleIcon /> },
     ...(publicPath ? [{ to: publicPath, label: t('Perfil público'), icon: <GlobeIcon />, hint: `mmisc.com.br${publicPath}` }] : []),

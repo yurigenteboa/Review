@@ -20,13 +20,15 @@ src/
   components/review/   ReviewCard, ComposeSheet, OrderPicker, CompareRating, RatingInput…
   components/profile/  ProfileView, ProfileSections, profile.css
   components/movie/    movie.css · components/place/ PlaceInfo · components/home/ (cartões do Início)
-  pages/               Inicio, Buscar, Amigos, Perfil, Pessoa, Item, Filme, Mapa, Ranking, Aparencia, Legal…
+  components/album/    AlbumParts, ChartFilters, AlbumCharts, AlbumInfo, album.css (acervo de álbuns)
+  pages/               Inicio, Buscar, Amigos, Perfil, Pessoa, Item, Filme, Mapa, Ranking, Aparencia, Legal, Albuns, AlbumGenero, AlbumArtista…
   lib/                 queries, social, profile*, diary, places, appearance(+Sync), i18n, telemetry, gamepad…
   styles/              tokens.css (cores, raios, blur, fontes, temas) · estilos.css (estilos inteiros) · desktop-pages.css
   locales/             en, es, fr, de, fi (chave = texto em português)
 supabase/migrations/   um .sql por mudança de banco · supabase/tests/ baterias PGlite · supabase/functions/
 e2e/                   fumaca.cjs (fluxos principais) · contraste.cjs (todas as aparências)
-scripts/               testes/ · i18n/ · marca/ · catalogo/
+scripts/               testes/ · i18n/ · marca/ · catalogo/ · albuns/ (acervo.py)
+Albuns/                .docx e dados do acervo de álbuns (só no PC, fora do git)
 docs/                  um arquivo por frente (tabela abaixo)
 ```
 
@@ -49,7 +51,7 @@ docs/                  um arquivo por frente (tabela abaixo)
 ## Testes (rodar antes de entregar; o GitHub roda sozinho a cada push)
 - `npm run build` — tipos + build.
 - `npm run i18n` — nenhuma tradução faltando nos 5 idiomas.
-- `npm run test:e2e` — build de teste com Supabase falso + `e2e/fumaca.cjs` (fluxos principais, 56 checagens) + `e2e/contraste.cjs` (5 estilos × 4 temas × 2 contrastes × 7 destaques). No PC, na primeira vez: `npx playwright install chromium`.
+- `npm run test:e2e` — build de teste com Supabase falso + `e2e/fumaca.cjs` (fluxos principais, 63 checagens) + `e2e/contraste.cjs` (5 estilos × 4 temas × 2 contrastes × 7 destaques). No PC, na primeira vez: `npx playwright install chromium`.
 - `npm run test:banco` — todas as baterias de `supabase/tests/` (PGlite com todas as migrações).
 - **GitHub Actions** (`.github/workflows/testes.yml`, desde 10/11): a cada push na `main`, dois trabalhos — "Build, traduções, fumaça e contraste" e "Regras do banco (RLS) em PGlite". Não bloqueia a Vercel: se ficar vermelho, o GitHub avisa no commit e por e-mail. Versões fixas: `playwright` 1.63.0 e `@electric-sql/pglite` 0.5.10 (devDependencies).
 - Fluxo novo ou tabela nova = checagem nova na fumaça ou bateria nova no banco.
@@ -69,6 +71,7 @@ Depois vieram Filmes, Perfil, Desktop, Mobile, Marca, Aparência e Idiomas. **Pl
 | Rede de reviews de tudo | `docs/REDE.md` | Fase 0 (erros e métricas) e 1 (ligações, pedidos dentro do bar) feitas; Fase 2 (lugares) 2a–2e feitas | **Portões com uso real:** bar + 3 pedidos em < 30 s; 50 lugares reais e busca acha 9 de 10. Depois: ranking de amigos, filhas ao editar a noite, "Pedi de novo". Próxima fase: 3 Eventos |
 | Marca | `docs/MARCA.md` | Logo, ícones, splash, prévia de link; grafia MMisc; destaque preto/creme | Cores das cartas × cores das categorias |
 | Aparência e menu lateral | `docs/APARENCIA.md` | A0–A4: temas, texto, destaque, acessibilidade, 5 estilos, controle no Console, sincronizar com a conta; menu lateral | A5: paletas e sons (por último) |
+| Álbuns (acervo de referência) | `docs/ALBUNS.md` | 13/11: código pronto — aba `/albuns` (paradas por ano/década/gênero, gêneros, números), páginas de gênero e artista, ficha do álbum no item, acervo na busca. Migração `202611131600_albuns_acervo.sql` escrita e testada (33 cenários), **NÃO aplicada** (mexe em RLS: aguarda OK do dono) | Aplicar a migração; rodar `scripts/albuns/acervo.py capas` (e `mbid`) e `csv`; importar as 7 partes do CSV no painel |
 | Idiomas | `docs/IDIOMAS.md` | pt, en, es, fr, de, fi na interface | Conteúdo do TMDB por idioma |
 
 ## Dependências (08/11)

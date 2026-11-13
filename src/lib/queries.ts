@@ -412,13 +412,40 @@ export function useCatalogSearch(
     enabled,
     staleTime: 10 * 60 * 1000,
     queryFn: async (): Promise<CatalogResponse> => {
-      const { data, error } = await supabase.functions.invoke<CatalogResponse>('catalog-search', {
+      const web = supabase.functions.invoke<CatalogResponse>('catalog-search', {
         body: { category, q, lat: placeCat ? near?.lat : undefined, lng: placeCat ? near?.lng : undefined },
       })
-      if (error) throw error
-      return data ?? { results: [] }
+      // Álbuns: o acervo de referência vem primeiro (mesma busca do app, sem esperar a internet cair)
+      const acervo = category === 'album' && q.length >= 2 ? searchAcervo(q) : Promise.resolve([] as CatalogResult[])
+      const [{ data, error }, fromAcervo] = await Promise.all([web, acervo])
+      if (error && fromAcervo.length === 0) throw error
+      const res = data ?? { results: [] }
+      if (fromAcervo.length === 0) return res
+      const seen = new Set(fromAcervo.map((r) => `${r.source}:${r.external_id}`))
+      return { ...res, results: [...fromAcervo, ...(res.results ?? []).filter((r) => !seen.has(`${r.source}:${r.external_id}`))] }
     },
   })
+}
+
+/**
+ * Busca no acervo de álbuns (migração 202611131600). Com id do MusicBrainz, vira o mesmo item da
+ * busca na internet; sem, entra como `acervo`. Sem a tabela (antes da migração), devolve vazio.
+ */
+async function searchAcervo(q: string): Promise<CatalogResult[]> {
+  const { data, error } = await supabase.rpc('search_album_catalog', { p_q: q, p_limit: 8 })
+  if (error || !Array.isArray(data)) return []
+  return (data as { id: string; title: string; artists: string[] | null; year: number; cover_url: string | null; mbid: string | null }[]).map((a) => ({
+    source: a.mbid ? 'musicbrainz' : 'acervo',
+    external_id: a.mbid ?? a.id,
+    category: 'album' as const,
+    title: a.title,
+    subtitle: (a.artists ?? []).join(', ') || null,
+    image_url: a.cover_url ?? (a.mbid ? `https://coverartarchive.org/release-group/${a.mbid}/front-250` : null),
+    year: a.year,
+    lat: null,
+    lng: null,
+    metadata: { acervo: a.id },
+  }))
 }
 
 /** Garante que o resultado externo exista na tabela items e devolve o id. */
